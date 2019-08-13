@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="CodeGeneration\__CSharpCodeGenerator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ClangSharp.dll" />
+    <None Remove="libclang.dll" />
+    <None Remove="_ClangSharp.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="libclang.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QuantumBinding.Clang\QuantumBinding.Clang.csproj" />
+  </ItemGroup>
+
+</Project>
