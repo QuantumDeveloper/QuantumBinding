@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Generator", "QuantumBinding.Generator\QuantumBinding.Generator.csproj", "{B95CDA41-B72D-4E22-B439-097E49EBEE82}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangGenerator", "QuantumBinding.Demo\QuantumBinding.ClangGenerator.csproj", "{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Clang", "QuantumBinding.Clang\QuantumBinding.Clang.csproj", "{7E8412B8-C462-4B54-A699-17A49AFEB6E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Debug|x64.ActiveCfg = Debug|x64
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Debug|x64.Build.0 = Debug|x64
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Release|x64.ActiveCfg = Release|x64
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Release|x64.Build.0 = Release|x64
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Debug|x64.ActiveCfg = Debug|x64
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Debug|x64.Build.0 = Debug|x64
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Release|x64.ActiveCfg = Release|x64
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Release|x64.Build.0 = Release|x64
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Debug|x64.ActiveCfg = Debug|x64
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Debug|x64.Build.0 = Debug|x64
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|x64.ActiveCfg = Release|x64
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D1D07A1-2D6A-4107-AAB6-C322F9578C72}
+	EndGlobalSection
+EndGlobal
