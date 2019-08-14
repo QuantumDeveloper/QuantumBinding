@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using QuantumBinding.Clang;
 using QuantumBinding.Clang.Interop;
@@ -38,6 +39,12 @@ namespace QuantumBinding.Generator.AST
         public void Parse(CXIndex index, List<string> arguments)
         {
             var parser = new ClangParser(this);
+            if (!File.Exists(FilePath))
+            {
+                Console.WriteLine($"File {FilePath} does not exist.");
+                return;
+            }
+            
             ParseResult = parser.Parse(index, FilePath, arguments);
             if (ParseResult != ParseResult.Success)
             {
