@@ -83,8 +83,6 @@ namespace QuantumBinding.Generator
             {
                 postGeneratorPassesDict.Remove(pass.Key);
             }
-
-            postGeneratorPassesDict.Clear();
         }
 
         internal void RunCodeGenerationPasses(Module module)
@@ -105,8 +103,6 @@ namespace QuantumBinding.Generator
             {
                 codeGenerationPassesDict.Remove(pass.Key);
             }
-
-            codeGenerationPassesDict.Clear();
         }
 
         public void AddPreGeneratorPass(IPreGeneratorPass pass, ExecutionPassKind passKind, params Module[] executeFor)

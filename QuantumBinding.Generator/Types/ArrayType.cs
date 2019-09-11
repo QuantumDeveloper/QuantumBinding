@@ -11,6 +11,7 @@ namespace QuantumBinding.Generator.Types
 
         public ArrayType(ArrayType type) : base(type)
         {
+            Declaration = type.Declaration;
             ElementType = (BindingType)type.ElementType.Clone();
             SizeType = type.SizeType;
             Size = type.Size;

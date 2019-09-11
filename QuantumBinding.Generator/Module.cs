@@ -27,6 +27,8 @@ namespace QuantumBinding.Generator
 
         internal List<TranslationUnit> TranslationUnits { get; }
 
+        public string Name { get; set; }
+
         public List<string> Files { get; set; }
 
         public List<string> IncludeDirs { get; set; }

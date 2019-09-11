@@ -16,6 +16,7 @@ namespace QuantumBinding.Generator.Types
 
         public BuiltinType(BuiltinType type) : base(type)
         {
+            Declaration = type.Declaration;
             Type = type.Type;
         }
 

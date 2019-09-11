@@ -24,11 +24,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (function.Name == "vkGetPhysicalDeviceWin32PresentationSupportKHR")
-            {
-
-            }
-
             if (function.ReturnType.IsCustomType(out var custom))
             {
                 Declaration decl = null;
@@ -76,7 +71,7 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (field.Class.Name == "VkPipelineMultisampleStateCreateInfo" && field.Name == "pSampleMask")
+            if (field.Class.Name == "VkBindSparseInfo" && field.Name == "pWaitSemaphores")
             {
 
             }
