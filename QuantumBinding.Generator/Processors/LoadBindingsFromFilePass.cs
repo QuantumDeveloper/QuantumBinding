@@ -48,11 +48,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (function.Name.Contains("vkGetBufferMemoryRequirements"))
-            {
-
-            }
-
             if (!functions.TryGetValue(function.Name, out var func))
             {
                 return false;

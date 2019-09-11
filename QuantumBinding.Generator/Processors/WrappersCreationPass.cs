@@ -67,21 +67,13 @@ namespace QuantumBinding.Generator.Processors
             ctor.InputParameters.Add(innerWrapperField);
             wrapper.Constructors.Add(ctor);
 
-            if (ctor.Class.Name == "VkFramebufferCreateInfo")
-            {
-
-            }
-
+            int pointersCount = 0;
             foreach (var field in @class.Fields)
             {
                 var property = new Property();
                 var name = field.Name.Replace("@", "");
                 property.Name = name[0].ToString().ToUpper() + name.Substring(1);
                 property.Type = (BindingType)field.Type.Clone();
-                if (field.Name == "pAttachments")
-                {
-
-                }
 
                 if (field.Type.Declaration is Class declaration && (!declaration.IsSimpleType && ProcessingContext.Options.ConvertRules.PodTypesAsSimpleTypes))
                 {
@@ -106,6 +98,7 @@ namespace QuantumBinding.Generator.Processors
                 var decl = property.Type.Declaration as Class;
                 if (field.IsPointer)
                 {
+                    pointersCount++;
                     property.PairedField = new Field($"ref{name}") { ShouldDispose = true };
                     if (field.Type.IsAnsiString() || field.Type.IsUnicodeString())
                     {
@@ -115,11 +108,13 @@ namespace QuantumBinding.Generator.Processors
                     {
                         property.PairedField.Type = new CustomType("StringArrayReference");
                     }
-                    else if (field.Type.IsPointerToArray() || field.Type.IsPointerToPointer())
+                    else if (field.Type.IsPointerToArray() || field.Type.IsPointerToEnum())
                     {
                         property.PairedField.Type = new CustomType("GCHandleReference");
                     }
-                    else
+                    else if (field.Type.IsPointerToStruct() || 
+                        field.Type.IsPointerToCustomType(out var custom) ||
+                        field.Type.IsPointerToPrimitiveType(out var primitive))
                     {
                         property.PairedField.Type = new CustomType("StructReference");
                     }
@@ -159,20 +154,30 @@ namespace QuantumBinding.Generator.Processors
                 wrapper.Properties.Add(property);
             }
 
-            if (@class.Fields.Any(x => x.IsPointer))
+            if (pointersCount > 0)
             {
                 wrapper.IsDisposable = true;
-                wrapper.DisposableBaseClass = "DisposableObject";
-                StringBuilder disposeBody = new StringBuilder();
-                for (int i = 1; i < wrapper.Fields.Count; i++)
-                {
-                    if (wrapper.Fields[i].ShouldDispose)
-                    {
-                        disposeBody.AppendLine($"{wrapper.Fields[i].Name}?.Dispose();");
-                    }
-                }
-                wrapper.DisposeBody = disposeBody.ToString();
             }
+            wrapper.DisposableBaseClass = "DisposableObject";
+            StringBuilder disposeBody = new StringBuilder();
+            foreach (var field in wrapper.Fields)
+            {
+                if (field.ShouldDispose)
+                {
+                    disposeBody.AppendLine($"{field.Name}?.Dispose();");
+                }
+            }
+
+            foreach (var property in wrapper.Properties)
+            {
+                if (property.Type.IsPurePointer() && 
+                    !property.Type.IsStringArray() && 
+                    !property.Type.IsPointerToArray())
+                {
+                    disposeBody.AppendLine($"Marshal.FreeHGlobal({property.Name});");
+                }
+            }
+            wrapper.DisposeBody = disposeBody.ToString();
 
             CurrentNamespace.AddDeclaration(wrapper);
         }

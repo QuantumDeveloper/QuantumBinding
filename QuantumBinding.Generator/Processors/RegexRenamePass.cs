@@ -212,11 +212,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (method.Name == "GetPhysicalDeviceWin32PresentationSupportKHR")
-            {
-
-            }
-
             var returnType = method.ReturnType;
 
             RenameType(returnType);
@@ -243,15 +238,13 @@ namespace QuantumBinding.Generator.Processors
 
         private void RenameType(BindingType type)
         {
+            if (type == null) return;
+
             var decl = type.Declaration;
             if (decl == null)
             {
                 if (type.IsCustomType(out var custom) && !custom.IsInSystemHeader)
                 {
-                    if (custom.Name == "VkClearColorValue")
-                    {
-
-                    }
                     custom.Name = Replace(custom.Name);
                 }
                 return;

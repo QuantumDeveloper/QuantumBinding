@@ -11,6 +11,7 @@ namespace QuantumBinding.Generator.Types
 
         public PointerType(PointerType type) : base(type)
         {
+            Declaration = type.Declaration;
             Pointee = type.Pointee;
             IsNullable = type.IsNullable;
             Pointee = Pointee.Clone() as BindingType;

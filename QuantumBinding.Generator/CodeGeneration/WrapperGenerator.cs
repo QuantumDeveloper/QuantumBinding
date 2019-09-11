@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
@@ -147,9 +148,9 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             GenerateWrappedProperties(@class);
 
-            GenerateDisposePattern(@class);
-
             GenerateConversionMethod(@class);
+
+            GenerateDisposePattern(@class);
 
             GenerateOverloads(@class);
 
@@ -173,6 +174,13 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 WriteLine($"{ctor.AccessSpecifier.ToString().ToLower()} {ctor.Class.Name}()");
                 WriteOpenBraceAndIndent();
+                foreach(var property in @class.Properties)
+                {
+                    if (property.Field.HasPredefinedValue && !property.Field.IsPredefinedValueReadOnly)
+                    {
+                        WriteLine($"{property.Name} = {property.Field.PredefinedValue};");
+                    }
+                }
                 UnindentAndWriteCloseBrace();
             }
             else
@@ -202,6 +210,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
                 WriteOpenBraceAndIndent();
                 TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+
                 foreach (var param in ctor.InputParameters)
                 {
                     var visitResult = TypePrinter.VisitField(param).Type.Split(' ')[0];
@@ -210,16 +219,20 @@ namespace QuantumBinding.Generator.CodeGeneration
                         int constArrayIndex = 0;
                         foreach (var property in @class.Properties)
                         {
-                            if (@class.Name == "PipelineDynamicStateCreateInfo" && property.Name == "PDynamicStates")
-                            {
-
-                            }
-
                             TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
                             var propertyTypeName = property.Type.Visit(TypePrinter);
                             TypePrinter.PopMarshalType();
 
                             var decl = property.Type.Declaration as Class;
+
+                            if (property.Field.HasPredefinedValue)
+                            {
+                                if (!property.Field.IsPredefinedValueReadOnly)
+                                {
+                                    WriteLine($"{property.Name} = {property.Field.PredefinedValue};");
+                                }
+                                continue;
+                            }
 
                             if (property.Type.IsPointer())
                             {
@@ -289,7 +302,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             int constArrayIndex = 0;
 
             PushBlock(CodeBlockKind.Method);
-
+            NewLine();
             WriteLine($"{TypePrinter.GetAccessSpecifier(@class.WrapperMethodAccessSpecifier)} {@class.WrappedStruct.AlternativeNamespace}.{@class.WrappedStruct.Name} {ConversionMethodName}");
             WriteOpenBraceAndIndent();
             WriteLine($"var {@class.WrappedStructFieldName} = new {@class.WrappedStruct.AlternativeNamespace}.{@class.WrappedStruct.Name}();");
@@ -297,17 +310,12 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 if (property.Setter == null) continue;
 
-                if (@class.Name == "PhysicalDeviceGroupProperties" && property.Name == "PhysicalDevices")
-                {
-
-                }
-
                 var decl = property.Type.Declaration as Class;
                 TypePrinter.PushMarshalType(MarshalTypes.Property);
                 var propertyStr = TypePrinter.VisitProperty(property);
                 var propertyTypeName = property.Type.Visit(TypePrinter);
                 TypePrinterResult pairedFieldType = "";
-                if (property.PairedField != null)
+                if (property.PairedField != null && property.PairedField.Type != null)
                 {
                     pairedFieldType = property.PairedField.Type.Visit(TypePrinter);
                 }
@@ -320,10 +328,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 if (property.Type.IsPointer())
                 {
-                    if (property.Name == "PSampleMask" && @class.Name == "PipelineMultisampleStateCreateInfo")
-                    {
-
-                    }
                     if (property.Type.IsPointerToVoid() || property.Type.IsPointerToIntPtr())
                     {
                         WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
@@ -421,6 +425,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 PushBlock(CodeBlockKind.FieldDefinition, field);
                 WriteLine($"{fieldStr.Type};");
+
                 PopBlock();
 
                 NewLine();
@@ -486,10 +491,6 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var property in @class.Properties)
             {
-                if (@class.Name == "DeviceCreateInfo" && property.Name == "PQueueCreateInfos")
-                {
-
-                }
                 PushBlock(CodeBlockKind.Property);
                 GenerateCommentIfNotEmpty(property.Comment);
                 TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
@@ -499,33 +500,43 @@ namespace QuantumBinding.Generator.CodeGeneration
                 PushBlock(CodeBlockKind.AccessSpecifier);
                 Write($"{TypePrinter.GetAccessSpecifier(property.AccessSpecifier)}");
                 PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
-                WriteLine($"{propertyTypeName} {property.Name}");
-                WriteOpenBraceAndIndent();
 
-                AddUsingIfNeeded(property.Type);
+                // Here we creating only getter because we dont want this property to be changed outside
+                if (property.Field.HasPredefinedValue)
+                {
+                    if (property.Field.IsPredefinedValueReadOnly)
+                    {
+                        WriteLine($"{propertyTypeName} {property.Name} => {property.Field.PredefinedValue};");
+                        PopBlock();
+                        continue;
+                    }
+                }
 
+                Write($"{propertyTypeName} {property.Name}");
                 var getterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Getter?.AccessSpecifier);
                 var setterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Setter?.AccessSpecifier);
 
-                if (property.Setter == null && property.Getter != null)
+                Write(" { ");
+
+                AddUsingIfNeeded(property.Type);
+
+                if (property.Getter != null)
                 {
                     if (property.Getter.AccessSpecifier != AccessSpecifier.Public)
                     {
                         Write($"{getterAccessSpecifier} ");
                     }
-                    Write($"get => {@class.WrappedStructFieldName}.{property.Field.Name};");
-                    WriteLine("");
+                    Write($"get; ");
                 }
-                else
+                if (property.Setter != null)
                 {
-                    if (property.Setter != null && property.Setter.AccessSpecifier != AccessSpecifier.Public)
+                    if (property.Setter.AccessSpecifier != AccessSpecifier.Public)
                     {
                         Write($"{setterAccessSpecifier} ");
                     }
-                    WriteLine("get; set;");
+                    Write("set;");
                 }
-
-                UnindentAndWriteCloseBrace();
+                Write(" }");
 
                 NewLine();
 
@@ -886,13 +897,13 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateDisposePattern(Class @class)
         {
-            if (!@class.IsDisposable || string.IsNullOrEmpty(@class.DisposableBaseClass))
+            if (!@class.IsDisposable || string.IsNullOrEmpty(@class.DisposeBody) || string.IsNullOrEmpty(@class.DisposableBaseClass))
             {
                 return;
             }
 
             PushBlock(CodeBlockKind.Disposable);
-
+            NewLine();
             WriteLine("protected override void UnmanagedDisposeOverride()");
             WriteOpenBraceAndIndent();
             WriteLine(@class.DisposeBody);

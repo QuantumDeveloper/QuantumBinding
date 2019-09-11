@@ -13,15 +13,12 @@ namespace QuantumBinding.Generator.AST
             AccessSpecifier = AccessSpecifier.Public;
             Fields = new List<Field>();
             methods = new List<Method>();
-            predefinedFields = new Dictionary<Field, string>();
             Properties = new List<Property>();
             Constructors = new List<Constructor>();
             Operators = new List<Operator>();
         }
 
         private List<Method> methods { get; }
-
-        private Dictionary<Field, String> predefinedFields { get; }
 
         public ClassType ClassType { get; set; }
 
@@ -84,28 +81,6 @@ namespace QuantumBinding.Generator.AST
         {
             field.Class = null;
             Fields.Remove(field);
-        }
-
-        public void AddPredefinedField(Field field, string value)
-        {
-            if (!predefinedFields.ContainsKey(field))
-            {
-                predefinedFields.Add(field, value);
-            }
-            else
-            {
-                predefinedFields[field] = value;
-            }
-        }
-
-        public void RemovePredefinedField(Field field)
-        {
-            predefinedFields.Remove(field);
-        }
-
-        public Dictionary<Field, string> GetPredefinedFields()
-        {
-            return new Dictionary<Field, string>(predefinedFields);
         }
 
         public void AddMethod(Method method)

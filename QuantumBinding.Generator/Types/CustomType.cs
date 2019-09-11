@@ -17,6 +17,7 @@ namespace QuantumBinding.Generator.Types
         public CustomType(CustomType type) : base(type)
         {
             Name = type.Name;
+            Declaration = type.Declaration;
             IsInSystemHeader = type.IsInSystemHeader;
         }
 

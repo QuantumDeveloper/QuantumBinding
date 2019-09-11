@@ -569,6 +569,17 @@ namespace QuantumBinding.Generator
 
         public override TypePrinterResult VisitField(Field field)
         {
+            if (field == null) return string.Empty;
+            if (field.Type == null)
+            {
+                string result = string.Empty;
+                if (MarshalType != MarshalTypes.MethodParameter)
+                {
+                    result = $"{GetAccessSpecifier(field.AccessSpecifier)} ";
+                }
+                return result += field.Name;
+            }
+
             StringBuilder builder = new StringBuilder();
             PushField(field);
             var fieldResult = field.Type.Visit(this);

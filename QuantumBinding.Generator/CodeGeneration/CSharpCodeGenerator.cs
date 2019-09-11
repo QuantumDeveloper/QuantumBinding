@@ -561,10 +561,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             PushBlock(CodeBlockKind.Method, method);
             GenerateCommentIfNotEmpty(method.Function.Comment);
             CheckParameters(method.Parameters);
-            if (method.Name == "disposeTokens")
-            {
-
-            }
             var methodResult = TypePrinter.VisitMethod(method);
             WriteLine(methodResult.ToString());
             WriteOpenBraceAndIndent();

@@ -33,6 +33,12 @@ namespace QuantumBinding.Generator.AST
 
         public bool CanGenerateSetter { get; set; } = true;
 
+        public bool HasPredefinedValue => !string.IsNullOrEmpty(PredefinedValue);
+
+        public string PredefinedValue { get; set; }
+
+        public bool IsPredefinedValueReadOnly { get; set; }
+
         public void AddAttribute(string attr)
         {
             if (!Attributes.Contains(attr))
