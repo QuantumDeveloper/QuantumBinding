@@ -491,6 +491,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var property in @class.Properties)
             {
+                AddUsingIfNeeded(property.Type);
+
                 PushBlock(CodeBlockKind.Property);
                 GenerateCommentIfNotEmpty(property.Comment);
                 TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
@@ -517,8 +519,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 var setterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Setter?.AccessSpecifier);
 
                 Write(" { ");
-
-                AddUsingIfNeeded(property.Type);
 
                 if (property.Getter != null)
                 {

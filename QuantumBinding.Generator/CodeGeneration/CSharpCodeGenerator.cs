@@ -419,6 +419,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var method in @class.ExtensionMethods)
             {
+                //If Current translation unit is not the same file as extension method, skip method generation
+                if (CurrentTranslationUnit.FileName != method.Owner.FileName) continue;
                 GenerateMethod(method);
             }
         }
