@@ -167,16 +167,6 @@ namespace QuantumBinding.Generator.Processors
                     disposeBody.AppendLine($"{field.Name}?.Dispose();");
                 }
             }
-
-            foreach (var property in wrapper.Properties)
-            {
-                if (property.Type.IsPurePointer() && 
-                    !property.Type.IsStringArray() && 
-                    !property.Type.IsPointerToArray())
-                {
-                    disposeBody.AppendLine($"Marshal.FreeHGlobal({property.Name});");
-                }
-            }
             wrapper.DisposeBody = disposeBody.ToString();
 
             CurrentNamespace.AddDeclaration(wrapper);
