@@ -93,7 +93,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             string marshaUtils =
 @"public static class MarshalUtils
 {
-    public static void IntPtrToManagedArray<T>(IntPtr unmanagedArray, T[] managedArray)
+    public static void IntPtrToManagedArray<T>(IntPtr unmanagedArray, T[] managedArray) where T: struct
     {
         var size = Marshal.SizeOf(typeof(T));
         for (int i = 0; i < managedArray.Length; i++)

@@ -52,6 +52,7 @@ namespace QuantumBinding.Generator.Processors
             {
                 wrapper.ClassType = ClassType.UnionWrapper;
             }
+
             var innerWrapperField = new Field("_internal");
             innerWrapperField.AccessSpecifier = AccessSpecifier.Private;
             innerWrapperField.Type = new CustomType(@class.Name);
@@ -86,6 +87,7 @@ namespace QuantumBinding.Generator.Processors
                             declarationCopy.ClassType = ClassType.UnionWrapper;
                         }
 
+                        declarationCopy.WrappedStruct = declaration;
                         property.Type.Declaration = declarationCopy;
                     }
                     else
