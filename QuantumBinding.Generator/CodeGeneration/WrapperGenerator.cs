@@ -254,7 +254,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                                 }
                                 else if (property.Type.IsPointerToArray())
                                 {
-                                    WritePointerToArrayGetter(property, @class);
+                                    WritePointerToArrayGetter(property, @class, constArrayIndex++);
                                 }
                                 else if (property.Type.IsPointerToPointer() || 
                                          property.Type.IsPointerToVoid() ||
@@ -576,7 +576,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
-        private void WritePointerToArrayGetter(Property property, Class parentClass)
+        private void WritePointerToArrayGetter(Property property, Class parentClass, int index)
         {
             var pointerType = property.Type as PointerType;
             if (pointerType == null) return;
@@ -593,7 +593,31 @@ namespace QuantumBinding.Generator.CodeGeneration
             var nativeArrayElementType = arrayType.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             WriteLine($"{property.Name} = new {arrayElementType}[{arraySizeFieldName}];");
-            WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeArrayElementType}>({arrayPtr}, {property.Name});");
+            var classDecl = pointerType.Declaration as Class;
+            if (classDecl != null && !classDecl.IsSimpleType)
+            {
+                var arrayName = $"nativeTmpArray{index}";
+                string nativeElementType = classDecl.Name;
+                if (classDecl.ClassType == ClassType.Class)
+                {
+                    nativeElementType = classDecl.InnerStruct.Name;
+                }
+                else if (classDecl.ClassType == ClassType.StructWrapper || classDecl.ClassType == ClassType.UnionWrapper)
+                {
+                    nativeElementType = classDecl.WrappedStruct.Name;
+                }
+
+                WriteLine($"var {arrayName} = new {nativeElementType}[{arraySizeFieldName}];");
+                WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeElementType}>({arrayPtr}, {arrayName});");
+                WriteLine($"for (int i = 0; i < {arrayName}.Length; ++i)");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{property.Name}[i] = new {classDecl.Name}({arrayName}[i]);");
+                UnindentAndWriteCloseBrace();
+            }
+            else
+            {
+                WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeArrayElementType}>({arrayPtr}, {property.Name});");
+            }
             WriteLine($"Marshal.FreeHGlobal({arrayPtr});");
         }
 
@@ -734,10 +758,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             TypePrinter.PopMarshalType();
             var tmpArrayName = $"tmpArray{index}";
             var size = $"{property.Name}.Length";
-            if (!string.IsNullOrEmpty(array.ArraySizeSource))
-            {
-                size = array.ArraySizeSource[0].ToString().ToUpper() + array.ArraySizeSource.Substring(1);
-            }
 
             if (decl == null || decl.IsSimpleType)
             {
