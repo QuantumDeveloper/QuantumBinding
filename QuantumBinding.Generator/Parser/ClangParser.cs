@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using QuantumBinding.Clang;
 using QuantumBinding.Clang.Interop;
 using QuantumBinding.Generator.AST;
@@ -191,6 +190,11 @@ namespace QuantumBinding.Generator.Parser
             this.fieldPosition = 0;
             var structName = clang.getCursorSpelling(cursor).ToString();
 
+            if (structName == "spvc_type_s")
+            {
+
+            }
+
             // struct names can be empty, and so we visit its sibling to find the name
             if (string.IsNullOrEmpty(structName))
             {
@@ -270,6 +274,11 @@ namespace QuantumBinding.Generator.Parser
 
             this.visitedTypeDefs.Add(spelling);
 
+            if (spelling == "spvc_constant")
+            {
+
+            }
+
             CXType type = clang.getCanonicalType(clang.getTypedefDeclUnderlyingType(cursor));
 
             // we handle enums and records in struct and enum visitors with forward declarations also
@@ -302,6 +311,11 @@ namespace QuantumBinding.Generator.Parser
                     var convertToClass = unit.Module.AllowConvertStructToClass;
                     var classType = convertToClass ? ClassType.Class : ClassType.Struct;
                     var pointeeName = pointee.ToString();
+                    if (pointeeName.StartsWith("const"))
+                    {
+                        pointeeName = pointeeName.Replace("const", "").Trim();
+                    }
+
                     var @class = new Class
                     {
                         Location = Utils.GetCurrentCursorLocation(cursor),
@@ -312,6 +326,7 @@ namespace QuantumBinding.Generator.Parser
                         InnerStruct = unit.AllClasses.FirstOrDefault(x => x.Name == pointeeName),
                         Comment = GetComment(cursor)
                     };
+
                     if (@class.InnerStruct != null)
                     {
                         @class.InnerStruct.ConnectedTo = @class;

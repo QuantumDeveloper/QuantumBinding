@@ -13,6 +13,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         Classes = 16,
         Delegates = 32,
         Functions = 64,
-        All = Constants|Enums | Structs|Unions|Classes|Delegates|Functions
+        StructWrappers = 128,
+        UnionWrappers = 256,
+        All = Constants|Enums | Structs|Unions|Classes|Delegates|Functions|StructWrappers|Unions
     }
 }

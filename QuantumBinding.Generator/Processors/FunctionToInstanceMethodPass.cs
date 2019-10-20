@@ -92,7 +92,7 @@ namespace QuantumBinding.Generator.Processors
         private bool GetFunctionParameter(Parameter parameter, out Class @class)
         {
             @class = parameter.Type.Declaration as Class;
-            if (@class == null || @class.ClassType != ClassType.Class)
+            if (@class == null || @class.ClassType != ClassType.Class || parameter.ParameterKind != ParameterKind.In)
             {
                 return false;
             }

@@ -71,7 +71,7 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (field.Class.Name == "VkBindSparseInfo" && field.Name == "pWaitSemaphores")
+            if (field.Class.Name == "spvc_msl_sampler_ycbcr_conversion" && field.Name == "swizzle")
             {
 
             }

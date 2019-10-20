@@ -107,6 +107,12 @@ namespace QuantumBinding.Generator
                         foreach (var mapping in module.NamespaceMapping)
                         {
                             var tu = new TranslationUnit(mapping.FileName, module) {Name = module.OutputNamespace, NamespaceExtension = mapping.NamespaceExtension, OutputPath = mapping.OutputPath};
+                            if (mapping.ReplaceBaseNameSpace)
+                            {
+                                tu.Name = mapping.NamespaceExtension;
+                                tu.NamespaceExtension = string.Empty;
+                            }
+
                             foreach (var unit in translationUnits)
                             {
                                 var units = unit.FindDeclarationsBySourceLocation(mapping.FileName, true);
@@ -181,13 +187,13 @@ namespace QuantumBinding.Generator
         {
             var utils = new UtilsExtensionPass() { OutputPath = Module.UtilsOutputPath, OutputFileName = Module.UtilsOutputName, Namespace = Module.UtilsNamespace };
             processingCtx.AddCodeGenerationPass(utils, ExecutionPassKind.Once, Module.GenerateUtilsForModule);
-
+            var specs = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
             foreach (var module in processingCtx.Options.Modules)
             {
                 if (module.WrapInteropObjects)
                 {
-                    processingCtx.AddPreGeneratorPass(new WrappersCreationPass(GeneratorSpecializations.Structs | GeneratorSpecializations.Unions), ExecutionPassKind.PerTranslationUnit, module);
-                    processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(GeneratorSpecializations.Structs | GeneratorSpecializations.Unions), ExecutionPassKind.PerTranslationUnit, module);
+                    processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
+                    processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
 
                     processingCtx.AddCodeGenerationPass(new WrappersGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
                 }
@@ -223,7 +229,7 @@ namespace QuantumBinding.Generator
                     }
 
                     string finalPath = path;
-                    if (codeGenerator.IsInteropGenerator())
+                    if (codeGenerator.IsInteropGenerator)
                     {
                         finalPath = Path.Combine(path, TranslationUnit.InteropNamespaceExtension.OutputPath);
                     }
@@ -250,7 +256,7 @@ namespace QuantumBinding.Generator
                 return $"{unit.FullNamespace}.{generator.FileExtension}";
             }
 
-            if (codeGenerator.IsInteropGenerator())
+            if (codeGenerator.IsInteropGenerator)
             {
                 return $"{unit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.FileName}{codeGenerator.Specializations.ToString()}.{generator.FileExtension}";
             }

@@ -36,7 +36,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void WriteCurrentNamespace(Namespace @namespace)
         {
-            if (IsInteropGenerator())
+            if (IsInteropGenerator)
             {
                 CurrentNamespace = $"{@namespace.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.NamespaceExtension}";
                 WriteLine($"namespace {CurrentNamespace}");
@@ -151,7 +151,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateFields(Class @class)
         {
-            if (@class.Name == "VkPhysicalDeviceGroupProperties")
+            if (@class.Name == "SpvcMslSamplerYcbcrConversion")
             {
 
             }

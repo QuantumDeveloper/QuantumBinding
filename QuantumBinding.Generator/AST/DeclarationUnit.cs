@@ -35,7 +35,7 @@ namespace QuantumBinding.Generator.AST
 
         public ReadOnlyCollection<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList().AsReadOnly();
 
-        public ReadOnlyCollection<Class> StructsWrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList().AsReadOnly();
+        public ReadOnlyCollection<Class> StructWrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList().AsReadOnly();
 
         public ReadOnlyCollection<Class> UnionWrappers => AllClasses.Where(x => x.ClassType == ClassType.UnionWrapper).ToList().AsReadOnly();
 
@@ -82,6 +82,13 @@ namespace QuantumBinding.Generator.AST
                         break;
                     case GeneratorSpecializations.Unions:
                         isAvailable |= Unions.Count > 0;
+                        break;
+                    case GeneratorSpecializations.StructWrappers:
+                        isAvailable |= StructWrappers.Count > 0 ||
+                            ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
+                        break;
+                    case GeneratorSpecializations.UnionWrappers:
+                        isAvailable |= UnionWrappers.Count > 0;
                         break;
                     case GeneratorSpecializations.Enums:
                         isAvailable |= Enums.Count > 0;

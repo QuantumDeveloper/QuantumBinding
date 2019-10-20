@@ -12,5 +12,7 @@ namespace QuantumBinding.Generator
 
         public string OutputPath { get; set; }
 
+        public bool ReplaceBaseNameSpace { get; set; }
+
     }
 }

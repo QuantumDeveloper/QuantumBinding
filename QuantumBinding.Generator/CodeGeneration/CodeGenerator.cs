@@ -51,17 +51,20 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         public List<TranslationUnit> TranslationUnits { get; }
 
-        public virtual bool IsInteropGenerator()
+        public virtual bool IsInteropGenerator
         {
-            if (Specializations.HasFlag(GeneratorSpecializations.Structs) ||
-                Specializations.HasFlag(GeneratorSpecializations.Unions) ||
-                Specializations.HasFlag(GeneratorSpecializations.Functions) ||
-                Specializations.HasFlag(GeneratorSpecializations.Delegates))
+            get 
             {
-                return true;
-            }
+                if (Specializations.HasFlag(GeneratorSpecializations.Structs) ||
+                    Specializations.HasFlag(GeneratorSpecializations.Unions) ||
+                    Specializations.HasFlag(GeneratorSpecializations.Functions) ||
+                    Specializations.HasFlag(GeneratorSpecializations.Delegates))
+                {
+                    return true;
+                }
 
-            return false;
+                return false;
+            }
         }
 
         public abstract void Run();
