@@ -63,8 +63,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             var dict = new Dictionary<GeneratorSpecializations, Action>
             {
-                { GeneratorSpecializations.Structs, () => GenerateStructWrappers(unit) },
-                { GeneratorSpecializations.Unions, () => GenerateUnionWrappers(unit) }
+                { GeneratorSpecializations.StructWrappers, () => GenerateStructWrappers(unit) },
+                { GeneratorSpecializations.UnionWrappers, () => GenerateUnionWrappers(unit) }
             };
 
             var parts = Specializations.GetFlags();
@@ -81,7 +81,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 foreach (var part in parts)
                 {
-                    if (part == GeneratorSpecializations.All)
+                    if (part == GeneratorSpecializations.All || !dict.ContainsKey(part))
                         continue;
 
                     dict[part].Invoke();
@@ -100,7 +100,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateStructWrappers(TranslationUnit unit)
         {
-            foreach (var @class in unit.StructsWrappers)
+            foreach (var @class in unit.StructWrappers)
             {
                 GenerateStructWrapper(@class);
             }
@@ -161,10 +161,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             PopBlock();
         }
 
-        public override bool IsInteropGenerator()
-        {
-            return false;
-        }
+        public override bool IsInteropGenerator => false;
 
         protected override void GenerateConstructor(Constructor ctor)
         {
@@ -210,6 +207,11 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
                 WriteOpenBraceAndIndent();
                 TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+
+                if (@class.Name == "SpvcMslConstexprSampler")
+                {
+
+                }
 
                 foreach (var param in ctor.InputParameters)
                 {
@@ -274,6 +276,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                             else if (decl != null && !decl.IsSimpleType)
                             {
                                 WriteLine($"{property.Name} = new {propertyTypeName}({param.Name}.{property.Field.Name});");
+                            }
+                            else if (property.Type.Declaration is Enumeration enumDecl)
+                            {
+                                WriteLine($"{property.Name} = ({enumDecl.Name}){param.Name}.{property.Field.Name};");
                             }
                             else
                             {
@@ -683,6 +689,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                     WriteLine($"{property.Name} = {tempField};");
                 }
             }
+            else if (arrayType.Declaration is Enumeration)
+            {
+                WriteLine($"{property.Name} = {parentClass.WrappedStructFieldName}.{property.Field.Name};");
+            }
             else //const array of structs
             {
                 TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
@@ -844,6 +854,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                 UnindentAndWriteCloseBrace();
                 UnindentAndWriteCloseBrace();
                 UnindentAndWriteCloseBrace();
+            }
+            else if (arrayType.Declaration is Enumeration)
+            {
+                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
             }
             else
             {

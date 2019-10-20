@@ -18,7 +18,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             : base(context, units, specializations)
         {
             TypePrinter = new CSharpTypePrinter(context.Options);
-
         }
 
         public CSharpCodeGenerator(
@@ -83,7 +82,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 foreach (var part in parts)
                 {
-                    if (part == GeneratorSpecializations.All)
+                    if (part == GeneratorSpecializations.All || !dict.ContainsKey(part))
                         continue;
 
                     dict[part].Invoke();
@@ -114,20 +113,25 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 case ClassType.Struct:
                     var structs = CurrentTranslationUnit.Structs.Where(x => !x.IsIgnored);
+
+                    if (Options.ConvertRules.PodTypesAsSimpleTypes && structs.Where(x=>!x.IsSimpleType).ToList().Count == 0 && Specializations == GeneratorSpecializations.Structs)
+                    {
+                        IsGeneratorEmpty = true;
+                    }
+
                     foreach (var @struct in structs)
                     {
                         GenerateClass(@struct);
                     }
 
-                    //var extensions = CurrentTranslationUnit.ExtensionClasses.Where(x=> !x.IsIgnored);
-                    //foreach (var @struct in extensions)
-                    //{
-                    //    GenerateClassExtension(@struct);
-                    //}
-
                     break;
                 case ClassType.Union:
                     var unions = CurrentTranslationUnit.Unions.Where(x => !x.IsIgnored);
+                    if (unions.Count() == 0 && Specializations == GeneratorSpecializations.Unions)
+                    {
+                        IsGeneratorEmpty = true;
+                    }
+
                     foreach (var union in unions)
                     {
                         GenerateClass(union);
@@ -135,6 +139,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     break;
                 case ClassType.Class:
                     var classes = CurrentTranslationUnit.Classes.Where(x => !x.IsIgnored);
+
                     foreach (var @class in classes)
                     {
                         GenerateClass(@class);
@@ -143,9 +148,14 @@ namespace QuantumBinding.Generator.CodeGeneration
                     GenerateCommonMethods();
 
                     var classExtensions = CurrentTranslationUnit.ExtensionClasses.Where(x => !x.IsIgnored);
-                    foreach (var @struct in classExtensions)
+                    foreach (var ext in classExtensions)
                     {
-                        GenerateClassExtension(@struct);
+                        GenerateClassExtension(ext);
+                    }
+
+                    if (classes.Count() == 0 && classExtensions.Count() == 0 && Specializations == GeneratorSpecializations.Classes)
+                    {
+                        IsGeneratorEmpty = true;
                     }
 
                     break;
@@ -542,7 +552,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
-            if (function.Name == "vkGetPhysicalDeviceProperties")
+            if (function.Name == "spvc_compiler_options_set_bool")
             {
 
             }
@@ -733,7 +743,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                             }
                             else
                             {
-                                textGenerator.WriteLine($"var {argumentName} = this;");
+                                argumentName = "this"; // pass this as first parameter tp avoid additional copying of memory
                             }
                         }
                         else

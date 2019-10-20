@@ -8,7 +8,7 @@ namespace QuantumBinding.Generator.Processors
         public WrappersGenerationPass()
         {
             CodeGeneratorPassKind = ExecutionPassKind.PerTranslationUnit;
-            GeneratorSpecializations = GeneratorSpecializations.Structs | GeneratorSpecializations.Unions;
+            GeneratorSpecializations = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
         }
 
         protected override CodeGenerator OnCreateGenerator(ProcessingContext context, GeneratorSpecializations specializations, params TranslationUnit[] units)

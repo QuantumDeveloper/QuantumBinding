@@ -54,7 +54,7 @@ namespace QuantumBinding.Generator.Processors
                 {
                     if (decl.ClassType == ClassType.Struct)
                     {
-                        declaration = unit.StructsWrappers.FirstOrDefault(x => x.Id == decl.Id);
+                        declaration = unit.StructWrappers.FirstOrDefault(x => x.Id == decl.Id);
                     }
                     else if (decl.ClassType == ClassType.Union)
                     {

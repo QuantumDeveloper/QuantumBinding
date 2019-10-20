@@ -65,6 +65,7 @@ namespace QuantumBinding.Generator
                     }
                 }
 
+                array.ElementType.Declaration = array.Declaration;
                 var result = array.ElementType.Visit(this);
 
                 if (array.ElementType.CanConvertToFixedArray() && MarshalType == MarshalTypes.NativeField)
@@ -408,6 +409,11 @@ namespace QuantumBinding.Generator
                 }
             }
 
+            if (customType.TryGetEnum(out Enumeration @enum))
+            {
+                return @enum.Name;
+            }
+
             if (customType.IsInSystemHeader && MarshalType == MarshalTypes.Property)
             {
                 return Result("object");
@@ -440,14 +446,21 @@ namespace QuantumBinding.Generator
             foreach (var parameter in @params)
             {
                 PushParameter(parameter);
-                var result = parameter.Visit(this);
-
-                if (parameter.Index == 0 && isExtensionMethod)
+                try
                 {
-                    result = $"this {result}";
-                }
+                    var result = parameter.Visit(this);
 
-                paramsList.Add(result.ToString());
+                    if (parameter.Index == 0 && isExtensionMethod)
+                    {
+                        result = $"this {result}";
+                    }
+
+                    paramsList.Add(result.ToString());
+                }
+                catch (Exception e)
+                {
+
+                }
                 PopParameter();
             }
 
@@ -466,45 +479,58 @@ namespace QuantumBinding.Generator
             {
                 var type = parameter.Type.Visit(this);
                 var decl = parameter.Type.Declaration as Class;
-                // Will always write full namespaces for structs and classes to avoid interference with native .Net types
-                if (Module.WrapInteropObjects)
+
+                if (decl != null)
                 {
-                    if (decl != null &&
-                        !decl.IsSimpleType &&
-                        (decl.ClassType == ClassType.Struct || decl.ClassType == ClassType.Union) &&
-                        parameter.Type.IsPointerToStruct() &&
-                        type.Type != IntPtrType)
+                    var originalNamespace = decl.Owner.FullNamespace;
+                    if (!string.IsNullOrEmpty(originalNamespace))
                     {
-                        if (MarshalType == MarshalTypes.NativeParameter && !((PointerType) parameter.Type).IsNullable)
+                        originalNamespace += ".";
+                    }
+                    var alternativeNamespace = decl.AlternativeNamespace;
+                    if (!string.IsNullOrEmpty(alternativeNamespace))
+                    {
+                        alternativeNamespace += ".";
+                    }
+                    // Will always write full namespaces for structs and classes to avoid interference with native .Net types
+                    if (Module.WrapInteropObjects)
+                    {
+                        if (!decl.IsSimpleType &&
+                            (decl.ClassType == ClassType.Struct || decl.ClassType == ClassType.Union) &&
+                            parameter.Type.IsPointerToStruct() &&
+                            type.Type != IntPtrType)
                         {
-                            type.Type = $"{decl.AlternativeNamespace}.{type.Type}";
+                            if ((MarshalType == MarshalTypes.NativeParameter && !((PointerType)parameter.Type).IsNullable) 
+                                || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter)
+                            {
+                                type.Type = $"{alternativeNamespace}{type.Type}";
+                            }
                         }
-                        else if (MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter)
+                        else if (decl != null && decl.ClassType == ClassType.Class && type.Type != IntPtrType)
                         {
-                            type.Type = $"{decl.AlternativeNamespace}.{type.Type}";
+                            if (MarshalType == MarshalTypes.MethodParameter)
+                            {
+                                type.Type = $"{originalNamespace}{type.Type}";
+                            }
+                            else if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
+                            {
+                                if (!string.IsNullOrEmpty(decl.InnerStruct.AlternativeNamespace))
+                                {
+                                    type.Type = $"{decl.InnerStruct.AlternativeNamespace}.{type.Type}";
+                                }
+                            }
                         }
                     }
-                    else if (decl != null && decl.ClassType == ClassType.Class && type.Type != IntPtrType)
+                    else if (type.Type != IntPtrType)
                     {
-                        if (MarshalType == MarshalTypes.MethodParameter)
+                        if (decl?.ClassType == ClassType.Class)
                         {
-                            type.Type = $"{decl.Owner.FullNamespace}.{type.Type}";
+                            type.Type = $"{originalNamespace}{type.Type}";
                         }
-                        else if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
+                        else
                         {
-                            type.Type = $"{decl.InnerStruct.AlternativeNamespace}.{type.Type}";
+                            type.Type = $"{alternativeNamespace}{type.Type}";
                         }
-                    }
-                }
-                else if (type.Type != IntPtrType)
-                {
-                    if (decl?.ClassType == ClassType.Class)
-                    {
-                        type.Type = $"{decl.Owner.FullNamespace}.{type.Type}";
-                    }
-                    else if (decl != null)
-                    {
-                        type.Type = $"{decl.AlternativeNamespace}.{type.Type}";
                     }
                 }
 

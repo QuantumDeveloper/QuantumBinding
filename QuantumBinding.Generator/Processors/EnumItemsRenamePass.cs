@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 
@@ -24,31 +25,44 @@ namespace QuantumBinding.Generator.Processors
             if (IsVisited(enumeration))
                 return false;
 
-            var list = new List<string>(enumeration.Items[0].Name.Split(separator, StringSplitOptions.RemoveEmptyEntries));
-            foreach (var item in enumeration.Items)
+            if (enumeration.Name == "Color_Space_KHR")
             {
-                var splitted = item.Name.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-                var maxIterations = Math.Min(splitted.Length, list.Count);
-                for (int i = 0; i < maxIterations; i++)
-                {
-                    var original = list[i];
-                    var compared = splitted[i];
-                    if (!string.Equals(original, compared, StringComparison.Ordinal))
-                    {
-                        var count = list.Count - i;
-                        list.RemoveRange(i, count);
-                        break;
-                    }
-                }
+
             }
 
-            var removePart = string.Join(separator, list);
+            var enumItems = enumeration.Items.Where(x => !x.IsIgnored).ToList();
 
-            if (enumeration.Items.Count > 1 && !string.IsNullOrEmpty(removePart))
+            var basicItem = enumItems.FirstOrDefault();
+            if (basicItem == null) return false;
+
+            var basicName = basicItem.Name;
+            var finalName = string.Empty;
+            List<string> shortenedNames = new List<string>();
+
+            foreach (var item in enumItems)
             {
-                foreach (var enumItem in enumeration.Items)
+                if (basicName == item.Name || item.IsIgnored) continue;
+
+                var name = item.Name;
+                var tempName = string.Empty;
+                for (int i = 0; i < name.Length; ++i)
                 {
-                    enumItem.Name = enumItem.Name.Replace(removePart+separator, "");
+                    if (i > basicName.Length - 1 || name[i] != basicName[i]) break;
+
+                    tempName += name[i];
+                }
+
+                shortenedNames.Add(tempName);
+            }
+
+
+            finalName = shortenedNames.OrderBy(x => x.Length).FirstOrDefault();
+
+            if (enumItems.Count > 1 && !string.IsNullOrEmpty(finalName))
+            {
+                foreach (var enumItem in enumItems)
+                {
+                    enumItem.Name = enumItem.Name.Replace(finalName, "");
                 }
             }
 
@@ -57,23 +71,45 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            foreach (var enumItem in enumeration.Items)
+            foreach (var enumItem in enumItems)
             {
                 var splitted = enumItem.Name.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-                string finalItem = String.Empty;
+                var finalItem = new StringBuilder();
                 for (int i = 0; i < splitted.Length; i++)
                 {
+                    bool isUpper = false;
                     var item = splitted[i];
-                    if (casePattern == CasePattern.CamelCase && i == 0)
+
+                    for (int j = 0; j < item.Length; ++j)
                     {
-                        finalItem += item.ToLower();
-                    }
-                    else
-                    {
-                        finalItem += item[0].ToString().ToUpper() + item.Substring(1).ToLower();
+                        if (j == 0)
+                        {
+                            if (casePattern == CasePattern.CamelCase && i > 0)
+                            {
+                                finalItem.Append(Char.ToLower(item[0]));
+                                isUpper = true;
+                            }
+                            else
+                            {
+                                isUpper = true;
+                                finalItem.Append(Char.ToUpper(item[0]));
+                            }
+                        }
+                        else
+                        {
+                            if (Char.IsUpper(item[j]) && isUpper)
+                            {
+                                finalItem.Append(Char.ToLower(item[j]));
+                            }
+                            else
+                            {
+                                finalItem.Append(item[j]);
+                            }
+                        }
                     }
                 }
-                enumItem.Name = finalItem;
+
+                enumItem.Name = finalItem.ToString();
 
                 if (char.IsDigit(enumItem.Name[0]))
                 {
@@ -86,7 +122,8 @@ namespace QuantumBinding.Generator.Processors
                 }
             }
 
-            for (int i = enumeration.Items.Count - 1; i >= 0; i--)
+            //Remove duplicated items if exists after renaming pass
+            for (int i = enumItems.Count - 1; i >= 0; i--)
             {
                 var item = enumeration.Items[i];
                 var result = enumeration.Items.Where(x => x.Name == item.Name && x.Value == item.Value).ToList();
