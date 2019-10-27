@@ -15,16 +15,17 @@ namespace QuantumBinding.ClangGenerator
         public override void OnSetup(BindingOptions options)
         {
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
-            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..\\", "QuantumBinding.Clang"));
+            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang"/*, "Generated"*/));
             string library = "libclang";
             options.GenerateSequentialLayout = true;
             options.DebugMode = false;
-            options.ConvertRules.PodTypesAsSimpleTypes = true;
+            options.PodTypesAsSimpleTypes = true;
             var clangModule = options.AddModule(library);
             clangModule.Defines.Add("_MSC_VER");
             clangModule.Defines.Add("_CINDEX_LIB_");
-            clangModule.IncludeDirs.Add("./clang-c");
+            //clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c");
             clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\Documentation.h");
+            //clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c\Documentation.h");
             clangModule.ForceCallingConvention = true;
             clangModule.AllowConvertStructToClass = false;
             clangModule.CallingConvention = CallingConvention.Cdecl;
@@ -40,7 +41,6 @@ namespace QuantumBinding.ClangGenerator
             clangModule.OutputFileName = "QuantumBinding.Clang";
             clangModule.OutputNamespace = "QuantumBinding.Clang";
             clangModule.SuppressUnmanagedCodeSecurity = false;
-            clangModule.TreatOutputArraysAsPointers = true;
             clangModule.WrapInteropObjects = false;
 
             Module.UtilsOutputName = "Utils";
@@ -148,22 +148,17 @@ namespace QuantumBinding.ClangGenerator
                 WithParameterName("Disable").
                 TreatAsIs().
                 SetParameterKind(ParameterKind.In);
-                //SetNullable(true);
 
             api.Function("clang_getCursorPlatformAvailability").
                 WithParameterName("always_deprecated").
                 TreatAsIs().
                 SetParameterKind(ParameterKind.In).
-                //SetNullable(true).
                 WithParameterName("deprecated_message").
                 TreatAsIs().
-                //SetNullable(true).
                 WithParameterName("always_unavailable").
                 TreatAsIs().
-                //SetNullable(true).
                 WithParameterName("unavailable_message").
                 TreatAsIs().
-                //SetNullable(true).
                 WithParameterName("availability").
                 TreatAsPointerToArray(new CustomType("CXPlatformAvailability"));
 
@@ -178,13 +173,10 @@ namespace QuantumBinding.ClangGenerator
             api.Function("clang_Cursor_isExternalSymbol").
                 WithParameterName("language").
                 TreatAsIs().
-                //SetNullable(true).
                 WithParameterName("definedIn").
                 TreatAsIs().
-                //SetNullable(true).
                 WithParameterName("isGenerated").
                 TreatAsIs();
-                //SetNullable(true);
 
             api.Function("clang_tokenize").
                 WithParameterName("Tokens").

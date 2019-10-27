@@ -40,6 +40,14 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
+        /// Return the timestamp for use with Clang's -fbuild-session-timestamp= option.
+        ///</summary>
+        public static ulong getBuildSessionTimestamp()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getBuildSessionTimestamp();
+        }
+
+        ///<summary>
         /// Create a CXVirtualFileOverlay object. Must be disposed with clang_VirtualFileOverlay_dispose().
         ///</summary>
         public static CXVirtualFileOverlay VirtualFileOverlay_create(uint options)
@@ -232,6 +240,14 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
+        /// Retrieve a NULL (invalid) source location.
+        ///</summary>
+        public static CXSourceLocation getNullLocation()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getNullLocation();
+        }
+
+        ///<summary>
         /// Determine whether two source locations, which must refer into the same translation unit, refer to exactly the same point in the source code.
         ///</summary>
         public static uint equalLocations(QuantumBinding.Clang.Interop.CXSourceLocation loc1, QuantumBinding.Clang.Interop.CXSourceLocation loc2)
@@ -269,6 +285,14 @@ namespace QuantumBinding.Clang
         public static int Location_isFromMainFile(QuantumBinding.Clang.Interop.CXSourceLocation location)
         {
             return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isFromMainFile(location);
+        }
+
+        ///<summary>
+        /// Retrieve a NULL (invalid) source range.
+        ///</summary>
+        public static CXSourceRange getNullRange()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getNullRange();
         }
 
         ///<summary>
@@ -458,6 +482,14 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
+        /// Retrieve the set of display options most similar to the default behavior of the clang compiler.
+        ///</summary>
+        public static uint defaultDiagnosticDisplayOptions()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_defaultDiagnosticDisplayOptions();
+        }
+
+        ///<summary>
         /// Determine the severity of the given diagnostic.
         ///</summary>
         public static CXDiagnosticSeverity getDiagnosticSeverity(QuantumBinding.Clang.Interop.CXDiagnostic param0)
@@ -587,6 +619,14 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
+        /// Returns the set of flags that is suitable for parsing a translation unit that is being edited.
+        ///</summary>
+        public static uint defaultEditingTranslationUnitOptions()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_defaultEditingTranslationUnitOptions();
+        }
+
+        ///<summary>
         /// Same as clang_parseTranslationUnit2, but returns the CXTranslationUnit instead of an error code. In case of an error this routine returns a NULL CXTranslationUnit, without further detailed error codes.
         ///</summary>
         public static CXTranslationUnit parseTranslationUnit(QuantumBinding.Clang.Interop.CXIndex CIdx, string source_filename, in string[] command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile? unsaved_files, uint num_unsaved_files, uint options)
@@ -606,7 +646,7 @@ namespace QuantumBinding.Clang
             arg1 = ReferenceEquals(unsaved_files, null) ? null : new QuantumBinding.Clang.Interop.CXUnsavedFile[unsaved_files.Length];
             if (!ReferenceEquals(unsaved_files, null))
             {
-                for (int i = 0; i < unsaved_files.Length; ++i)
+                for (var i = 0U; i < unsaved_files.Length; ++i)
                 {
                     arg1[i] = unsaved_files[i];
                 }
@@ -727,6 +767,14 @@ namespace QuantumBinding.Clang
         public static int TargetInfo_getPointerWidth(QuantumBinding.Clang.Interop.CXTargetInfo Info)
         {
             return QuantumBinding.Clang.Interop.ClangInterop.clang_TargetInfo_getPointerWidth(Info);
+        }
+
+        ///<summary>
+        /// Retrieve the NULL cursor, which represents no entity.
+        ///</summary>
+        public static CXCursor getNullCursor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getNullCursor();
         }
 
         ///<summary>
@@ -892,7 +940,7 @@ namespace QuantumBinding.Clang
             arg3 = ReferenceEquals(availability, null) ? null : new QuantumBinding.Clang.Interop.CXPlatformAvailability[availability.Length];
             if (!ReferenceEquals(availability, null))
             {
-                for (int i = 0; i < availability.Length; ++i)
+                for (var i = 0U; i < availability.Length; ++i)
                 {
                     arg3[i] = availability[i];
                 }
@@ -935,6 +983,14 @@ namespace QuantumBinding.Clang
         public static CXTranslationUnit Cursor_getTranslationUnit(QuantumBinding.Clang.Interop.CXCursor param0)
         {
             return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getTranslationUnit(param0);
+        }
+
+        ///<summary>
+        /// Creates an empty CXCursorSet.
+        ///</summary>
+        public static CXCursorSet createCXCursorSet()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_createCXCursorSet();
         }
 
         ///<summary>
@@ -983,15 +1039,10 @@ namespace QuantumBinding.Clang
         public static void getOverriddenCursors(QuantumBinding.Clang.Interop.CXCursor cursor, out QuantumBinding.Clang.Interop.CXCursor[] overridden, out uint num_overridden)
         {
             var arg1 = System.IntPtr.Zero;
-            QuantumBinding.Clang.Interop.ClangInterop.clang_getOverriddenCursors(cursor, arg1, out num_overridden);
-            var _overridden = new QuantumBinding.Clang.Interop.CXCursor[num_overridden];
-            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXCursor>(arg1, _overridden);
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getOverriddenCursors(cursor, ref arg1, out num_overridden);
+            overridden = new QuantumBinding.Clang.Interop.CXCursor[num_overridden];
+            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXCursor>(arg1, overridden);
             Marshal.FreeHGlobal(arg1);
-            overridden = new CXCursor[num_overridden];
-            for (int i = 0; i< num_overridden; ++i)
-            {
-                overridden[i] = _overridden[i];
-            }
         }
 
         ///<summary>
@@ -2103,15 +2154,10 @@ namespace QuantumBinding.Clang
         public static void tokenize(QuantumBinding.Clang.Interop.CXTranslationUnit TU, QuantumBinding.Clang.Interop.CXSourceRange Range, out QuantumBinding.Clang.Interop.CXToken[] Tokens, out uint NumTokens)
         {
             var arg2 = System.IntPtr.Zero;
-            QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(TU, Range, arg2, out NumTokens);
-            var _Tokens = new QuantumBinding.Clang.Interop.CXToken[NumTokens];
-            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXToken>(arg2, _Tokens);
+            QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(TU, Range, ref arg2, out NumTokens);
+            Tokens = new QuantumBinding.Clang.Interop.CXToken[NumTokens];
+            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXToken>(arg2, Tokens);
             Marshal.FreeHGlobal(arg2);
-            Tokens = new CXToken[NumTokens];
-            for (int i = 0; i< NumTokens; ++i)
-            {
-                Tokens[i] = _Tokens[i];
-            }
         }
 
         ///<summary>
@@ -2123,21 +2169,16 @@ namespace QuantumBinding.Clang
             arg1 = ReferenceEquals(Tokens, null) ? null : new QuantumBinding.Clang.Interop.CXToken[Tokens.Length];
             if (!ReferenceEquals(Tokens, null))
             {
-                for (int i = 0; i < Tokens.Length; ++i)
+                for (var i = 0U; i < Tokens.Length; ++i)
                 {
                     arg1[i] = Tokens[i];
                 }
             }
             var arg2 = System.IntPtr.Zero;
-            QuantumBinding.Clang.Interop.ClangInterop.clang_annotateTokens(TU, arg1, NumTokens, arg2);
-            var _Cursors = new QuantumBinding.Clang.Interop.CXCursor[NumTokens];
-            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXCursor>(arg2, _Cursors);
+            QuantumBinding.Clang.Interop.ClangInterop.clang_annotateTokens(TU, arg1, NumTokens, ref arg2);
+            Cursors = new QuantumBinding.Clang.Interop.CXCursor[NumTokens];
+            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXCursor>(arg2, Cursors);
             Marshal.FreeHGlobal(arg2);
-            Cursors = new CXCursor[NumTokens];
-            for (int i = 0; i< NumTokens; ++i)
-            {
-                Cursors[i] = _Cursors[i];
-            }
         }
 
         ///<summary>
@@ -2159,6 +2200,11 @@ namespace QuantumBinding.Clang
         public static void getDefinitionSpellingAndExtent(QuantumBinding.Clang.Interop.CXCursor param0, in string[] startBuf, in string[] endBuf, ref uint startLine, ref uint startColumn, ref uint endLine, ref uint endColumn)
         {
             QuantumBinding.Clang.Interop.ClangInterop.clang_getDefinitionSpellingAndExtent(param0, startBuf, endBuf, ref startLine, ref startColumn, ref endLine, ref endColumn);
+        }
+
+        public static void enableStackTraces()
+        {
+            QuantumBinding.Clang.Interop.ClangInterop.clang_enableStackTraces();
         }
 
         public static void executeOnThread(System.IntPtr fn, ref System.IntPtr user_data, uint stack_size)
@@ -2282,6 +2328,14 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
+        /// Returns a default set of code-completion options that can be passed to clang_codeCompleteAt().
+        ///</summary>
+        public static uint defaultCodeCompleteOptions()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_defaultCodeCompleteOptions();
+        }
+
+        ///<summary>
         /// Perform code completion at a given location in a translation unit.
         ///</summary>
         public static CXCodeCompleteResults codeCompleteAt(QuantumBinding.Clang.Interop.CXTranslationUnit TU, string complete_filename, uint complete_line, uint complete_column, QuantumBinding.Clang.Interop.CXUnsavedFile? unsaved_files, uint num_unsaved_files, uint options)
@@ -2301,7 +2355,7 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
@@ -2328,7 +2382,7 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
@@ -2345,7 +2399,7 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
@@ -2362,7 +2416,7 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
@@ -2379,7 +2433,7 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
@@ -2396,7 +2450,7 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
@@ -2413,12 +2467,20 @@ namespace QuantumBinding.Clang
             arg0 = ReferenceEquals(Results, null) ? null : new QuantumBinding.Clang.Interop.CXCodeCompleteResults[Results.Length];
             if (!ReferenceEquals(Results, null))
             {
-                for (int i = 0; i < Results.Length; ++i)
+                for (var i = 0U; i < Results.Length; ++i)
                 {
                     arg0[i] = Results[i];
                 }
             }
             return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetObjCSelector(arg0);
+        }
+
+        ///<summary>
+        /// Return a version string, suitable for showing to a user, but not intended to be parsed (the format is not guaranteed to be stable).
+        ///</summary>
+        public static CXString getClangVersion()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getClangVersion();
         }
 
         ///<summary>

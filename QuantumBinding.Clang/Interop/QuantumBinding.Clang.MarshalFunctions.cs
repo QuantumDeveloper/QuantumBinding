@@ -20,7 +20,7 @@ namespace QuantumBinding.Clang.Interop
         /// Annotate the given set of tokens by providing cursors for each token that can be mapped to a specific entity within the abstract syntax tree.
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_annotateTokens", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void clang_annotateTokens([In] QuantumBinding.Clang.Interop.CXTranslationUnit TU, [In] QuantumBinding.Clang.Interop.CXToken[] Tokens, [In] uint NumTokens, [In, Out] System.IntPtr Cursors);
+        internal static extern void clang_annotateTokens([In] QuantumBinding.Clang.Interop.CXTranslationUnit TU, [In] QuantumBinding.Clang.Interop.CXToken[] Tokens, [In] uint NumTokens, [In, Out] ref System.IntPtr Cursors);
 
         ///<summary>
         /// Returns text of the specified word-like argument.
@@ -1313,7 +1313,7 @@ namespace QuantumBinding.Clang.Interop
         /// Determine the set of methods that are overridden by the given method.
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_getOverriddenCursors", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void clang_getOverriddenCursors([In] QuantumBinding.Clang.Interop.CXCursor cursor, [In, Out] System.IntPtr overridden, [Out] out uint num_overridden);
+        internal static extern void clang_getOverriddenCursors([In] QuantumBinding.Clang.Interop.CXCursor cursor, [In, Out] ref System.IntPtr overridden, [Out] out uint num_overridden);
 
         ///<summary>
         /// For pointer types, returns the type of the pointee.
@@ -1980,7 +1980,7 @@ namespace QuantumBinding.Clang.Interop
         /// Tokenize the source code described by the given range into raw lexical tokens.
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_tokenize", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void clang_tokenize([In] QuantumBinding.Clang.Interop.CXTranslationUnit TU, [In] QuantumBinding.Clang.Interop.CXSourceRange Range, [In, Out] System.IntPtr Tokens, [Out] out uint NumTokens);
+        internal static extern void clang_tokenize([In] QuantumBinding.Clang.Interop.CXTranslationUnit TU, [In] QuantumBinding.Clang.Interop.CXSourceRange Range, [In, Out] ref System.IntPtr Tokens, [Out] out uint NumTokens);
 
         ///<summary>
         /// Returns zero-based nesting depth of this parameter in the template parameter list.

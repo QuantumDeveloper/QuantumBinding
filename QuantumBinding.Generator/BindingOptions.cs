@@ -10,7 +10,6 @@ namespace QuantumBinding.Generator
             modulesInternal = new List<Module>();
             Modules = new ReadOnlyCollection<Module>(modulesInternal);
             ParserArguments = new List<string>();
-            ConvertRules = new ConvertRules();
         }
 
         public bool GenerateSequentialLayout { get; set; }
@@ -19,7 +18,7 @@ namespace QuantumBinding.Generator
 
         public string PathToBindingsFile { get; set; }
 
-        public ConvertRules ConvertRules { get; }
+        public bool PodTypesAsSimpleTypes { get; set; }
 
         public List<string> ParserArguments { get; set; }
 

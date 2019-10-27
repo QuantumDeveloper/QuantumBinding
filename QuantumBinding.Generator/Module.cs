@@ -51,8 +51,6 @@ namespace QuantumBinding.Generator
 
         public bool AllowConvertStructToClass { get; set; }
 
-        public bool TreatOutputArraysAsPointers { get; set; } // is using only for p/invoke part with out parameters
-
         public CallingConvention CallingConvention { get; set; }
 
         public GeneratorSpecializations GeneratorSpecializations { get; set; }
@@ -60,6 +58,8 @@ namespace QuantumBinding.Generator
         public bool SuppressUnmanagedCodeSecurity { get; set; }
 
         public bool WrapInteropObjects { get; set; }
+
+        public bool CharAsBoolForMethods { get; set; }
 
         /// <summary>
         /// Create overloads for functions, which contains input arrays

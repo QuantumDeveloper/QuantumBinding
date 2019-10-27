@@ -71,6 +71,11 @@ namespace QuantumBinding.Generator.AST
 
         public IReadOnlyCollection<Method> AllMethods => methods.AsReadOnly();
 
+        public void AddConstructor(Constructor ctor)
+        {
+            Constructors.Add(ctor);
+        }
+
         public void AddField(Field field)
         {
             field.Class = this;

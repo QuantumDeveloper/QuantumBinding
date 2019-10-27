@@ -184,7 +184,7 @@ namespace QuantumBinding.Generator
             {
                 if (pointer.IsPointerToArray())
                 {
-                    if (Module.TreatOutputArraysAsPointers && 
+                    if (//Module.TreatOutputArraysAsPointers && 
                         Parameter != null && 
                         Parameter.ParameterKind == ParameterKind.Out && 
                         MarshalType == MarshalTypes.NativeParameter)
@@ -192,7 +192,7 @@ namespace QuantumBinding.Generator
                         return Result(IntPtrType);
                     }
 
-                    if (@class.IsSimpleType && Options.ConvertRules.PodTypesAsSimpleTypes)
+                    if (@class.IsSimpleType && Options.PodTypesAsSimpleTypes)
                     {
                         return pointer.Pointee.Visit(this);
                     }
@@ -219,7 +219,7 @@ namespace QuantumBinding.Generator
                         {
                             if (pointer.IsNullableForDelegate)
                             {
-                                return $"{IntPtrType}";
+                                return Result(IntPtrType);
                             }
                             else
                             {
@@ -249,7 +249,7 @@ namespace QuantumBinding.Generator
                 {
                     if (MarshalType == MarshalTypes.MethodParameter && Parameter?.ParameterKind == ParameterKind.InOut)
                     {
-                        if (Options.ConvertRules.PodTypesAsSimpleTypes)
+                        if (Options.PodTypesAsSimpleTypes)
                         {
                             return $"{@class.UnderlyingNativeType.Visit(this)}";
                         }
@@ -257,9 +257,14 @@ namespace QuantumBinding.Generator
                         return $"{@class.Name}{NullableOperator}";
                     }
 
+                    if (pointer.IsPointerToPrimitiveType(out var primitive) && MarshalType == MarshalTypes.MethodParameter)
+                    {
+                        return pointer.Pointee.Visit(this);
+                    }
+
                     if (pointer.IsNullable && (MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.WrappedProperty || MarshalType == MarshalTypes.Property))
                     {
-                        if (Options.ConvertRules.PodTypesAsSimpleTypes)
+                        if (Options.PodTypesAsSimpleTypes)
                         {
                             return $"{@class.UnderlyingNativeType.Visit(this)}{NullableOperator}";
                         }
@@ -269,7 +274,7 @@ namespace QuantumBinding.Generator
 
                     if (!pointer.IsPointerToArray() && MarshalType == MarshalTypes.NativeParameter)
                     {
-                        if (Options.ConvertRules.PodTypesAsSimpleTypes)
+                        if (Options.PodTypesAsSimpleTypes)
                         {
                             return $"{@class.UnderlyingNativeType.Visit(this)}";
                         }
@@ -338,14 +343,24 @@ namespace QuantumBinding.Generator
             switch (builtin.Type)
             {
                 case PrimitiveType.Bool:
-                    return "byte";
                 case PrimitiveType.Bool32:
                     return "bool";
                 case PrimitiveType.Char:
-                case PrimitiveType.Byte:
                 case PrimitiveType.UChar:
+                    if (Module.CharAsBoolForMethods && 
+                        (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter))
+                    {
+                        return "bool";
+                    }
+                    return "byte";
+                case PrimitiveType.Byte:
                     return "byte";
                 case PrimitiveType.SChar:
+                    if (Module.CharAsBoolForMethods &&
+                        (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter))
+                    {
+                        return "bool";
+                    }
                     return "sbyte";
                 case PrimitiveType.WideChar:
                     return "char";
@@ -403,9 +418,14 @@ namespace QuantumBinding.Generator
                     return @class.Name;
                 }
 
-                if (@class.IsSimpleType && Options.ConvertRules.PodTypesAsSimpleTypes)
+                if (@class.IsSimpleType && Options.PodTypesAsSimpleTypes)
                 {
                     return @class.UnderlyingNativeType.Visit(this);
+                }
+
+                if (@class.ClassType == ClassType.Class && MarshalType == MarshalTypes.MethodParameter)
+                {
+                    return @class.Name;
                 }
             }
 
@@ -699,6 +719,12 @@ namespace QuantumBinding.Generator
                     return true;
                 }
 
+                if (param.ParameterKind == ParameterKind.Out && param.Type.IsPointerToArray())
+                {
+                    modifier = "ref";
+                    return true;
+                }
+
                 return false;
             }
 
@@ -739,7 +765,7 @@ namespace QuantumBinding.Generator
                     case ParameterKind.Out:
                         if (param.Type.IsPointerToArray())
                         {
-                            modifier = "[In, Out]";
+                            modifier = "[In, Out] ref";
                         }
                         else
                         {

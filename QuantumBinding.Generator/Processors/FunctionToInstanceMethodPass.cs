@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using QuantumBinding.Generator.AST;
+using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -17,12 +18,10 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (function.Parameters.Count == 0)
-                return false;
-
-            var parameter = function.Parameters[0];
-
-            if (!GetFunctionParameter(parameter, out Class @class)) // Create method in global scope
+            Class @class = null;
+            // Create method in global scope
+            if ((function.Parameters.Count > 0 && !GetFunctionParameter(function.Parameters[0], out @class)) ||
+                (function.Parameters.Count == 0 && !GetFunctionReturnType(function.ReturnType, out @class)))
             {
                 var globalMethod = new Method();
                 globalMethod.Function = function;
@@ -46,6 +45,25 @@ namespace QuantumBinding.Generator.Processors
 
             var method = new Method();
             bool isExtension = false;
+
+            if (function.Parameters.Count == 0)
+            {
+                if (!GetFunctionReturnType(function.ReturnType, out @class))
+                {
+                    return false;
+                }
+
+                method.IsStatic = true;
+            }
+            else if (function.Parameters.Count > 0 && function.Parameters[0].ParameterKind != ParameterKind.In)
+            {
+                if (!GetFunctionParameter(function.Parameters[0], out @class))
+                {
+                    return false;
+                }
+
+                method.IsStatic = true;
+            }
 
             if (@class.Owner != function.Owner)
             {
@@ -73,7 +91,7 @@ namespace QuantumBinding.Generator.Processors
             }
             else
             {
-                var parameters = function.Parameters.Skip(1);
+                var parameters = function.Parameters.Count > 0 && function.Parameters[0].ParameterKind == ParameterKind.In ? function.Parameters.Skip(1) : function.Parameters;
                 foreach (var parameter1 in parameters)
                 {
                     // Copy parameters with creating new instance and decrement parameter indices because we removed the first one
@@ -89,24 +107,41 @@ namespace QuantumBinding.Generator.Processors
             return true;
         }
 
-        private bool GetFunctionParameter(Parameter parameter, out Class @class)
+        private bool GetFunctionReturnType(BindingType type, out Class @class)
         {
-            @class = parameter.Type.Declaration as Class;
-            if (@class == null || @class.ClassType != ClassType.Class || parameter.ParameterKind != ParameterKind.In)
+            @class = type.Declaration as Class;
+            if (@class == null || @class.ClassType != ClassType.Class)
             {
                 return false;
             }
 
+            CheckExtensions(ref @class);
+
+            return true;
+        }
+
+        private bool GetFunctionParameter(Parameter parameter, out Class @class)
+        {
+            @class = parameter.Type.Declaration as Class;
+            if (@class == null || @class.ClassType != ClassType.Class)
+            {
+                return false;
+            }
+
+            CheckExtensions(ref @class);
+
+            return true;
+        }
+
+        private void CheckExtensions(ref Class @class)
+        {
             if (CurrentNamespace != @class.Owner && @class.HasExtensions)
             {
                 if (CurrentNamespace.FindClass(@class.Name) is Class extension)
                 {
                     @class = extension;
-                    return true;
                 }
             }
-
-            return true;
         }
     }
 }
