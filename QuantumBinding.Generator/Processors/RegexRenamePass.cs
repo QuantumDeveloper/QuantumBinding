@@ -212,6 +212,11 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
+            if (pattern == "^shaderc_compile_options")
+            {
+
+            }
+
             var returnType = method.ReturnType;
 
             RenameType(returnType);

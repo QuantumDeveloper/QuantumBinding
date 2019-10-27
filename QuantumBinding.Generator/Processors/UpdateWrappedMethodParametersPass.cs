@@ -41,7 +41,7 @@ namespace QuantumBinding.Generator.Processors
             foreach (var parameter in method.Parameters)
             {
                 var decl = parameter.Type.Declaration as Class;
-                if (decl == null || (decl.IsSimpleType && ProcessingContext.Options.ConvertRules.PodTypesAsSimpleTypes)) continue;
+                if (decl == null || (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)) continue;
                 if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) continue;
 
                 if (decl.Name == "ImageView")

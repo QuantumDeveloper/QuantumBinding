@@ -114,7 +114,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 case ClassType.Struct:
                     var structs = CurrentTranslationUnit.Structs.Where(x => !x.IsIgnored);
 
-                    if (Options.ConvertRules.PodTypesAsSimpleTypes && structs.Where(x=>!x.IsSimpleType).ToList().Count == 0 && Specializations == GeneratorSpecializations.Structs)
+                    if (Options.PodTypesAsSimpleTypes && structs.Where(x=>!x.IsSimpleType).ToList().Count == 0 && Specializations == GeneratorSpecializations.Structs)
                     {
                         IsGeneratorEmpty = true;
                     }
@@ -153,7 +153,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         GenerateClassExtension(ext);
                     }
 
-                    if (classes.Count() == 0 && classExtensions.Count() == 0 && Specializations == GeneratorSpecializations.Classes)
+                    if (classes.Count() == 0 && CurrentTranslationUnit.Methods.Count == 0 && classExtensions.Count() == 0 && Specializations == GeneratorSpecializations.Classes)
                     {
                         IsGeneratorEmpty = true;
                     }
@@ -552,7 +552,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
-            if (function.Name == "spvc_compiler_options_set_bool")
+            if (function.Name == "spvc_resources_get_resource_list_for_type")
             {
 
             }
@@ -573,7 +573,9 @@ namespace QuantumBinding.Generator.CodeGeneration
             PushBlock(CodeBlockKind.Method, method);
             GenerateCommentIfNotEmpty(method.Function.Comment);
             CheckParameters(method.Parameters);
+            TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
             var methodResult = TypePrinter.VisitMethod(method);
+            TypePrinter.PopMarshalType();
             WriteLine(methodResult.ToString());
             WriteOpenBraceAndIndent();
             var nativeFunctionCallResult = VisitNativeFunctionCall(method);
@@ -597,17 +599,13 @@ namespace QuantumBinding.Generator.CodeGeneration
             int index = 0;
             var wrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
 
-            if (method.Name == "loadDiagnostics" || method.Name == "CmdBeginTransformFeedbackEXT")
+            if (method.Name == "GetResourceListForType")
             {
 
             }
 
             for (var i = 0; i < method.Function.Parameters.Count; i++)
             {
-                if (method.Name == "UnregisterObjectsNVX")
-                {
-
-                }
                 var parameter = method.Function.Parameters[i];
                 var classDecl = parameter.Type.Declaration as Class;
                 if (wrapInteropObjects)
@@ -617,6 +615,11 @@ namespace QuantumBinding.Generator.CodeGeneration
                         parameter = method.Parameters.FirstOrDefault(x=>x.Id == parameter.Id);
                         classDecl = parameter.Type.Declaration as Class;
                     }
+                }
+
+                if (parameter.Type.IsPointerToPrimitiveType(out var primType))
+                {
+                    classDecl = null;
                 }
 
                 ArrayType currentArray = null;
@@ -633,7 +636,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         textGenerator.UnindentAndWriteCloseBrace();
                     }
 
-                    if (parameter.Type.Declaration == null || !parameter.Type.IsPointer())
+                    if (parameter.Type.Declaration == null || !parameter.Type.IsPointer() || parameter.Type.IsPointerToPrimitiveType(out var prim))
                     {
                         nativeParams.Add(parameter);
                         continue;
@@ -721,7 +724,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         textGenerator.WriteLine($"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {enumeration.InheritanceType}[{parameter.Name}.Length];");
                         textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
                         textGenerator.WriteOpenBraceAndIndent();
-                        textGenerator.WriteLine($"for (int i = 0; i < {arrayLength}; ++i)");
+                        textGenerator.WriteLine($"for (var i = 0; i < {arrayLength}; ++i)");
                         textGenerator.WriteOpenBraceAndIndent();
                         textGenerator.WriteLine($"{argumentName}[i] = ({enumeration.InheritanceType}){parameter.Name}[i];");
                         textGenerator.UnindentAndWriteCloseBrace();
@@ -792,13 +795,13 @@ namespace QuantumBinding.Generator.CodeGeneration
                         else if (parameter.ParameterKind == ParameterKind.Out)
                         {
                             if (!string.IsNullOrEmpty(currentArray.ArraySizeSource)
-                                && CurrentTranslationUnit.Module.TreatOutputArraysAsPointers)
+                                && CurrentTranslationUnit.Module.WrapInteropObjects)
                             {
                                 textGenerator.WriteLine($"IntPtr {argumentName} = IntPtr.Zero;");
                                 actions.Add(ConvertPtrToWrappedStructArray);
                             }
                             else if (!string.IsNullOrEmpty(currentArray.ArraySizeSource)
-                                     && !CurrentTranslationUnit.Module.TreatOutputArraysAsPointers)
+                                     && !CurrentTranslationUnit.Module.WrapInteropObjects)
                             {
                                 textGenerator.WriteLine(
                                     $"var {argumentName} = new {classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[{arrayLength}];");
@@ -914,7 +917,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     {
                         // Input parameter is just ref to simple type like int, long or another, so we need to just pass it as is without any conversion
                         if (classDecl.IsSimpleType && 
-                            Options.ConvertRules.PodTypesAsSimpleTypes && 
+                            Options.PodTypesAsSimpleTypes && 
                             parameter.ParameterKind == ParameterKind.InOut)
                         {
                             argumentName = parameter.Name;
@@ -1029,28 +1032,19 @@ namespace QuantumBinding.Generator.CodeGeneration
                         }
                         else if (parameter.ParameterKind == ParameterKind.Out)
                         {
-                            if (CurrentTranslationUnit.Module.TreatOutputArraysAsPointers)
+                            textGenerator.WriteLine($"var {argumentName} = {IntPtrZero};");
+                            if (classDecl.ClassType != ClassType.Struct && classDecl.ClassType != ClassType.Union)
                             {
-                                textGenerator.WriteLine($"var {argumentName} = {IntPtrZero};");
                                 actions.Add(ConvertPtrToWrappedStructArray);
                             }
-                            else if (!string.IsNullOrEmpty(arraySizeSource))
+                            else
                             {
-                                if (classDecl.ClassType == ClassType.Class)
-                                {
-                                    textGenerator.WriteLine($"var {argumentName} = new {classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[{arraySizeSource}];");
-                                }
-                                else
-                                {
-                                    textGenerator.WriteLine($"var {argumentName} = new {classDecl.AlternativeNamespace}.{classDecl.Name}[{arraySizeSource}];");
-                                }
-                                actions.Add(ImplicitTwoWayArrayTypeConversion);
+                                actions.Add(ConvertIntPtrToArray);
                             }
                         }
                     }
                     else if (!string.IsNullOrEmpty(arraySizeSource) &&
-                             parameter.ParameterKind == ParameterKind.Out &&
-                             CurrentTranslationUnit.Module.TreatOutputArraysAsPointers)
+                             parameter.ParameterKind == ParameterKind.Out)
                     {
                         textGenerator.WriteLine($"var {argumentName} = {IntPtrZero};");
                         actions.Add(ConvertIntPtrToArray);
@@ -1092,7 +1086,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     {
                         textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
                         textGenerator.WriteOpenBraceAndIndent();
-                        textGenerator.WriteLine($"for (int i = 0; i < {arrayLength}; ++i)");
+                        textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
                         textGenerator.WriteOpenBraceAndIndent();
                         if (parameter.ParameterKind == ParameterKind.In)
                         {
@@ -1154,7 +1148,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                     void InnerArrayCopy()
                     {
-                        textGenerator.WriteLine($"for (int i = 0; i < {arrayLength}; ++i)");
+                        textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
                         textGenerator.WriteOpenBraceAndIndent();
                         if (parameter.ParameterKind != ParameterKind.In)
                         {
@@ -1209,7 +1203,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     if ((CurrentTranslationUnit.Module.WrapInteropObjects && classType == ClassType.Struct) ||
                         classType == ClassType.Class)
                     {
-                        textGenerator.WriteLine($"for (int i = 0; i< {arrayLength}; ++i)");
+                        textGenerator.WriteLine($"for (var i = 0U; i< {arrayLength}; ++i)");
                         textGenerator.WriteOpenBraceAndIndent();
                         if (wrapInteropObjects && classType != ClassType.Class)
                         {
@@ -1228,6 +1222,11 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 void ConvertPtrToWrappedStructArray()
                 {
+                    if (classDecl.Name == "getOverriddenCursors")
+                    {
+
+                    }
+
                     TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
                     var typeStrResult = parameter.Type.Visit(TypePrinter);
                     TypePrinter.PopMarshalType();
@@ -1242,12 +1241,24 @@ namespace QuantumBinding.Generator.CodeGeneration
                     }
 
                     textGenerator.WriteLine($"var _{parameter.Name} = new {interopNamespace}[{currentArray.ArraySizeSource}];");
-                    textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray<{interopNamespace}>({argumentName}, _{parameter.Name});");
-                    textGenerator.WriteLine($"Marshal.FreeHGlobal({argumentName});");
+
+                    if (classDecl.ClassType == ClassType.Class)
+                    {
+                        textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray2<{interopNamespace}>({argumentName}, _{parameter.Name});");
+                    }
+                    else
+                    {
+                        textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray<{interopNamespace}>({argumentName}, _{parameter.Name});");
+                    }
+
+                    if (classDecl.ClassType == ClassType.Struct || classDecl.ClassType == ClassType.Union)
+                    {
+                        textGenerator.WriteLine($"Marshal.FreeHGlobal({argumentName});");
+                    }
                     textGenerator.WriteLine($"{parameter.Name} = new {typeStrResult}[{currentArray.ArraySizeSource}];");
-                    textGenerator.WriteLine($"for (int i = 0; i< {arrayLength}; ++i)");
+                    textGenerator.WriteLine($"for (var i = 0U; i< {arrayLength}; ++i)");
                     textGenerator.WriteOpenBraceAndIndent();
-                    textGenerator.WriteLine($"{parameter.Name}[i] = _{parameter.Name}[i];");
+                    textGenerator.WriteLine($"{parameter.Name}[i] = new {typeStrResult}(_{parameter.Name}[i]);");
                     textGenerator.UnindentAndWriteCloseBrace();
                 }
             }
