@@ -25,11 +25,6 @@ namespace QuantumBinding.Generator.Processors
             if (IsVisited(enumeration))
                 return false;
 
-            if (enumeration.Name == "Color_Space_KHR")
-            {
-
-            }
-
             var enumItems = enumeration.Items.Where(x => !x.IsIgnored).ToList();
 
             var basicItem = enumItems.FirstOrDefault();
@@ -74,42 +69,12 @@ namespace QuantumBinding.Generator.Processors
             foreach (var enumItem in enumItems)
             {
                 var splitted = enumItem.Name.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-                var finalItem = new StringBuilder();
-                for (int i = 0; i < splitted.Length; i++)
+                if (splitted.Length > 1 || (splitted.Length == 1 && HasUniformRegister(splitted[0])))
                 {
-                    bool isUpper = false;
-                    var item = splitted[i];
-
-                    for (int j = 0; j < item.Length; ++j)
-                    {
-                        if (j == 0)
-                        {
-                            if (casePattern == CasePattern.CamelCase && i > 0)
-                            {
-                                finalItem.Append(Char.ToLower(item[0]));
-                                isUpper = true;
-                            }
-                            else
-                            {
-                                isUpper = true;
-                                finalItem.Append(Char.ToUpper(item[0]));
-                            }
-                        }
-                        else
-                        {
-                            if (Char.IsUpper(item[j]) && isUpper)
-                            {
-                                finalItem.Append(Char.ToLower(item[j]));
-                            }
-                            else
-                            {
-                                finalItem.Append(item[j]);
-                            }
-                        }
-                    }
+                    var finalItem = new StringBuilder();
+                    RenameItem(splitted, finalItem);
+                    enumItem.Name = finalItem.ToString();
                 }
-
-                enumItem.Name = finalItem.ToString();
 
                 if (char.IsDigit(enumItem.Name[0]))
                 {
@@ -138,5 +103,50 @@ namespace QuantumBinding.Generator.Processors
 
             return true;
         }
+
+        private void RenameItem (string[] enumItems, StringBuilder builder)
+        {
+            for (int i = 0; i < enumItems.Length; i++)
+            {
+                bool isUpper = false;
+                var item = enumItems[i];
+
+                for (int j = 0; j < item.Length; ++j)
+                {
+                    if (j == 0)
+                    {
+                        if (casePattern == CasePattern.CamelCase && i > 0)
+                        {
+                            builder.Append(Char.ToLower(item[0]));
+                            isUpper = true;
+                        }
+                        else
+                        {
+                            isUpper = true;
+                            builder.Append(Char.ToUpper(item[0]));
+                        }
+                    }
+                    else
+                    {
+                        if (Char.IsUpper(item[j]) && isUpper)
+                        {
+                            builder.Append(Char.ToLower(item[j]));
+                        }
+                        else
+                        {
+                            builder.Append(item[j]);
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool HasUniformRegister(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return false;
+
+            return value == value.ToLower() || value == value.ToUpper();
+        }
+
     }
 }
