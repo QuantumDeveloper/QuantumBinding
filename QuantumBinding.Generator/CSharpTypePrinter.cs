@@ -109,7 +109,7 @@ namespace QuantumBinding.Generator
 
             if (pointer.IsAnsiString())
             {
-                if (MarshalType == MarshalTypes.NativeParameter)
+                if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
                 {
                     return Result("string", "", "[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))]");
                 }
@@ -215,6 +215,7 @@ namespace QuantumBinding.Generator
                     if ((@class.ClassType == ClassType.Struct || @class.ClassType == ClassType.Union) &&
                         (MarshalType == MarshalTypes.DelegateParameter || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty))
                     {
+                        pointer.Pointee.Declaration = pointer.Declaration;
                         if (@class.ClassType == ClassType.Struct && MarshalType == MarshalTypes.DelegateParameter)
                         {
                             if (pointer.IsNullableForDelegate)
@@ -429,6 +430,11 @@ namespace QuantumBinding.Generator
                 }
             }
 
+            if (customType.TryGetDelegate(out Delegate @delegate))
+            {
+                return Result(IntPtrType); // we must return delegates to C++ as IntPtr because in other way we will corrupt memory
+            }
+
             if (customType.TryGetEnum(out Enumeration @enum))
             {
                 return @enum.Name;
@@ -489,15 +495,15 @@ namespace QuantumBinding.Generator
 
         public override TypePrinterResult VisitParameter(Parameter parameter)
         {
-            var hasModifier = ContainsModifiers(parameter, out string modifier);
-            string result;
+            var hasModifier = ContainsModifiers(parameter, out string attribute, out string modifier);
+            TypePrinterResult result;
             if (MarshalType == MarshalTypes.SkipParamTypes)
             {
                 result = parameter.Name;
             }
             else
             {
-                var type = parameter.Type.Visit(this);
+                result = parameter.Type.Visit(this);
                 var decl = parameter.Type.Declaration as Class;
 
                 if (decl != null)
@@ -518,48 +524,49 @@ namespace QuantumBinding.Generator
                         if (!decl.IsSimpleType &&
                             (decl.ClassType == ClassType.Struct || decl.ClassType == ClassType.Union) &&
                             parameter.Type.IsPointerToStruct() &&
-                            type.Type != IntPtrType)
+                            result.Type != IntPtrType)
                         {
                             if ((MarshalType == MarshalTypes.NativeParameter && !((PointerType)parameter.Type).IsNullable) 
                                 || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter)
                             {
-                                type.Type = $"{alternativeNamespace}{type.Type}";
+                                result.Type = $"{alternativeNamespace}{result.Type}";
                             }
                         }
-                        else if (decl != null && decl.ClassType == ClassType.Class && type.Type != IntPtrType)
+                        else if (decl != null && decl.ClassType == ClassType.Class && result.Type != IntPtrType)
                         {
                             if (MarshalType == MarshalTypes.MethodParameter)
                             {
-                                type.Type = $"{originalNamespace}{type.Type}";
+                                result.Type = $"{originalNamespace}{result.Type}";
                             }
                             else if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
                             {
                                 if (!string.IsNullOrEmpty(decl.InnerStruct.AlternativeNamespace))
                                 {
-                                    type.Type = $"{decl.InnerStruct.AlternativeNamespace}.{type.Type}";
+                                    result.Type = $"{decl.InnerStruct.AlternativeNamespace}.{result.Type}";
                                 }
                             }
                         }
                     }
-                    else if (type.Type != IntPtrType)
+                    else if (result.Type != IntPtrType)
                     {
                         if (decl?.ClassType == ClassType.Class)
                         {
-                            type.Type = $"{originalNamespace}{type.Type}";
+                            result.Type = $"{originalNamespace}{result.Type}";
                         }
                         else
                         {
-                            type.Type = $"{alternativeNamespace}{type.Type}";
+                            result.Type = $"{alternativeNamespace}{result.Type}";
                         }
                     }
                 }
 
-                result = $"{type.MergeResult()} {parameter.Name}";
+                result.Type += $"{result.Suffix} {parameter.Name}";
+                result.Suffix = string.Empty;
             }
 
             if (parameter.HasDefaultValue && MarshalType == MarshalTypes.MethodParameter)
             {
-                result += $" = {parameter.DefaultValue}";
+                result.Type += $" = {parameter.DefaultValue}";
             }
 
             if ((MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter) && 
@@ -569,9 +576,28 @@ namespace QuantumBinding.Generator
                 hasModifier = false;
             }
 
+            if (parameter.Name == "pPipelines")
+            {
+
+            }
+
             if (hasModifier)
             {
-                return $"{modifier} {result}";
+                if (!string.IsNullOrEmpty(attribute))
+                {
+                    string finalString = attribute;
+                    if(!string.IsNullOrEmpty(result.Attribute))
+                    {
+                        finalString += $" {result.Attribute}";
+                    }
+
+                    if (!string.IsNullOrEmpty(modifier))
+                    {
+                        finalString += $" {modifier}";
+                    }
+                    return $"{finalString} {result.Type}";
+                }
+                return $"{modifier} {result.MergeResult()}";
             }
 
             return result;
@@ -691,9 +717,10 @@ namespace QuantumBinding.Generator
             return accessSpecifier.ToString().ToLower();
         }
 
-        private bool ContainsModifiers(Parameter param, out string modifier)
+        private bool ContainsModifiers(Parameter param, out string attribute, out string modifier)
         {
             modifier = string.Empty;
+            attribute = string.Empty;
             if (param.ParameterKind == ParameterKind.Readonly &&
                 (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.SkipParamTypes))
             {
@@ -748,14 +775,14 @@ namespace QuantumBinding.Generator
                 switch (param.ParameterKind)
                 {
                     case ParameterKind.In:
-                        modifier = "[In]";
+                        attribute = "[In]";
                         break;
                     case ParameterKind.InOut:
                         if (param.Type.IsArray() || 
                             param.Type.IsPointerToArray() ||
                             param.Type.IsPurePointer())
                         {
-                            modifier = "[In, Out]";
+                            attribute = "[In, Out]";
                         }
                         else
                         {
@@ -765,11 +792,13 @@ namespace QuantumBinding.Generator
                     case ParameterKind.Out:
                         if (param.Type.IsPointerToArray())
                         {
-                            modifier = "[In, Out] ref";
+                            attribute = "[In, Out]";
+                            modifier = "ref";
                         }
                         else
                         {
-                            modifier = "[Out] out";
+                            attribute = "[Out]";
+                            modifier = "out";
                         }
                         break;
                 }

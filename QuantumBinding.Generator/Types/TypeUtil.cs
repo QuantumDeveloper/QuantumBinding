@@ -371,6 +371,13 @@ namespace QuantumBinding.Generator.Types
             return decl != null;
         }
 
+        public static bool TryGetDelegate(this BindingType type, out Delegate @class)
+        {
+            var decl = type.Declaration as Delegate;
+            @class = decl;
+            return decl != null;
+        }
+
         public static PrimitiveType GetPrimitiveTypeFromString(string type)
         {
             switch (type)
