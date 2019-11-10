@@ -271,6 +271,11 @@ namespace QuantumBinding.Generator.CodeGeneration
                 return;
             }
 
+            if (@class.Name == "VkAllocationCallbacks")
+            {
+
+            }
+
             switch (@class.ClassType)
             {
                 case ClassType.Class:
@@ -500,17 +505,19 @@ namespace QuantumBinding.Generator.CodeGeneration
             Write($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} delegate");
             PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
 
-            var returnType = @delegate.ReturnType.Visit(TypePrinter);
-            Write($"{returnType} {@delegate.Name}(");
-            if (@delegate.Name == "PFN_vkCreateInstance")
+            if (@delegate.Name == "ShadercIncludeResolveFn")
             {
 
             }
+            TypePrinter.PushMarshalType(MarshalTypes.NativeField);
+            var returnType = @delegate.ReturnType.Visit(TypePrinter);
+            Write($"{returnType} {@delegate.Name}(");
+            TypePrinter.PopMarshalType();
             CheckParameters(@delegate.Parameters);
+
             var @params = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
             Write(@params.ToString());
             Write(");");
-
             NewLine();
 
             PopBlock();
@@ -552,7 +559,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
-            if (function.Name == "spvc_resources_get_resource_list_for_type")
+            if (function.Name == "shaderc_compile_options_set_include_callbacks")
             {
 
             }

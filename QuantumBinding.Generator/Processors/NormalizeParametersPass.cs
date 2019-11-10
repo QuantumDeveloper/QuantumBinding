@@ -24,17 +24,34 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (function.ReturnType.IsCustomType(out var custom))
-            {
-                Declaration decl = null;
-                foreach (var unit in AstContext.TranslationUnits)
-                {
-                    decl = unit.Declarations.FirstOrDefault(x => x.Name == custom.Name);
-                    if (decl != null) break;
-                }
+            var decl = GetDeclarationFromCustomType(function.ReturnType);
+            function.ReturnType.Declaration = decl;
 
-                function.ReturnType.Declaration = decl;
+            return true;
+        }
+
+        public override bool VisitMethod(Method method)
+        {
+            if (IsVisited(method))
+            {
+                return false;
             }
+
+            var decl = GetDeclarationFromCustomType(method.ReturnType);
+            method.ReturnType.Declaration = decl;
+
+            return true;
+        }
+
+        public override bool VisitDelegate(Delegate @delegate)
+        {
+            if (IsVisited(@delegate))
+            {
+                return false;
+            }
+
+            Declaration decl = GetDeclarationFromCustomType(@delegate.ReturnType);
+            @delegate.ReturnType.Declaration = decl;
 
             return true;
         }
@@ -131,17 +148,7 @@ namespace QuantumBinding.Generator.Processors
                 }
             }
 
-            parameter.Type.IsCustomType(out CustomType custom);
-            Declaration decl = null;
-            if (custom != null)
-            {
-                foreach (var unit in AstContext.TranslationUnits)
-                {
-                    decl = unit.Declarations.FirstOrDefault(x => x.Name == custom.Name);
-                    if (decl != null) break;
-                }
-            }
-
+            Declaration decl = GetDeclarationFromCustomType(parameter.Type);
             parameter.Type.Declaration = decl;
 
             Class classDecl = decl as Class;
@@ -184,6 +191,22 @@ namespace QuantumBinding.Generator.Processors
             }
 
             return true;
+        }
+
+        private Declaration GetDeclarationFromCustomType(BindingType type)
+        {
+            type.IsCustomType(out CustomType custom);
+            Declaration decl = null;
+            if (custom != null)
+            {
+                foreach (var unit in AstContext.TranslationUnits)
+                {
+                    decl = unit.Declarations.FirstOrDefault(x => x.Name == custom.Name);
+                    if (decl != null) break;
+                }
+            }
+
+            return decl;
         }
     }
 }
