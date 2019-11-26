@@ -606,7 +606,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             int index = 0;
             var wrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
 
-            if (method.Name == "GetResourceListForType")
+            if (method.Name == "UpdateDescriptorSets")
             {
 
             }
@@ -994,7 +994,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                             typeStrResult = parameter.WrappedType.Visit(TypePrinter);
                         }
                         TypePrinter.PopMarshalType();
-                        if (parameter.ParameterKind == ParameterKind.In)
+                        if (parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly)
                         {
                             if (classDecl.ClassType == ClassType.Class)
                             {
@@ -1091,16 +1091,18 @@ namespace QuantumBinding.Generator.CodeGeneration
                     if ((classDecl.ClassType == ClassType.StructWrapper ||
                          classDecl.ClassType == ClassType.UnionWrapper) && classDecl.IsDisposable)
                     {
-                        textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        if (parameter.ParameterKind == ParameterKind.In)
+                        if (parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly)
                         {
+                            textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
+                            textGenerator.WriteOpenBraceAndIndent();
+                            textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
+                            textGenerator.WriteOpenBraceAndIndent();
+
                             textGenerator.WriteLine($"{parameter.Name}[i]?.Dispose();");
+
+                            textGenerator.UnindentAndWriteCloseBrace();
+                            textGenerator.UnindentAndWriteCloseBrace();
                         }
-                        textGenerator.UnindentAndWriteCloseBrace();
-                        textGenerator.UnindentAndWriteCloseBrace();
                     }
                 }
 
@@ -1157,7 +1159,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     {
                         textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
                         textGenerator.WriteOpenBraceAndIndent();
-                        if (parameter.ParameterKind != ParameterKind.In)
+                        if (parameter.ParameterKind != ParameterKind.In && parameter.ParameterKind != ParameterKind.Readonly)
                         {
                             if (wrapInteropObjects)
                             {
@@ -1187,7 +1189,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 void ConvertIntPtrToArray()
                 {
-                    TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+                    TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
                     var type = parameter.Type.Visit(TypePrinter);
                     TypePrinter.PopMarshalType();
 
@@ -1205,8 +1207,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     }
 
                     textGenerator.WriteLine($"{parameter.Name} = new {type}[{currentArray.ArraySizeSource}];");
-                    textGenerator.WriteLine(
-                        $"MarshalUtils.IntPtrToManagedArray<{type}>({argumentName}, {parameter.Name});");
+                    textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray<{type}>({argumentName}, {parameter.Name});");
                     if ((CurrentTranslationUnit.Module.WrapInteropObjects && classType == ClassType.Struct) ||
                         classType == ClassType.Class)
                     {
@@ -1244,7 +1245,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                     }
                     else
                     {
-                        interopNamespace = $"{classDecl.AlternativeNamespace}.{typeStrResult}";
+                        TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+                        var nativeResult = parameter.Type.Visit(TypePrinter);
+                        interopNamespace = $"{classDecl.AlternativeNamespace}.{nativeResult}";
+                        TypePrinter.PopMarshalType();
                     }
 
                     textGenerator.WriteLine($"var _{parameter.Name} = new {interopNamespace}[{currentArray.ArraySizeSource}];");

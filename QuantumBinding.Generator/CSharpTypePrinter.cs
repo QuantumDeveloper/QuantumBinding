@@ -184,8 +184,7 @@ namespace QuantumBinding.Generator
             {
                 if (pointer.IsPointerToArray())
                 {
-                    if (//Module.TreatOutputArraysAsPointers && 
-                        Parameter != null && 
+                    if (Parameter != null && 
                         Parameter.ParameterKind == ParameterKind.Out && 
                         MarshalType == MarshalTypes.NativeParameter)
                     {
@@ -200,6 +199,11 @@ namespace QuantumBinding.Generator
                     if (@class.ClassType == ClassType.Class && MarshalType == MarshalTypes.NativeParameter && @class.InnerStruct != null)
                     {
                         return Result(@class.InnerStruct.Name, "[]");
+                    }
+
+                    if (@class.ClassType == ClassType.StructWrapper && MarshalType == MarshalTypes.NativeParameter && @class.WrappedStruct != null)
+                    {
+                        return Result(@class.WrappedStruct.Name, "[]");
                     }
 
                     if (MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty)
