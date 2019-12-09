@@ -18,7 +18,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             if (!functions.TryGetValue(delegateName, out _currentFunction))
             {
                 var @delegate = new DelegateExtension();
-                @delegate.Name = delegateName;
+                @delegate.DecoratedName = delegateName;
                 _currentFunction = @delegate;
                 delegates.Add(delegateName, @delegate);
             }

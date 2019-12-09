@@ -4,11 +4,11 @@ using QuantumBinding.Generator.ProcessingFluentApi;
 
 namespace QuantumBinding.Generator.Processors
 {
-    public class FixIncorrectParametersPass : PreGeneratorPass
+    public class PostProcessingApiPass : PreGeneratorPass
     {
         private readonly PostProcessingApi fixApi;
 
-        public FixIncorrectParametersPass(PostProcessingApi fixApi)
+        public PostProcessingApiPass(PostProcessingApi fixApi)
         {
             this.fixApi = fixApi;
             Options.VisitFunctions = true;
@@ -38,6 +38,9 @@ namespace QuantumBinding.Generator.Processors
             {
                 function.ReturnType = func.ReturnType;
             }
+
+            function.Name = func.DecoratedName;
+            function.EntryPoint = func.EntryPointName;
 
             foreach (var parameter in func.Parameters)
             {

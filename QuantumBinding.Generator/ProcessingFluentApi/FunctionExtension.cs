@@ -9,8 +9,10 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         {
             Parameters = new List<ParameterExtension>();
         }
+        
+        public string EntryPointName { get; set; }
 
-        public string Name { get; set; }
+        public string DecoratedName { get; set; }
 
         public BindingType ReturnType { get; set; }
 

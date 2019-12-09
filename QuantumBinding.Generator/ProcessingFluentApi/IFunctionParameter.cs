@@ -6,6 +6,8 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
     {
         ITreatFunctionParameterByName WithParameterName(string paramName);
 
+        ITreatFunctionParameterByName RenameTo(string newName);
+
         void WithReturnType(BindingType returnType);
     }
 
