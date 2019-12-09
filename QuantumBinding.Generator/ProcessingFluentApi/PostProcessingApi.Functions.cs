@@ -36,7 +36,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             if (!functions.TryGetValue(functionName, out _currentFunction))
             {
                 var function = new FunctionExtension();
-                function.Name = functionName;
+                function.DecoratedName = functionName;
                 _currentFunction = function;
                 functions.Add(functionName, function);
             }
@@ -58,7 +58,8 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                 if (!functions.TryGetValue(functionName, out _currentFunction))
                 {
                     var function = new FunctionExtension();
-                    function.Name = functionName;
+                    function.EntryPointName = functionName;
+                    function.DecoratedName = functionName;
                     _currentFunctions.Add(function);
                     functions.Add(functionName, function);
                 }
@@ -78,6 +79,12 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             CreateParameter(paramName);
             return this;
         }
+        
+        public ITreatFunctionParameterByName RenameTo(string newName)
+        {
+            _currentFunction.DecoratedName = newName;
+            return this;
+        }
 
         private void CreateParameter(string paramName)
         {
@@ -92,7 +99,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                 if (parameter != null)
                 {
                     throw new ArgumentException(
-                        $"Parameter with name {paramName} already added for {_currentFunction.Name}");
+                        $"Parameter with name {paramName} already added for {_currentFunction.DecoratedName}");
                 }
 
                 var param = new ParameterExtension();
@@ -112,7 +119,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                     if (parameter != null)
                     {
                         throw new ArgumentException(
-                            $"Parameter with name {paramName} already added for {_currentFunction.Name}");
+                            $"Parameter with name {paramName} already added for {_currentFunction.DecoratedName}");
                     }
 
                     currentFunction.Parameters.Add(param);

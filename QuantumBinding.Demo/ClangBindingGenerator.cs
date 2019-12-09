@@ -282,7 +282,7 @@ namespace QuantumBinding.ClangGenerator
                 .WithField("indexEntityReference")
                 .TreatAsPointerType(new BuiltinType(PrimitiveType.Void)); 
 
-             var fixingFunctionParameters = new FixIncorrectParametersPass(api);
+             var fixingFunctionParameters = new PostProcessingApiPass(api);
             ctx.AddPreGeneratorPass(fixingFunctionParameters, ExecutionPassKind.PerTranslationUnit);
         }
     }
