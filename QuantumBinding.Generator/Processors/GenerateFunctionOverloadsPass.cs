@@ -58,7 +58,7 @@ namespace QuantumBinding.Generator.Processors
             return true;
         }
 
-        public override void OnPassCompleted()
+        public override void OnTranslationUnitPassCompleted()
         {
             CurrentNamespace.AddDeclarations(overloadedFunctions);
             overloadedFunctions.Clear();
