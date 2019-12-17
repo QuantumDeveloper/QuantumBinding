@@ -37,6 +37,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             {
                 var function = new FunctionExtension();
                 function.DecoratedName = functionName;
+                function.EntryPointName = functionName;
                 _currentFunction = function;
                 functions.Add(functionName, function);
             }

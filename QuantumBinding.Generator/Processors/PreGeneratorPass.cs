@@ -4,7 +4,7 @@ using QuantumBinding.Generator.AST;
 
 namespace QuantumBinding.Generator.Processors
 {
-    public abstract class PreGeneratorPass: IPreGeneratorPass
+    public abstract class PreGeneratorPass : IPreGeneratorPass
     {
         protected PreGeneratorPass()
         {
@@ -12,6 +12,7 @@ namespace QuantumBinding.Generator.Processors
             Options = new PreGeneratorOptions();
         }
 
+        private uint runIndex;
         private HashSet<Declaration> Visited { get; }
         public PreGeneratorOptions Options { get; }
         public ProcessingContext ProcessingContext { get; set; }
@@ -20,19 +21,33 @@ namespace QuantumBinding.Generator.Processors
         protected TranslationUnit CurrentNamespace { get; private set; }
         protected Declaration ParentDeclaration { get; private set; }
 
+        public bool RunAgain { get; set; }
+
+        public uint RunIndex => runIndex;
+
         public void Run()
         {
+            OnInitialize();
+
             foreach (var unit in AstContext.TranslationUnits)
             {
                 CurrentNamespace = unit;
                 VisitTranslationUnit(unit);
-                OnPassCompleted();
+                OnTranslationUnitPassCompleted();
             }
+
+            OnComplete();
+            runIndex++;
         }
 
         protected virtual bool IsVisited(Declaration declaration)
         {
             return !Visited.Add(declaration);
+        }
+
+        protected void CleanVisitedDeclarations()
+        {
+            Visited.Clear();
         }
 
         public virtual bool VisitTranslationUnit(TranslationUnit translationUnit)
@@ -231,9 +246,17 @@ namespace QuantumBinding.Generator.Processors
             return true;
         }
 
-        public virtual void OnPassCompleted()
+        public virtual void OnInitialize()
+        {
+        }
+
+        public virtual void OnTranslationUnitPassCompleted()
         {
 
+        }
+
+        public virtual void OnComplete()
+        {
         }
     }
 }

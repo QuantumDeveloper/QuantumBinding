@@ -6,13 +6,23 @@ namespace QuantumBinding.Generator.Processors
 {
     public class RegexRenamePass : PreGeneratorPass
     {
-        private readonly Regex regex;
-        private readonly string pattern;
-        private readonly string replaceWith;
-        private readonly RenameTargets renameTargets;
-        private readonly RegexOptions regexOpts;
+        protected Regex regex;
+        protected string pattern;
+        protected string replaceWith;
+        protected RenameTargets renameTargets;
+        protected RegexOptions regexOpts;
+
+        protected RegexRenamePass()
+        {
+
+        }
 
         public RegexRenamePass(string pattern, string replaceWith, RenameTargets targets, bool ignoreCase)
+        {
+            InitializeLocalValues(pattern, replaceWith, targets, ignoreCase);
+        }
+
+        protected void InitializeLocalValues(string pattern, string replaceWith, RenameTargets targets, bool ignoreCase)
         {
             this.pattern = pattern;
             this.replaceWith = replaceWith;
@@ -123,11 +133,6 @@ namespace QuantumBinding.Generator.Processors
             if (IsVisited(@class))
                 return false;
 
-            if (@class.Name == "VkPhysicalDeviceGroupProperties" /*&& @class.ClassType == ClassType.StructWrapper*/)
-            {
-
-            }
-
             if ((@class.ClassType == ClassType.Class  && renameTargets.HasFlag(RenameTargets.Class)) ||
                 (@class.ClassType == ClassType.StructWrapper && renameTargets.HasFlag(RenameTargets.StructWrapper)) ||
                 (@class.ClassType == ClassType.UnionWrapper && renameTargets.HasFlag(RenameTargets.UnionWrapper)) ||
@@ -145,11 +150,6 @@ namespace QuantumBinding.Generator.Processors
             if (IsVisited(field))
             {
                 return false;
-            }
-
-            if (field.Name == "physicalDevices")
-            {
-
             }
 
             var type = field.Type;
@@ -212,11 +212,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (pattern == "^shaderc_compile_options")
-            {
-
-            }
-
             var returnType = method.ReturnType;
 
             RenameType(returnType);
@@ -267,16 +262,7 @@ namespace QuantumBinding.Generator.Processors
             {
                 if (type.IsCustomType(out var custom))
                 {
-                    if (custom.Name == "VkClearColorValue")
-                    {
-
-                    }
                     custom.Name = Replace(custom.Name);
-                }
-
-                if (decl.Name == "VkClearColorValue")
-                {
-
                 }
 
                 decl.Name = Replace(decl.Name);

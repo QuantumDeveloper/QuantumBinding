@@ -52,8 +52,11 @@ namespace QuantumBinding.Generator
                 var pass = preGeneratorPassesList[index];
                 if (CanExecute(preGeneratorPassesDict[pass], module))
                 {
-                    pass.ProcessingContext = this;
-                    pass.Run();
+                    do
+                    {
+                        pass.ProcessingContext = this;
+                        pass.Run();
+                    } while (pass.RunAgain);
                 }
             }
 

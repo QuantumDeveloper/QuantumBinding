@@ -24,11 +24,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (function.Name == "vkGetPhysicalDeviceSurfaceCapabilitiesKHR")
-            {
-
-            }
-
             if (!fixApi.TryGetFunction(function.Name, false, out FunctionExtension func))
             {
                 return false;
@@ -40,7 +35,11 @@ namespace QuantumBinding.Generator.Processors
             }
 
             function.Name = func.DecoratedName;
-            function.EntryPoint = func.EntryPointName;
+
+            if (!string.IsNullOrEmpty(func.EntryPointName))
+            {
+                function.EntryPoint = func.EntryPointName;
+            }
 
             foreach (var parameter in func.Parameters)
             {
