@@ -114,7 +114,7 @@ namespace QuantumBinding.Generator
                     return Result("string", "", "[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))]");
                 }
 
-                if (MarshalType == MarshalTypes.MethodParameter)
+                if (MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.NativeReturnType)
                 {
                     return Result("string");
                 }
@@ -142,7 +142,7 @@ namespace QuantumBinding.Generator
                 return Result("string[]");
             }
 
-            if (MarshalType == MarshalTypes.NativeField) // pointers for struct fields are ALWAYS translated as IntPtr;
+            if (MarshalType == MarshalTypes.NativeField || MarshalType == MarshalTypes.NativeReturnType) // pointers for struct fields are ALWAYS translated as IntPtr;
             {
                 return Result(IntPtrType);
             }
@@ -348,7 +348,16 @@ namespace QuantumBinding.Generator
             switch (builtin.Type)
             {
                 case PrimitiveType.Bool:
+                    if (MarshalType == MarshalTypes.NativeField)
+                    {
+                        return "byte";
+                    }
+                    return "bool";
                 case PrimitiveType.Bool32:
+                    if (MarshalType == MarshalTypes.NativeField)
+                    {
+                        return "uint";
+                    }
                     return "bool";
                 case PrimitiveType.Char:
                 case PrimitiveType.UChar:
@@ -441,6 +450,10 @@ namespace QuantumBinding.Generator
 
             if (customType.TryGetEnum(out Enumeration @enum))
             {
+                if (MarshalType == MarshalTypes.NativeField)
+                {
+                    return @enum.InheritanceType;
+                }
                 return @enum.Name;
             }
 

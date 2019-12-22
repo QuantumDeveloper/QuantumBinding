@@ -208,11 +208,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteOpenBraceAndIndent();
                 TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
 
-                if (@class.Name == "SpvcMslConstexprSampler")
-                {
-
-                }
-
                 foreach (var param in ctor.InputParameters)
                 {
                     var visitResult = TypePrinter.VisitField(param).Type.Split(' ')[0];
@@ -283,7 +278,35 @@ namespace QuantumBinding.Generator.CodeGeneration
                             }
                             else
                             {
-                                WriteLine($"{property.Name} = {param.Name}.{property.Field.Name};");
+                                if (property.Type is BuiltinType builtinType)
+                                {
+                                    FromNativeToWrapper(builtinType);
+                                }
+                                else if (decl != null && decl.IsSimpleType && Options.PodTypesAsSimpleTypes)
+                                {
+                                    if (decl.UnderlyingNativeType is BuiltinType primitiveType)
+                                    {
+                                        FromNativeToWrapper(primitiveType);
+                                    }
+                                }
+                                else
+                                {
+                                    WriteLine($"{property.Name} = {param.Name}.{property.Field.Name};");
+                                }
+
+                                void FromNativeToWrapper(BuiltinType builtin)
+                                {
+                                    switch (builtin.Type)
+                                    {
+                                        case PrimitiveType.Bool:
+                                        case PrimitiveType.Bool32:
+                                            WriteLine($"{property.Name} = System.Convert.ToBoolean({@class.WrappedStructFieldName}.{property.Field.Name});");
+                                            break;
+                                        default:
+                                            WriteLine($"{property.Name} = {@class.WrappedStructFieldName}.{property.Field.Name};");
+                                            break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -384,7 +407,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         UnindentAndWriteCloseBrace();
                         constArrayIndex++;
                     }
-                    else if (decl != null && (decl.ClassType == ClassType.Class || decl.IsSimpleType))
+                    else if (decl != null && (decl.ClassType == ClassType.Class && !decl.IsSimpleType))
                     {
                         WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                     }
@@ -395,9 +418,43 @@ namespace QuantumBinding.Generator.CodeGeneration
                         WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name}.{ConversionMethodName};");
                         UnindentAndWriteCloseBrace();
                     }
-                    else // if decl is not Class (for ex., Enum)
+                    else if (property.Type.Declaration is Enumeration @enum)
                     {
-                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = ({@enum.InheritanceType}){property.Name};");
+                    }
+                    else
+                    {
+                        if (property.Type is BuiltinType builtinType)
+                        {
+                            FromWrappedToNative(builtinType);
+                        }
+                        else if (decl != null && decl.IsSimpleType && Options.PodTypesAsSimpleTypes)
+                        {
+                            if (decl.UnderlyingNativeType is BuiltinType primitiveType)
+                            {
+                                FromWrappedToNative(primitiveType);
+                            }
+                        }
+                        else
+                        {
+                            WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                        }
+
+                        void FromWrappedToNative(BuiltinType builtin)
+                        {
+                            switch (builtin.Type)
+                            {
+                                case PrimitiveType.Bool:
+                                    WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = System.Convert.ToByte({property.Name});");
+                                    break;
+                                case PrimitiveType.Bool32:
+                                    WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = System.Convert.ToUInt32({property.Name});");
+                                    break;
+                                default:
+                                    WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                                    break;
+                            }
+                        }
                     }
                 }
             }
@@ -642,6 +699,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             var arrayType = property.Type as ArrayType;
             var size = arrayType.Size;
+            //var size = $"{ parentClass.WrappedStructFieldName }.{ property.Field.Name}.Length";
             if (arrayType.ElementType.CanConvertToFixedArray())
             {
                 var tempField = $"tmpArr{index}";
@@ -655,7 +713,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                     nativeArrayElementType = "byte";
                     castToByte = true;
                 }
-
 
                 WriteLine($"var {tempField} = new {nativeArrayElementType}[{size}];");
                 WriteLine("unsafe");
@@ -691,7 +748,12 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
             else if (arrayType.Declaration is Enumeration)
             {
-                WriteLine($"{property.Name} = {parentClass.WrappedStructFieldName}.{property.Field.Name};");
+                WriteLine($"{property.Name} = new {arrayType.Declaration.Name}[{size}];");
+                WriteLine($"for (int i = 0; i < {size}; ++i)");
+                WriteOpenBraceAndIndent();
+                var typeName = arrayType.Declaration.Name;
+                WriteLine($"{property.Name}[i] = ({typeName})({parentClass.WrappedStructFieldName}.{property.Field.Name}[i]);");
+                UnindentAndWriteCloseBrace();
             }
             else //const array of structs
             {
@@ -712,11 +774,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void WritePointerToStructGetter(Property property, Class parentClass, Class decl, string propertyTypeName)
         {
-            if (parentClass.Name == "PipelineMultisampleStateCreateInfo")
-            {
-
-            }
-
             var structFieldPath = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
 
             var pointer = property.Field.Type as PointerType;
@@ -855,9 +912,13 @@ namespace QuantumBinding.Generator.CodeGeneration
                 UnindentAndWriteCloseBrace();
                 UnindentAndWriteCloseBrace();
             }
-            else if (arrayType.Declaration is Enumeration)
+            else if (arrayType.Declaration is Enumeration @enum)
             {
-                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = new {@enum.InheritanceType}[{size}];");
+                WriteLine($"for (int i = 0; i < {property.Name}.Length; ++i)");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = ({@enum.InheritanceType}){property.Name}[i];");
+                UnindentAndWriteCloseBrace();
             }
             else
             {

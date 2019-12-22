@@ -18,7 +18,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         }
 
         private FileExtensionKind extensionKind;
-        private string disposableClassName = "DisposableObject";
+        public static string DisposableClassName = "VulkanDisposableObject";
 
         public override void Run()
         {
@@ -215,43 +215,44 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private string GetDisposeClassString()
         {
-            return
-@"public class DisposableObject: IDisposable
-{
-    public bool IsDisposed { get; private set; }
+            var classContent =
+@"public class {0}: IDisposable
+{{
+    public bool IsDisposed {{ get; private set; }}
 
     protected virtual void Dispose(bool disposeManaged)
-    {
+    {{
         if (IsDisposed)
-        {
+        {{
             return;
-        }
+        }}
 
         if (disposeManaged)
-        {
+        {{
             ManagedDisposeOverride();
-        }
+        }}
 
         UnmanagedDisposeOverride();
 
         IsDisposed = true;
-    }
+    }}
 
-    protected virtual void ManagedDisposeOverride() { }
+    protected virtual void ManagedDisposeOverride() {{ }}
 
-    protected virtual void UnmanagedDisposeOverride() { }
+    protected virtual void UnmanagedDisposeOverride() {{ }}
 
-    ~DisposableObject()
-    {
+    ~{0}()
+    {{
         Dispose(false);
-    }
+    }}
 
     public void Dispose()
-    {
+    {{
         Dispose(true);
         GC.SuppressFinalize(this);
-    }
-}";
+    }}
+}}";
+            return string.Format(classContent, DisposableClassName);
         }
 
         private void GenerateDisposedClasses(List<Class> classes)
@@ -267,7 +268,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             PushBlock(CodeBlockKind.Class, @class);
 
-            WriteLine($"{TypePrinter.VisitClass(@class)} : {disposableClassName}");
+            WriteLine($"{TypePrinter.VisitClass(@class)} : {DisposableClassName}");
 
             WriteOpenBraceAndIndent();
 
@@ -280,7 +281,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateDisposeClass()
         {
-            PushBlock(CodeBlockKind.Class, "DisposableObject");
+            PushBlock(CodeBlockKind.Class, DisposableClassName);
             WriteLine(GetDisposeClassString());
             PopBlock();
         }
@@ -288,179 +289,177 @@ namespace QuantumBinding.Generator.CodeGeneration
         private void GenerateGCHandleReferenceClass()
         {
             PushBlock(CodeBlockKind.Class, "GCHandleReference");
-            var str =
-@"public class GCHandleReference : DisposableObject
-{
-    bool isInitialized;
+            var classContent =
+@"public class GCHandleReference : {0}
+{{
     GCHandle reference;
 
     public IntPtr Handle
-    {
+    {{
         get
-        {
+        {{
             if (reference.IsAllocated)
-            {
+            {{
                 return reference.AddrOfPinnedObject();
-            }
+            }}
             return IntPtr.Zero;
-        }
-    }
+        }}
+    }}
 
     public GCHandleReference(object obj)
-    {
+    {{
         if (obj != null)
-        {
-            isInitialized = true;
+        {{
             reference = GCHandle.Alloc(obj, GCHandleType.Pinned);
-        }
-    }
+        }}
+    }}
 
     protected override void UnmanagedDisposeOverride()
-    {
+    {{
         base.UnmanagedDisposeOverride();
-        if (isInitialized)
-        {
+        if (reference.IsAllocated)
+        {{
             reference.Free();
-        }
-    }
-}";
-            WriteLine(str);
+        }}
+    }}
+}}";
+            WriteLine(string.Format(classContent, DisposableClassName));
             PopBlock();
         }
 
         private void GenerateStringReferenceClass()
         {
             PushBlock(CodeBlockKind.Class, "StringReference");
-            var str =
-@"public class StringReference : DisposableObject
-{
+            var classContent =
+@"public class StringReference : {0}
+{{
     bool isInitialized;
     IntPtr reference;
 
     public IntPtr Handle => reference;
 
     public StringReference(string str, bool isUnicode)
-    {
+    {{
         if (string.IsNullOrEmpty(str))
-        {
+        {{
             return;
-        }
+        }}
 
         if (!isUnicode)
-        {
+        {{
             reference = Marshal.StringToHGlobalAnsi(str);
-        }
+        }}
         else
-        {
+        {{
             reference = Marshal.StringToHGlobalUni(str);
-        }
+        }}
         isInitialized = true;
-    }
+    }}
 
     protected override void UnmanagedDisposeOverride()
-    {
+    {{
         base.UnmanagedDisposeOverride();
         if (isInitialized)
-        {
+        {{
             Marshal.FreeHGlobal(reference);
-        }
-    }
-}";
-            WriteLine(str);
+        }}
+    }}
+}}";
+            WriteLine(string.Format(classContent, DisposableClassName));
             PopBlock();
         }
 
         private void GenerateStringArrayReferenceClass()
         {
             PushBlock(CodeBlockKind.Class, "StringArrayReference");
-            var str =
-@"public class StringArrayReference : DisposableObject
-{
+            var classContent =
+@"public class StringArrayReference : {0}
+{{
     IntPtr[] stringReferences;
 
     GCHandle reference;
 
     public IntPtr Handle
-    {
+    {{
         get
-        {
+        {{
             if (reference.IsAllocated)
-            {
+            {{
                 return reference.AddrOfPinnedObject();
-            }
+            }}
             return IntPtr.Zero;
-        }
-    }
+        }}
+    }}
 
     public StringArrayReference(in string[] strArray, bool isUnicode)
-    {
+    {{
         if (strArray != null && strArray.Length > 0)
-        {
+        {{
             stringReferences = new IntPtr[strArray.Length];
             int cnt = 0;
             foreach (var str in strArray)
-            {
+            {{
                 if (!isUnicode)
-                {
+                {{
                     stringReferences[cnt++] = Marshal.StringToHGlobalAnsi(str);
-                }
+                }}
                 else
-                {
+                {{
                     stringReferences[cnt++] = Marshal.StringToHGlobalUni(str);
-                }
-            }
+                }}
+            }}
             reference = GCHandle.Alloc(stringReferences, GCHandleType.Pinned);
-        }
-    }
+        }}
+    }}
 
     protected override void UnmanagedDisposeOverride()
-    {
+    {{
         base.UnmanagedDisposeOverride();
         if (stringReferences != null)
-        {
+        {{
             foreach (var ptr in stringReferences)
-            {
+            {{
                 Marshal.FreeHGlobal(ptr);
-            }
+            }}
             reference.Free();
-        }
-    }
-}";
-            WriteLine(str);
+        }}
+    }}
+}}";
+            WriteLine(string.Format(classContent, DisposableClassName));
             PopBlock();
         }
 
         private void GenerateStructReferenceClass()
         {
-            var str =
-@"public class StructReference : DisposableObject
-{
+            var classContent =
+@"public class StructReference : {0}
+{{
     bool isInitialized;
     IntPtr reference;
 
     public IntPtr Handle => reference;
 
     public StructReference(object obj)
-    {
+    {{
         if (obj != null)
-        {
+        {{
             isInitialized = true;
             reference = MarshalUtils.MarshalStructToPtr(obj);
-        }
-    }
+        }}
+    }}
 
     protected override void UnmanagedDisposeOverride()
-    {
+    {{
         base.UnmanagedDisposeOverride();
         if (isInitialized)
-        {
+        {{
             Marshal.FreeHGlobal(reference);
-        }
-    }
-}";
+        }}
+    }}
+}}";
 
             PushBlock(CodeBlockKind.Class, "StructReference");
-            WriteLine(str);
+            WriteLine(string.Format(classContent, DisposableClassName));
             PopBlock();
         }
 

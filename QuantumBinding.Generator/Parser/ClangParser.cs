@@ -132,31 +132,6 @@ namespace QuantumBinding.Generator.Parser
 
             string inheritedEnumType = cursor.GetEnumUnderlyingType();
 
-            // Cross-plat hack:
-            // For whatever reason, libclang detects untyped enums (i.e. your average 'enum X { A, B }')
-            // as uints on Linux and ints on Windows.
-            // Since we want to have the same generated code everywhere, we try to force 'int'
-            // if it doesn't change semantics, i.e. if all enum values are in the right range.
-            // Remember that 2's complement ints use the same binary representation as uints for positive numbers.
-            if (inheritedEnumType == "uint")
-            {
-                long minValue = long.MaxValue;
-                long maxValue = long.MinValue;
-                clang.visitChildren(cursor, (cxCursor, visitor, cxData) =>
-                {
-                    long value = clang.getEnumConstantDeclValue(cxCursor);
-                    minValue = Math.Min(minValue, value);
-                    maxValue = Math.Max(maxValue, value);
-
-                    return CXChildVisitResult.CXChildVisit_Continue;
-                }, new CXClientData());
-
-                if (minValue < 0)
-                {
-                    inheritedEnumType = "int";
-                }
-            }
-
             var @enum = new Enumeration
             {
                 Location = Utils.GetCurrentCursorLocation(cursor),
@@ -173,12 +148,58 @@ namespace QuantumBinding.Generator.Parser
                 var enumItemDescriptor = new EnumerationItem
                 {
                     Name = clang.getCursorSpelling(cxCursor).ToString(),
-                    Value = clang.getEnumConstantDeclValue(cxCursor).ToString(),
+                    Value = clang.getEnumConstantDeclValue(cxCursor),
                     Comment = GetComment(cxCursor)
                 };
                 @enum.Items.Add(enumItemDescriptor);
                 return CXChildVisitResult.CXChildVisit_Continue;
             }, new CXClientData());
+
+            // Cross-plat hack:
+            // For whatever reason, libclang detects untyped enums (i.e. your average 'enum X { A, B }')
+            // as uints on Linux and ints on Windows.
+            // Since we want to have the same generated code everywhere, we try to force 'int'
+            // if it doesn't change semantics, i.e. if all enum values are in the right range.
+            // Remember that 2's complement ints use the same binary representation as uints for positive numbers.
+
+            var minValue = @enum.Items.Select(x => x.Value).Min();
+
+            if (minValue < 0)
+            {
+                switch (@enum.InheritanceType)
+                {
+                    case "uint":
+                        @enum.InheritanceType = "int";
+                        break;
+                    case "ushort":
+                        @enum.InheritanceType = "short";
+                        break;
+                    case "ulong":
+                        @enum.InheritanceType = "long";
+                        break;
+                    default:
+                        @enum.InheritanceType = "int";
+                        break;
+                }
+            }
+            else
+            {
+                switch (@enum.InheritanceType)
+                {
+                    case "int":
+                        @enum.InheritanceType = "uint";
+                        break;
+                    case "short":
+                        @enum.InheritanceType = "ushort";
+                        break;
+                    case "long":
+                        @enum.InheritanceType = "ulong";
+                        break;
+                    default:
+                        @enum.InheritanceType = "uint";
+                        break;
+                }
+            }
 
             AddDeclaration(@enum);
 
