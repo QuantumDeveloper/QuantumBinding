@@ -6,6 +6,7 @@
         NativeField,
         MethodParameter,
         NativeParameter,
+        NativeReturnType,
         DelegateParameter,
         SkipParamTypes,
         Property,

@@ -160,7 +160,7 @@ namespace QuantumBinding.Generator.Processors
             {
                 wrapper.IsDisposable = true;
             }
-            wrapper.DisposableBaseClass = "DisposableObject";
+            wrapper.DisposableBaseClass = FileExtensionGenerator.DisposableClassName;
             StringBuilder disposeBody = new StringBuilder();
             foreach (var field in wrapper.Fields)
             {

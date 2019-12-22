@@ -271,11 +271,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 return;
             }
 
-            if (@class.Name == "VkAllocationCallbacks")
-            {
-
-            }
-
             switch (@class.ClassType)
             {
                 case ClassType.Class:
@@ -505,11 +500,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             Write($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} delegate");
             PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
 
-            if (@delegate.Name == "ShadercIncludeResolveFn")
-            {
-
-            }
-            TypePrinter.PushMarshalType(MarshalTypes.NativeField);
+            TypePrinter.PushMarshalType(MarshalTypes.NativeReturnType);
             var returnType = @delegate.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {@delegate.Name}(");
             TypePrinter.PopMarshalType();
@@ -559,10 +550,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
-            if (function.Name == "shaderc_compile_options_set_include_callbacks")
-            {
 
-            }
             var @params = TypePrinter.VisitParameters(function.Parameters, MarshalTypes.NativeParameter);
             Write(@params.ToString());
             Write(");");
@@ -605,11 +593,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
             int index = 0;
             var wrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
-
-            if (method.Name == "UpdateDescriptorSets")
-            {
-
-            }
 
             for (var i = 0; i < method.Function.Parameters.Count; i++)
             {
@@ -1230,10 +1213,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 void ConvertPtrToWrappedStructArray()
                 {
-                    if (classDecl.Name == "getOverriddenCursors")
-                    {
-
-                    }
 
                     TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
                     var typeStrResult = parameter.Type.Visit(TypePrinter);
