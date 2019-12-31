@@ -15,7 +15,7 @@ namespace QuantumBinding.ClangGenerator
         public override void OnSetup(BindingOptions options)
         {
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
-            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang"/*, "Generated"*/));
+            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
             string library = "libclang";
             options.GenerateSequentialLayout = true;
             options.DebugMode = false;
@@ -23,26 +23,23 @@ namespace QuantumBinding.ClangGenerator
             var clangModule = options.AddModule(library);
             clangModule.Defines.Add("_MSC_VER");
             clangModule.Defines.Add("_CINDEX_LIB_");
-            //clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c");
-            clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\Documentation.h");
+            clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include");
+            clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c");
+            clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c\Documentation.h");
             //clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c\Documentation.h");
             clangModule.ForceCallingConvention = true;
-            clangModule.AllowConvertStructToClass = false;
+            clangModule.AllowConvertStructToClass = true;
             clangModule.CallingConvention = CallingConvention.Cdecl;
             clangModule.MethodClassName = "clang";
             clangModule.InteropClassName = "ClangInterop";
-            clangModule.GeneratorSpecializations = GeneratorSpecializations.Classes |
-                                                    GeneratorSpecializations.Enums |
-                                                    GeneratorSpecializations.Functions |
-                                                    GeneratorSpecializations.Delegates |
-                                                    GeneratorSpecializations.Structs |
-                                                    GeneratorSpecializations.Unions;
+            clangModule.GeneratorSpecializations = GeneratorSpecializationUtil.AllExcept(GeneratorSpecializations.Constants); 
             clangModule.OutputPath = outputPath;
             clangModule.OutputFileName = "QuantumBinding.Clang";
             clangModule.OutputNamespace = "QuantumBinding.Clang";
             clangModule.SuppressUnmanagedCodeSecurity = false;
-            clangModule.WrapInteropObjects = false;
+            clangModule.WrapInteropObjects = true;
 
+            Module.GenerateUtilsForModule = clangModule;
             Module.UtilsOutputName = "Utils";
             Module.UtilsNamespace = clangModule.OutputNamespace;
         }
@@ -52,7 +49,13 @@ namespace QuantumBinding.ClangGenerator
             context.AddPreGeneratorPass(new FunctionToInstanceMethodAction(), ExecutionPassKind.PerTranslationUnit);
             context.AddPreGeneratorPass(new ForceCallingConventionPass(CallingConvention.Cdecl), ExecutionPassKind.PerTranslationUnit);
             context.AddPreGeneratorPass(new CheckFlagEnumsPass(), ExecutionPassKind.PerTranslationUnit);
+        }
+
+        public override void OnSetupComplete(ProcessingContext context)
+        {
+            base.OnSetupComplete(context);
             context.AddPreGeneratorPass(new RegexRenamePass("^clang_", "", RenameTargets.Method, true), ExecutionPassKind.PerTranslationUnit);
+            context.AddPreGeneratorPass(new RegexRenamePass("^CX", "QB", RenameTargets.Class | RenameTargets.StructWrapper | RenameTargets.UnionWrapper, true), ExecutionPassKind.PerTranslationUnit);
         }
 
         private void AddFunctionsToFix(ProcessingContext ctx)
@@ -280,9 +283,25 @@ namespace QuantumBinding.ClangGenerator
                 .WithField("indexDeclaration")
                 .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("indexEntityReference")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void)); 
+                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void));
 
-             var fixingFunctionParameters = new PostProcessingApiPass(api);
+            api.Class("CXIdxEntityInfo")
+                .WithField("attributes")
+                .TreatAsPointerToArray(new CustomType("CXIdxAttrInfo"), true, "numAttributes");
+
+            api.Class("CXIdxDeclInfo")
+                .WithField("attributes")
+                .TreatAsPointerToArray(new CustomType("CXIdxAttrInfo"), true, "numAttributes");
+
+            api.Class("CXIdxObjCProtocolRefListInfo")
+                .WithField("protocols")
+                .TreatAsPointerToArray(new CustomType("CXIdxObjCProtocolRefInfo"), true, "numProtocols");
+
+            api.Class("CXIdxCXXClassDeclInfo")
+                .WithField("bases")
+                .TreatAsPointerToArray(new CustomType("CXIdxBaseClassInfo"), true, "numBases");
+
+            var fixingFunctionParameters = new PostProcessingApiPass(api);
             ctx.AddPreGeneratorPass(fixingFunctionParameters, ExecutionPassKind.PerTranslationUnit);
         }
     }

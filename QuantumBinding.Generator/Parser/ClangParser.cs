@@ -134,7 +134,7 @@ namespace QuantumBinding.Generator.Parser
 
             var @enum = new Enumeration
             {
-                Location = Utils.GetCurrentCursorLocation(cursor),
+                Location = ClangUtils.GetCurrentCursorLocation(cursor),
                 Name = enumName,
                 InheritanceType = inheritedEnumType,
                 Comment = GetComment(cursor)
@@ -236,7 +236,7 @@ namespace QuantumBinding.Generator.Parser
             {
                 Name = structName,
                 ClassType = ClassType.Struct,
-                Location = Utils.GetCurrentCursorLocation(cursor),
+                Location = ClangUtils.GetCurrentCursorLocation(cursor),
                 Comment = GetComment(cursor)
             };
 
@@ -329,7 +329,7 @@ namespace QuantumBinding.Generator.Parser
 
                     var @class = new Class
                     {
-                        Location = Utils.GetCurrentCursorLocation(cursor),
+                        Location = ClangUtils.GetCurrentCursorLocation(cursor),
                         Name = spelling,
                         IsTypedef = true,
                         IsPointer = true,
@@ -337,6 +337,20 @@ namespace QuantumBinding.Generator.Parser
                         InnerStruct = unit.AllClasses.FirstOrDefault(x => x.Name == pointeeName),
                         Comment = GetComment(cursor)
                     };
+
+                    if (convertToClass && classType == ClassType.Class && @class.InnerStruct == null)
+                    {
+                        var @struct = (Class)@class.Clone();
+                        @struct.ClassType = ClassType.Struct;
+                        @struct.Name += "Impl";
+                        var field1 = new Field();
+                        field1.AccessSpecifier = AccessSpecifier.Public;
+                        field1.Name = "pointer";
+                        field1.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                        @struct.AddField(field1);
+                        AddDeclaration(@struct);
+                        @class.InnerStruct = @struct;
+                    }
 
                     if (@class.InnerStruct != null)
                     {
@@ -352,7 +366,8 @@ namespace QuantumBinding.Generator.Parser
                     {
                         field.AccessSpecifier = AccessSpecifier.Internal;
                         field.Name = "__Instance";
-                        field.Type = new CustomType(pointeeName);
+                        field.Type = new CustomType(@class.InnerStruct.Name);
+                        field.Type.Declaration = @class.InnerStruct;
                     }
                     else if (classType == ClassType.Struct)
                     {
@@ -362,14 +377,6 @@ namespace QuantumBinding.Generator.Parser
                     }
 
                     @class.AddField(field);
-
-                    var getter = new Method();
-                    getter.Class = @class;
-                    getter.AccessSpecifier = AccessSpecifier.Public;
-
-                    var setter = new Method();
-                    setter.Class = @class;
-                    setter.AccessSpecifier = AccessSpecifier.Internal;
 
                     var op = new Operator();
                     op.Class = @class;
@@ -389,7 +396,7 @@ namespace QuantumBinding.Generator.Parser
                     {
                         Constructor defaultCtr = new Constructor() {Class = @class, IsDefault = true};
                         @class.Constructors.Add(defaultCtr);
-                        
+
                         Constructor ctr = new Constructor() { Class = @class };
                         ctr.InputParameters.Add(field);
                         @class.Constructors.Add(ctr);
@@ -414,7 +421,7 @@ namespace QuantumBinding.Generator.Parser
                 if (pointee.kind == CXTypeKind.CXType_FunctionProto)
                 {
                     var callback = new Delegate();
-                    callback.Location = Utils.GetCurrentCursorLocation(cursor);
+                    callback.Location = ClangUtils.GetCurrentCursorLocation(cursor);
                     callback.CallingConvention = pointee.GetCallingConvention();
                     callback.ReturnType = clang.getResultType(pointee).GetBindingType();
                     callback.Name = spelling;
@@ -431,7 +438,7 @@ namespace QuantumBinding.Generator.Parser
                     {
                         if (cxCursor.kind == CXCursorKind.CXCursor_ParmDecl)
                         {
-                            var argumentDescriptor = Utils.ArgumentHelper(pointee, cxCursor, argumentCounter);
+                            var argumentDescriptor = ClangUtils.ArgumentHelper(pointee, cxCursor, argumentCounter);
                             argumentCounter++;
                             argumentDescriptor.Parent = callback;
                             callback.Parameters.Add(argumentDescriptor);
@@ -454,7 +461,7 @@ namespace QuantumBinding.Generator.Parser
                 var @class = new Class
                 {
                     ClassType = ClassType.Struct,
-                    Location = Utils.GetCurrentCursorLocation(cursor),
+                    Location = ClangUtils.GetCurrentCursorLocation(cursor),
                     Name = spelling,
                     IsTypedef = true,
                     IsSimpleType = true,
@@ -507,13 +514,13 @@ namespace QuantumBinding.Generator.Parser
             }
 
             this.visitedFunctions.Add(functionName);
-            var function = Utils.GetFunctionInfo(cursor);
+            var function = ClangUtils.GetFunctionInfo(cursor);
             if (unit.Module.SuppressUnmanagedCodeSecurity)
             {
                 function.SuppressUnmanagedCodeSecurity = true;
             }
             function.Comment = GetComment(cursor);
-            function.Location = Utils.GetCurrentCursorLocation(cursor);
+            function.Location = ClangUtils.GetCurrentCursorLocation(cursor);
             AddDeclaration(function);
 
             return CXChildVisitResult.CXChildVisit_Continue;
@@ -531,7 +538,7 @@ namespace QuantumBinding.Generator.Parser
             visitedMacros.Add(macroName);
 
             var macro = new Macro();
-            macro.Location = Utils.GetCurrentCursorLocation(cursor);
+            macro.Location = ClangUtils.GetCurrentCursorLocation(cursor);
             macro.Name = macroName;
             macro.IsBuiltIn = clang.Cursor_isMacroBuiltin(cursor) != 0;
             macro.IsFunctionLike = clang.Cursor_isMacroFunctionLike(cursor) != 0;

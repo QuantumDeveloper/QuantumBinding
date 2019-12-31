@@ -13,12 +13,14 @@ namespace QuantumBinding.Generator.AST
             AccessSpecifier = AccessSpecifier.Public;
             Fields = new List<Field>();
             methods = new List<Method>();
-            Properties = new List<Property>();
+            properties = new List<Property>();
             Constructors = new List<Constructor>();
             Operators = new List<Operator>();
         }
 
         private List<Method> methods { get; }
+
+        private List<Property> properties { get; }
 
         public ClassType ClassType { get; set; }
 
@@ -51,7 +53,7 @@ namespace QuantumBinding.Generator.AST
 
         public List<Field> Fields { get; }
 
-        public List<Property> Properties { get; }
+        public IReadOnlyCollection<Property> Properties => properties.AsReadOnly();
 
         public List<Constructor> Constructors { get; }
 
@@ -76,16 +78,42 @@ namespace QuantumBinding.Generator.AST
             Constructors.Add(ctor);
         }
 
-        public void AddField(Field field)
+        public bool AddField(Field field)
         {
-            field.Class = this;
-            Fields.Add(field);
+            var f = Fields.FirstOrDefault(x => x.Name == field.Name);
+            if (f == null)
+            {
+                field.Class = this;
+                Fields.Add(field);
+            }
+
+            return f == null;
         }
 
         public void RemoveField(Field field)
         {
             field.Class = null;
             Fields.Remove(field);
+        }
+
+        public bool AddProperty(Property prop)
+        {
+            var property = properties.FirstOrDefault(x => x.Name == prop.Name);
+            if (property == null)
+            {
+                properties.Add(prop);
+            }
+
+            return property == null;
+        }
+
+        public void RemoveProperty(string name)
+        {
+            var property = properties.FirstOrDefault(x => x.Name == name);
+            if (property != null)
+            {
+                properties.Remove(property);
+            }
         }
 
         public void AddMethod(Method method)

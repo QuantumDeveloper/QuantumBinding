@@ -33,7 +33,7 @@ namespace QuantumBinding.Generator.Processors
 
         private void UpdateMethodParameters(Method method)
         {
-            if (method.Name == "VkCreateWin32SurfaceKHR")
+            if (method.Name == "Clang_getExpansionLocation")
             {
 
             }
@@ -44,17 +44,17 @@ namespace QuantumBinding.Generator.Processors
                 if (decl == null || (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)) continue;
                 if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) continue;
 
-                if (decl.Name == "ImageView")
-                {
-
-                }
-
                 Class declaration = null;
                 foreach (var unit in AstContext.TranslationUnits)
                 {
                     if (decl.ClassType == ClassType.Struct)
                     {
                         declaration = unit.StructWrappers.FirstOrDefault(x => x.Id == decl.Id);
+
+                        if (declaration == null)
+                        {
+                            declaration = unit.Classes.FirstOrDefault(x => x.Id == decl.Id);
+                        }
                     }
                     else if (decl.ClassType == ClassType.Union)
                     {

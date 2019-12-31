@@ -238,7 +238,7 @@ namespace QuantumBinding.Generator.Processors
                 property.Setter = propertyFix.Setter ? new Method() : null;
                 property.Field = new Field(propertyFix.Field.Name);
 
-                @class.Properties.Add(property);
+                @class.AddProperty(property);
             }
 
             return true;
