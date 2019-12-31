@@ -10,7 +10,7 @@ namespace QuantumBinding.Generator.AST
     {
         protected DeclarationUnit()
         {
-            declarations = new List<DeclarationUnit>();
+            declarations = new List<Declaration>();
             Namespaces = new List<Namespace>();
         }
 
@@ -19,7 +19,7 @@ namespace QuantumBinding.Generator.AST
             DummyTypes = new Dictionary<string, string>();
         }
 
-        private List<DeclarationUnit> declarations;
+        private List<Declaration> declarations;
 
         public List<Namespace> Namespaces { get; private set; }
 
@@ -35,6 +35,8 @@ namespace QuantumBinding.Generator.AST
 
         public ReadOnlyCollection<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList().AsReadOnly();
 
+        public ReadOnlyCollection<Class> Wrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper || x.ClassType == ClassType.UnionWrapper).ToList().AsReadOnly();
+
         public ReadOnlyCollection<Class> StructWrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList().AsReadOnly();
 
         public ReadOnlyCollection<Class> UnionWrappers => AllClasses.Where(x => x.ClassType == ClassType.UnionWrapper).ToList().AsReadOnly();
@@ -47,9 +49,9 @@ namespace QuantumBinding.Generator.AST
 
         public ReadOnlyCollection<Method> Methods => declarations.Where(x => x is Method).Cast<Method>().ToList().AsReadOnly();
 
-        public ReadOnlyCollection<DeclarationUnit> Declarations => declarations.AsReadOnly();
+        public ReadOnlyCollection<Declaration> Declarations => declarations.AsReadOnly();
 
-        public ReadOnlyCollection<DeclarationUnit> IgnoredDeclarations =>
+        public ReadOnlyCollection<Declaration> IgnoredDeclarations =>
             declarations.Where(x => x.IsIgnored).ToList().AsReadOnly();
 
         public static Dictionary<string, string> DummyTypes { get; }
@@ -129,9 +131,9 @@ namespace QuantumBinding.Generator.AST
             }
         }
 
-        public IEnumerable<DeclarationUnit> FindDeclarationsBySourceLocation(string fileName, bool remove)
+        public IEnumerable<Declaration> FindDeclarationsBySourceLocation(string fileName, bool remove)
         {
-            var declsOutput = new List<DeclarationUnit>();
+            var declsOutput = new List<Declaration>();
 
             if (remove)
             {
@@ -147,7 +149,7 @@ namespace QuantumBinding.Generator.AST
             return declsOutput;
         }
 
-        public void AddDeclarations(IEnumerable<DeclarationUnit> decs)
+        public void AddDeclarations(IEnumerable<Declaration> decs)
         {
             foreach (var declaration in decs)
             {
@@ -155,17 +157,59 @@ namespace QuantumBinding.Generator.AST
             }
         }
 
-        public void AddDeclaration(DeclarationUnit declaration)
+        public void AddDeclaration(Declaration declaration)
         {
-            declarations.Add(declaration);
+            Declaration decl = null;
+            switch(declaration)
+            {
+                case Enumeration @enum:
+                    decl = Enums.FirstOrDefault(x => x.Name == declaration.Name);
+                    break;
+                case Class @class:
+                    switch (@class.ClassType)
+                    {
+                        case ClassType.Class:
+                            decl = Classes.FirstOrDefault(x => x.Name == declaration.Name);
+                            break;
+                        case ClassType.Struct:
+                            decl = Structs.FirstOrDefault(x => x.Name == declaration.Name);
+                            break;
+                        case ClassType.Union:
+                            decl = Unions.FirstOrDefault(x => x.Name == declaration.Name);
+                            break;
+                        case ClassType.StructWrapper:
+                            if (declaration.Name == "VkBaseOutStructure")
+                            {
+
+                            }
+                            decl = StructWrappers.FirstOrDefault(x => x.Name == declaration.Name);
+                            break;
+                        case ClassType.UnionWrapper:
+                            decl = UnionWrappers.FirstOrDefault(x => x.Name == declaration.Name);
+                            break;
+                    }
+                    break;
+            }
+
+            if (decl == null)
+            {
+                declarations.Add(declaration);
+            }
         }
 
-        private void RemoveDeclaration(DeclarationUnit declaration)
+        public void RemoveDeclaration(Declaration declaration)
         {
             declarations.Remove(declaration);
         }
 
-        public DeclarationUnit FindDeclaration(CustomType customType)
+        public bool IsWrapperPresent(string declName, out Declaration declaration)
+        {
+            var wrapper = Wrappers.FirstOrDefault(x => x.Name == declName);
+            declaration = wrapper;
+            return wrapper != null;
+        }
+
+        public Declaration FindDeclaration(CustomType customType)
         {
             if (customType == null)
                 return null;

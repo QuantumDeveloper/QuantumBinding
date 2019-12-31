@@ -658,6 +658,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                                 WritePointerToSimpleType();
                             }
                         }
+                        else if (classDecl.ClassType == ClassType.StructWrapper || classDecl.ClassType == ClassType.UnionWrapper)
+                        {
+                            WriteWrappedStruct();
+                        }
                         else // structs without pointers, simple types
                         {
                             if (parameter.ParameterKind == ParameterKind.Out &&
@@ -743,8 +747,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                         {
                             if (!parameter.Type.IsPointer())
                             {
+                                TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
                                 textGenerator.WriteLine(
                                     $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {parameter.Type.Visit(TypePrinter)}() : ({classDecl.InnerStruct.Name}){parameter.Name};");
+                                TypePrinter.PopMarshalType();
                             }
                             else
                             {
@@ -807,6 +813,34 @@ namespace QuantumBinding.Generator.CodeGeneration
                     {
                         textGenerator.WriteLine($"{classDecl.InnerStruct.Name} {argumentName};");
                         actions.Add(ConvertOutStructToClass);
+                    }
+                }
+
+                void WriteWrappedStruct()
+                {
+                    var type = parameter.Type;
+                    TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+                    var interopType = parameter.WrappedType.Visit(TypePrinter).Type;
+                    TypePrinter.PopMarshalType();
+
+                    if (parameter.ParameterKind == ParameterKind.In ||
+                        parameter.ParameterKind == ParameterKind.Readonly ||
+                        parameter.ParameterKind == ParameterKind.InOut)
+                    {
+                        textGenerator.WriteLine($"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {classDecl.AlternativeNamespace}.{interopType}() : {parameter.Name}.{ConversionMethodName};");
+                        actions.Add(DisposeWrapper);
+                    }
+                    else if (parameter.ParameterKind == ParameterKind.Out)
+                    {
+                        if (wrapInteropObjects)
+                        {
+                            textGenerator.WriteLine($"{parameter.WrappedType.Declaration.Name} {argumentName};");
+                            actions.Add(ConvertOutStructToClass);
+                        }
+                        else
+                        {
+                            argumentName = parameter.Name;
+                        }
                     }
                 }
 

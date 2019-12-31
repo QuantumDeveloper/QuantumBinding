@@ -23,11 +23,7 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (@class.Name == "VkBool32")
-            {
-
-            }
-
+            // Create wrappers only for structs and unions
             if ((@class.ClassType != ClassType.Struct && @class.ClassType != ClassType.Union)
                 || @class.IsSimpleType 
                 || @class.ConnectedTo != null)
@@ -42,15 +38,25 @@ namespace QuantumBinding.Generator.Processors
 
         private void CreateStructWrapper(Class @class)
         {
-            var wrapper = (Class)@class.Clone();
-            wrapper.Name = @class.Name[0].ToString().ToUpper()+@class.Name.Substring(1);
-            if (@class.ClassType == ClassType.Struct)
+            Class wrapper;
+            if (!CurrentNamespace.IsWrapperPresent(@class.Name, out var wrapperDecl))
             {
-                wrapper.ClassType = ClassType.StructWrapper;
+                wrapper = (Class)@class.Clone();
+                wrapper.Name = @class.Name[0].ToString().ToUpper() + @class.Name.Substring(1);
+                if (@class.ClassType == ClassType.Struct)
+                {
+                    wrapper.ClassType = ClassType.StructWrapper;
+                }
+                else if (@class.ClassType == ClassType.Union)
+                {
+                    wrapper.ClassType = ClassType.UnionWrapper;
+                }
+
+                CurrentNamespace.AddDeclaration(wrapper);
             }
-            else if (@class.ClassType == ClassType.Union)
+            else
             {
-                wrapper.ClassType = ClassType.UnionWrapper;
+                wrapper = (Class)wrapperDecl;
             }
 
             var innerWrapperField = new Field("_internal");
@@ -80,15 +86,23 @@ namespace QuantumBinding.Generator.Processors
                 {
                     if ((declaration.ClassType == ClassType.Struct && declaration.ConnectedTo == null) || declaration.ClassType == ClassType.Union)
                     {
-                        var declarationCopy = (Class) declaration.Clone();
-                        declarationCopy.ClassType = ClassType.StructWrapper;
-                        if (declaration.ClassType == ClassType.Union)
+                        if (CurrentNamespace.IsWrapperPresent(declaration.Name, out wrapperDecl))
                         {
-                            declarationCopy.ClassType = ClassType.UnionWrapper;
+                            property.Type.Declaration = wrapperDecl;
                         }
+                        else
+                        {
+                            var declarationCopy = (Class)declaration.Clone();
+                            declarationCopy.ClassType = ClassType.StructWrapper;
+                            if (declaration.ClassType == ClassType.Union)
+                            {
+                                declarationCopy.ClassType = ClassType.UnionWrapper;
+                            }
 
-                        declarationCopy.WrappedStruct = declaration;
-                        property.Type.Declaration = declarationCopy;
+                            declarationCopy.WrappedStruct = declaration;
+                            property.Type.Declaration = declarationCopy;
+                            CurrentNamespace.AddDeclaration(declarationCopy);
+                        }
                     }
                     else
                     {
@@ -153,7 +167,7 @@ namespace QuantumBinding.Generator.Processors
                     property.Setter = new Method();
                 }
 
-                wrapper.Properties.Add(property);
+                wrapper.AddProperty(property);
             }
 
             if (pointersCount > 0)
@@ -170,8 +184,6 @@ namespace QuantumBinding.Generator.Processors
                 }
             }
             wrapper.DisposeBody = disposeBody.ToString();
-
-            CurrentNamespace.AddDeclaration(wrapper);
         }
     }
 }

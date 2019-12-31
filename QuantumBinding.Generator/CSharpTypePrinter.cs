@@ -96,6 +96,7 @@ namespace QuantumBinding.Generator
                 return Result("string", "", "[MarshalAs(UnmanagedType.LPWStr)]");
             }
 
+            array.ElementType.Declaration = array.Declaration;
             var visitResult = array.ElementType.Visit(this).ToString();
             return Result($"{visitResult}[]");
         }
@@ -208,6 +209,7 @@ namespace QuantumBinding.Generator
 
                     if (MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty)
                     {
+                        pointer.Pointee.Declaration = pointer.Declaration;
                         return pointer.Pointee.Visit(this);
                     }
 
@@ -216,8 +218,20 @@ namespace QuantumBinding.Generator
 
                 if (pointer.IsPointerToStruct() && !pointer.IsSimpleType())
                 {
-                    if ((@class.ClassType == ClassType.Struct || @class.ClassType == ClassType.Union) &&
-                        (MarshalType == MarshalTypes.DelegateParameter || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty))
+                    if (
+                        (
+                        @class.ClassType == ClassType.Struct ||
+                        @class.ClassType == ClassType.Union ||
+                        @class.ClassType == ClassType.StructWrapper ||
+                        @class.ClassType == ClassType.UnionWrapper
+                        ) &&
+                        (
+                        MarshalType == MarshalTypes.DelegateParameter ||
+                        MarshalType == MarshalTypes.MethodParameter ||
+                        MarshalType == MarshalTypes.Property ||
+                        MarshalType == MarshalTypes.WrappedProperty
+                        )
+                        )
                     {
                         pointer.Pointee.Declaration = pointer.Declaration;
                         if (@class.ClassType == ClassType.Struct && MarshalType == MarshalTypes.DelegateParameter)
@@ -421,7 +435,7 @@ namespace QuantumBinding.Generator
                 }
 
                 if ((@class.ClassType == ClassType.StructWrapper || @class.ClassType == ClassType.UnionWrapper) &&
-                    MarshalType == MarshalTypes.WrappedProperty)
+                    (MarshalType == MarshalTypes.WrappedProperty || MarshalType == MarshalTypes.MethodParameter))
                 {
                     return @class.Name;
                 }
@@ -437,7 +451,11 @@ namespace QuantumBinding.Generator
                     return @class.UnderlyingNativeType.Visit(this);
                 }
 
-                if (@class.ClassType == ClassType.Class && MarshalType == MarshalTypes.MethodParameter)
+                if (@class.ClassType == ClassType.Class && 
+                    (
+                    MarshalType == MarshalTypes.MethodParameter || 
+                    MarshalType == MarshalTypes.WrappedProperty || 
+                    MarshalType == MarshalTypes.Property))
                 {
                     return @class.Name;
                 }

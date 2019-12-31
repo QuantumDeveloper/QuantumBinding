@@ -18,7 +18,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         }
 
         private FileExtensionKind extensionKind;
-        public static string DisposableClassName = "VulkanDisposableObject";
+        public static string DisposableClassName => "QBDisposableObject";
 
         public override void Run()
         {

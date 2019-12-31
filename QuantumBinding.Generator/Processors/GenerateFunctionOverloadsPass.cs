@@ -21,10 +21,6 @@ namespace QuantumBinding.Generator.Processors
             }
 
             List<Parameter> parameters = new List<Parameter>();
-            if (function.Name == "vkQueueSubmit")
-            {
-
-            }
 
             foreach (var parameter in function.Parameters)
             {

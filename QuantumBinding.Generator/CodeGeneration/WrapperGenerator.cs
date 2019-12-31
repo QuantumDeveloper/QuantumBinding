@@ -140,6 +140,11 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine(classVisitResult);
             }
 
+            if (@class.Name == "BaseOutStructure")
+            {
+
+            }
+
             WriteOpenBraceAndIndent();
 
             GenerateFields(@class);
@@ -552,6 +557,11 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateWrappedProperties(Class @class)
         {
+            if (@class.Name == "QBCompletionResult")
+            {
+
+            }
+
             foreach (var property in @class.Properties)
             {
                 AddUsingIfNeeded(property.Type);
@@ -649,7 +659,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             var arrayPtr = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
             var arraySizeFieldName = $"{parentClass.WrappedStructFieldName}.{arrayType.ArraySizeSource}";
-            TypePrinter.PushMarshalType(MarshalTypes.Property);
+            TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
             var arrayElementType = arrayType.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             TypePrinter.PushMarshalType(MarshalTypes.NativeField);
@@ -745,6 +755,15 @@ namespace QuantumBinding.Generator.CodeGeneration
                 {
                     WriteLine($"{property.Name} = {tempField};");
                 }
+            }
+            else if (arrayType.ElementType.IsPurePointer())
+            {
+                var propertyArrayElementType = arrayType.ElementType.Visit(TypePrinter);
+                WriteLine($"{property.Name} = new {propertyArrayElementType}[{size}];");
+                WriteLine($"for (int i = 0; i < {size}; ++i)");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{property.Name}[i] = {parentClass.WrappedStructFieldName}.{property.Field.Name}[i];");
+                UnindentAndWriteCloseBrace();
             }
             else if (arrayType.Declaration is Enumeration)
             {
@@ -910,6 +929,15 @@ namespace QuantumBinding.Generator.CodeGeneration
                 }
                 UnindentAndWriteCloseBrace();
                 UnindentAndWriteCloseBrace();
+                UnindentAndWriteCloseBrace();
+            }
+            else if (arrayType.ElementType.IsPurePointer())
+            {
+                var propertyArrayElementType = arrayType.ElementType.Visit(TypePrinter);
+                WriteLine($"{property.Name} = new {propertyArrayElementType}[{size}];");
+                WriteLine($"for (int i = 0; i < {size}; ++i)");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = {property.Name}[i];");
                 UnindentAndWriteCloseBrace();
             }
             else if (arrayType.Declaration is Enumeration @enum)

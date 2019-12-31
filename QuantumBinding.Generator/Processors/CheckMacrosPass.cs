@@ -26,7 +26,7 @@ namespace QuantumBinding.Generator.Processors
                 macro.Value = macro.Value[1..^1];
             }
 
-            macro.Type = Utils.GetMacroType(macro.Value);
+            macro.Type = ClangUtils.GetMacroType(macro.Value);
 
             return true;
         }

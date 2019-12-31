@@ -230,7 +230,7 @@ namespace QuantumBinding.Generator.Types
                 return false;
             }
 
-            if (decl.ClassType != ClassType.Struct)
+            if ((decl.ClassType != ClassType.Struct) && (decl.ClassType != ClassType.StructWrapper))
             {
                 return false;
             }

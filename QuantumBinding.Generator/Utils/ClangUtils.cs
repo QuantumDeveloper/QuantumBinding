@@ -9,7 +9,7 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Generator
 {
-    internal static partial class Utils
+    internal static partial class ClangUtils
     {
         public static bool IsInSystemHeader(this CXCursor cursor)
         {

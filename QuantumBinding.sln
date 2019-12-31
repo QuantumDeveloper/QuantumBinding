@@ -9,24 +9,48 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangGenerat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Clang", "QuantumBinding.Clang\QuantumBinding.Clang.csproj", "{7E8412B8-C462-4B54-A699-17A49AFEB6E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuantumBinding.ClangPlayground", "QuantumBinding.ClangPlayground\QuantumBinding.ClangPlayground.csproj", "{F17A117C-F270-4570-BC2F-ACDBDC5F8095}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Debug|x64.ActiveCfg = Debug|x64
 		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Debug|x64.Build.0 = Debug|x64
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Release|x64.ActiveCfg = Release|x64
 		{B95CDA41-B72D-4E22-B439-097E49EBEE82}.Release|x64.Build.0 = Release|x64
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Debug|x64.ActiveCfg = Debug|x64
 		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Debug|x64.Build.0 = Debug|x64
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Release|x64.ActiveCfg = Release|x64
 		{3E928F6F-5EC3-405A-BEB7-4C6D95F456F6}.Release|x64.Build.0 = Release|x64
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Debug|x64.ActiveCfg = Debug|x64
 		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Debug|x64.Build.0 = Debug|x64
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|x64.ActiveCfg = Release|x64
 		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|x64.Build.0 = Release|x64
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.Build.0 = Debug|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|x64.ActiveCfg = Release|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
