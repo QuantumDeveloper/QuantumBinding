@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangGenerat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Clang", "QuantumBinding.Clang\QuantumBinding.Clang.csproj", "{7E8412B8-C462-4B54-A699-17A49AFEB6E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuantumBinding.ClangPlayground", "QuantumBinding.ClangPlayground\QuantumBinding.ClangPlayground.csproj", "{F17A117C-F270-4570-BC2F-ACDBDC5F8095}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangPlayground", "QuantumBinding.ClangPlayground\QuantumBinding.ClangPlayground.csproj", "{F17A117C-F270-4570-BC2F-ACDBDC5F8095}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,8 +45,7 @@ Global
 		{7E8412B8-C462-4B54-A699-17A49AFEB6E1}.Release|x64.Build.0 = Release|x64
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.Build.0 = Debug|Any CPU
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.ActiveCfg = Debug|x64
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|x64.ActiveCfg = Release|Any CPU

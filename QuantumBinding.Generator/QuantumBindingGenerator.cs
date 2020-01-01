@@ -156,8 +156,6 @@ namespace QuantumBinding.Generator
                     clang.disposeIndex(createIndex);
                 }
             }
-
-
         }
 
         public virtual void OnSetup(BindingOptions options) {}
@@ -194,6 +192,7 @@ namespace QuantumBinding.Generator
                 {
                     processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
                     processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
+                    processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
 
                     processingCtx.AddCodeGenerationPass(new WrappersGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
                 }

@@ -7,7 +7,7 @@ using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.CodeGeneration
 {
-    public class WrapperGenerator : CSharpCodeGeneratorBase
+    public class WrapperGenerator : CSharpCodeGenerator
     {
         public WrapperGenerator(ProcessingContext context, TranslationUnit unit, GeneratorSpecializations specializations) : 
             base(context, unit, specializations)
@@ -140,7 +140,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine(classVisitResult);
             }
 
-            if (@class.Name == "BaseOutStructure")
+            if (@class.Name == "QBCodeCompleteResults")
             {
 
             }
@@ -152,6 +152,8 @@ namespace QuantumBinding.Generator.CodeGeneration
             GenerateConstructors(@class);
 
             GenerateWrappedProperties(@class);
+
+            GenerateMethods(@class);
 
             GenerateConversionMethod(@class);
 
@@ -557,11 +559,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateWrappedProperties(Class @class)
         {
-            if (@class.Name == "QBCompletionResult")
-            {
-
-            }
-
             foreach (var property in @class.Properties)
             {
                 AddUsingIfNeeded(property.Type);

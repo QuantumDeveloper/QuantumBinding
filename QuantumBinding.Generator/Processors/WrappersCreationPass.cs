@@ -74,6 +74,15 @@ namespace QuantumBinding.Generator.Processors
             ctor.InputParameters.Add(innerWrapperField);
             wrapper.Constructors.Add(ctor);
 
+            var op = new Operator();
+            op.Class = wrapper;
+            op.PassValueToConstructor = true;
+            op.Type = new CustomType(@class.Name);
+            op.Type.Declaration = @class;
+            op.TransformationKind = TransformationKind.FromValueToClass;
+            op.OperatorKind = OperatorKind.Implicit;
+            wrapper.Operators.Add(op);
+
             int pointersCount = 0;
             foreach (var field in @class.Fields)
             {
