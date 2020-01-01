@@ -380,16 +380,19 @@ namespace QuantumBinding.Generator.Parser
 
                     var op = new Operator();
                     op.Class = @class;
-                    op.Field = field;
+                    op.FieldName = field.Name;
+                    op.Type = field.Type;
                     op.TransformationKind = TransformationKind.FromClassToValue;
                     op.OperatorKind = OperatorKind.Implicit;
                     @class.Operators.Add(op);
 
                     op = new Operator();
                     op.Class = @class;
-                    op.Field = field;
+                    op.FieldName = field.Name;
+                    op.Type = field.Type;
                     op.TransformationKind = TransformationKind.FromValueToClass;
                     op.OperatorKind = OperatorKind.Implicit;
+                    op.PassValueToConstructor = true;
                     @class.Operators.Add(op);
 
                     if (convertToClass)
@@ -483,7 +486,8 @@ namespace QuantumBinding.Generator.Parser
                 var op = new Operator
                 {
                     Class = @class,
-                    Field = field,
+                    FieldName = field.Name,
+                    Type = field.Type,
                     TransformationKind = TransformationKind.FromClassToValue,
                     OperatorKind = OperatorKind.Implicit
                 };
@@ -492,7 +496,8 @@ namespace QuantumBinding.Generator.Parser
                 op = new Operator
                 {
                     Class = @class,
-                    Field = field,
+                    FieldName = field.Name,
+                    Type = field.Type,
                     TransformationKind = TransformationKind.FromValueToClass,
                     OperatorKind = OperatorKind.Implicit
                 };

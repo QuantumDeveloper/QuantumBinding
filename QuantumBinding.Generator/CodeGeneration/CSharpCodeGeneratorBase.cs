@@ -265,47 +265,61 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             PushBlock(CodeBlockKind.Operator, @operator);
             var variableName = @operator.Class.Name[0].ToString().ToLower();
-            string @namespace = @operator.Field.Type.Declaration?.AlternativeNamespace;
-            if (string.IsNullOrEmpty(@namespace) && !@operator.Field.Type.IsSimpleType())
+            string @namespace = @operator.Type.Declaration?.AlternativeNamespace;
+            if (string.IsNullOrEmpty(@namespace) && !@operator.Type.IsSimpleType())
             {
-                @namespace = $"{@operator.Field.Type.Declaration?.Owner.FullNamespace}";
+                @namespace = $"{@operator.Type.Declaration?.Owner.FullNamespace}";
             }
 
-            var decl = @operator.Field.Type.Declaration as Class;
+            var decl = @operator.Type.Declaration as Class;
             if (@operator.TransformationKind == TransformationKind.FromClassToValue)
             {
                 if (decl != null && !decl.IsSimpleType)
                 {
                     WriteLine(
-                        $"public static {@operator.OperatorKind.ToString().ToLower()} operator {@namespace}.{@operator.Field.Type.Visit(TypePrinter)}({@operator.Class.Name} {variableName})");
+                        $"public static {@operator.OperatorKind.ToString().ToLower()} operator {@namespace}.{@operator.Type.Visit(TypePrinter)}({@operator.Class.Name} {variableName})");
                 }
                 else
                 {
                     WriteLine(
-                        $"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Field.Type.Visit(TypePrinter)}({@operator.Class.Name} {variableName})");
+                        $"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Type.Visit(TypePrinter)}({@operator.Class.Name} {variableName})");
                 }
                 WriteOpenBraceAndIndent();
                 OperatorOverloadOverride(@operator, variableName);
                 if (decl != null && @operator.Class.ClassType == ClassType.Class)
                 {
-                    WriteLine($"return {variableName}?.{@operator.Field.Name} ?? new {@namespace}.{@operator.Field.Type.Visit(TypePrinter)}();");
+                    WriteLine($"return {variableName}?.{@operator.FieldName} ?? new {@namespace}.{@operator.Type.Visit(TypePrinter)}();");
                 }
                 else
                 {
-                    WriteLine($"return {variableName}.{@operator.Field.Name};");
+                    WriteLine($"return {variableName}.{@operator.FieldName};");
                 }
 
                 UnindentAndWriteCloseBrace();
             }
             else
             {
+                if (@operator.Class.ClassType == ClassType.Class)
+                {
+                    TypePrinter.PushMarshalType(MarshalTypes.Property);
+                }
+                else if (@operator.Class.ClassType == ClassType.StructWrapper || @operator.Class.ClassType == ClassType.UnionWrapper)
+                {
+                    TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
+                }
+
                 if (decl != null && !decl.IsSimpleType)
                 {
-                    WriteLine($"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Class.Name}({@namespace}.{@operator.Field.Type.Visit(TypePrinter)} {variableName})");
+                    WriteLine($"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Class.Name}({@namespace}.{@operator.Type.Visit(TypePrinter)} {variableName})");
                 }
                 else
                 {
-                    WriteLine($"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Class.Name}({@operator.Field.Type.Visit(TypePrinter)} {variableName})");
+                    WriteLine($"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Class.Name}({@operator.Type.Visit(TypePrinter)} {variableName})");
+                }
+
+                if (@operator.Class.ClassType == ClassType.Class || @operator.Class.ClassType == ClassType.StructWrapper || @operator.Class.ClassType == ClassType.UnionWrapper)
+                {
+                    TypePrinter.PopMarshalType();
                 }
 
                 WriteOpenBraceAndIndent();

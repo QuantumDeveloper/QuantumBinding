@@ -26,6 +26,22 @@ namespace QuantumBinding.Clang
 
         public System.IntPtr Data { get; set; }
         public uint Private_flags { get; set; }
+        ///<summary>
+        /// Free the given string.
+        ///</summary>
+        public void disposeString()
+        {
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeString(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the character data associated with the given string.
+        ///</summary>
+        public string getCString()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCString(ToInternal());
+        }
+
 
         public QuantumBinding.Clang.Interop.CXString ToInternal()
         {
@@ -34,6 +50,11 @@ namespace QuantumBinding.Clang
             _internal.private_flags = Private_flags;
             return _internal;
         }
+        public static implicit operator QBString(QuantumBinding.Clang.Interop.CXString q)
+        {
+            return new QBString(q);
+        }
+
     }
 
     public partial class QBStringSet : QBDisposableObject
@@ -53,6 +74,16 @@ namespace QuantumBinding.Clang
 
         public QBString Strings { get; set; }
         public uint Count { get; set; }
+        ///<summary>
+        /// Free the given string set.
+        ///</summary>
+        public void disposeStringSet()
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeStringSet(arg0);
+            Marshal.FreeHGlobal(arg0);
+        }
+
 
         public QuantumBinding.Clang.Interop.CXStringSet ToInternal()
         {
@@ -71,6 +102,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refStrings?.Dispose();
+        }
+
+        public static implicit operator QBStringSet(QuantumBinding.Clang.Interop.CXStringSet q)
+        {
+            return new QBStringSet(q);
         }
 
     }
@@ -121,6 +157,11 @@ namespace QuantumBinding.Clang
             refContents?.Dispose();
         }
 
+        public static implicit operator QBUnsavedFile(QuantumBinding.Clang.Interop.CXUnsavedFile q)
+        {
+            return new QBUnsavedFile(q);
+        }
+
     }
 
     public partial class QBVersion
@@ -148,6 +189,11 @@ namespace QuantumBinding.Clang
             _internal.Subminor = Subminor;
             return _internal;
         }
+        public static implicit operator QBVersion(QuantumBinding.Clang.Interop.CXVersion q)
+        {
+            return new QBVersion(q);
+        }
+
     }
 
     public partial class QBFileUniqueID
@@ -193,6 +239,11 @@ namespace QuantumBinding.Clang
             }
             return _internal;
         }
+        public static implicit operator QBFileUniqueID(QuantumBinding.Clang.Interop.CXFileUniqueID q)
+        {
+            return new QBFileUniqueID(q);
+        }
+
     }
 
     public partial class QBSourceLocation
@@ -213,6 +264,92 @@ namespace QuantumBinding.Clang
 
         public System.IntPtr[] Ptr_data { get; set; }
         public uint Int_data { get; set; }
+        ///<summary>
+        /// Determine whether two source locations, which must refer into the same translation unit, refer to exactly the same point in the source code.
+        ///</summary>
+        public uint equalLocations(QBSourceLocation loc2)
+        {
+            var arg1 = ReferenceEquals(loc2, null) ? new QuantumBinding.Clang.Interop.CXSourceLocation() : loc2.ToInternal();
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalLocations(ToInternal(), arg1);
+            return result;
+        }
+
+        ///<summary>
+        /// Retrieve the file, line, column, and offset represented by the given source location.
+        ///</summary>
+        public void getExpansionLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
+        {
+            CXFileImpl arg1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getExpansionLocation(ToInternal(), out arg1, out line, out column, out offset);
+            file = new QBFile(arg1);
+        }
+
+        ///<summary>
+        /// Retrieve the file, line, column, and offset represented by the given source location.
+        ///</summary>
+        public void getFileLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
+        {
+            CXFileImpl arg1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getFileLocation(ToInternal(), out arg1, out line, out column, out offset);
+            file = new QBFile(arg1);
+        }
+
+        ///<summary>
+        /// Legacy API to retrieve the file, line, column, and offset represented by the given source location.
+        ///</summary>
+        public void getInstantiationLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
+        {
+            CXFileImpl arg1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getInstantiationLocation(ToInternal(), out arg1, out line, out column, out offset);
+            file = new QBFile(arg1);
+        }
+
+        ///<summary>
+        /// Retrieve the file, line and column represented by the given source location, as specified in a # line directive.
+        ///</summary>
+        public void getPresumedLocation(out QBString filename, out uint line, out uint column)
+        {
+            CXString arg1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getPresumedLocation(ToInternal(), out arg1, out line, out column);
+            filename = new QBString(arg1);
+        }
+
+        ///<summary>
+        /// Retrieve a source range given the beginning and ending source locations.
+        ///</summary>
+        public QBSourceRange getRange(QBSourceLocation end)
+        {
+            var arg1 = ReferenceEquals(end, null) ? new QuantumBinding.Clang.Interop.CXSourceLocation() : end.ToInternal();
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getRange(ToInternal(), arg1);
+            return result;
+        }
+
+        ///<summary>
+        /// Retrieve the file, line, column, and offset represented by the given source location.
+        ///</summary>
+        public void getSpellingLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
+        {
+            CXFileImpl arg1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getSpellingLocation(ToInternal(), out arg1, out line, out column, out offset);
+            file = new QBFile(arg1);
+        }
+
+        ///<summary>
+        /// Returns non-zero if the given source location is in the main file of the corresponding translation unit.
+        ///</summary>
+        public int Location_isFromMainFile()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isFromMainFile(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if the given source location is in a system header.
+        ///</summary>
+        public int Location_isInSystemHeader()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isInSystemHeader(ToInternal());
+        }
+
 
         public QuantumBinding.Clang.Interop.CXSourceLocation ToInternal()
         {
@@ -231,6 +368,11 @@ namespace QuantumBinding.Clang
             _internal.int_data = Int_data;
             return _internal;
         }
+        public static implicit operator QBSourceLocation(QuantumBinding.Clang.Interop.CXSourceLocation q)
+        {
+            return new QBSourceLocation(q);
+        }
+
     }
 
     public partial class QBSourceRange
@@ -253,6 +395,40 @@ namespace QuantumBinding.Clang
         public System.IntPtr[] Ptr_data { get; set; }
         public uint Begin_int_data { get; set; }
         public uint End_int_data { get; set; }
+        ///<summary>
+        /// Determine whether two ranges are equivalent.
+        ///</summary>
+        public uint equalRanges(QBSourceRange range2)
+        {
+            var arg1 = ReferenceEquals(range2, null) ? new QuantumBinding.Clang.Interop.CXSourceRange() : range2.ToInternal();
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalRanges(ToInternal(), arg1);
+            return result;
+        }
+
+        ///<summary>
+        /// Retrieve a source location representing the last character within a source range.
+        ///</summary>
+        public QBSourceLocation getRangeEnd()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getRangeEnd(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve a source location representing the first character within a source range.
+        ///</summary>
+        public QBSourceLocation getRangeStart()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getRangeStart(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if range is null.
+        ///</summary>
+        public int Range_isNull()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Range_isNull(ToInternal());
+        }
+
 
         public QuantumBinding.Clang.Interop.CXSourceRange ToInternal()
         {
@@ -272,6 +448,11 @@ namespace QuantumBinding.Clang
             _internal.end_int_data = End_int_data;
             return _internal;
         }
+        public static implicit operator QBSourceRange(QuantumBinding.Clang.Interop.CXSourceRange q)
+        {
+            return new QBSourceRange(q);
+        }
+
     }
 
     public partial class QBSourceRangeList : QBDisposableObject
@@ -291,6 +472,16 @@ namespace QuantumBinding.Clang
 
         public uint Count { get; set; }
         public QBSourceRange Ranges { get; set; }
+        ///<summary>
+        /// Destroy the given CXSourceRangeList.
+        ///</summary>
+        public void disposeSourceRangeList()
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeSourceRangeList(arg0);
+            Marshal.FreeHGlobal(arg0);
+        }
+
 
         public QuantumBinding.Clang.Interop.CXSourceRangeList ToInternal()
         {
@@ -309,6 +500,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refranges?.Dispose();
+        }
+
+        public static implicit operator QBSourceRangeList(QuantumBinding.Clang.Interop.CXSourceRangeList q)
+        {
+            return new QBSourceRangeList(q);
         }
 
     }
@@ -335,6 +531,11 @@ namespace QuantumBinding.Clang
             _internal.amount = Amount;
             return _internal;
         }
+        public static implicit operator QBTUResourceUsageEntry(QuantumBinding.Clang.Interop.CXTUResourceUsageEntry q)
+        {
+            return new QBTUResourceUsageEntry(q);
+        }
+
     }
 
     public partial class QBTUResourceUsage : QBDisposableObject
@@ -356,6 +557,11 @@ namespace QuantumBinding.Clang
         public System.IntPtr Data { get; set; }
         public uint NumEntries { get; set; }
         public QBTUResourceUsageEntry Entries { get; set; }
+        public void disposeCXTUResourceUsage()
+        {
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCXTUResourceUsage(ToInternal());
+        }
+
 
         public QuantumBinding.Clang.Interop.CXTUResourceUsage ToInternal()
         {
@@ -375,6 +581,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refentries?.Dispose();
+        }
+
+        public static implicit operator QBTUResourceUsage(QuantumBinding.Clang.Interop.CXTUResourceUsage q)
+        {
+            return new QBTUResourceUsage(q);
         }
 
     }
@@ -399,6 +610,812 @@ namespace QuantumBinding.Clang
         public CXCursorKind Kind { get; set; }
         public int Xdata { get; set; }
         public System.IntPtr[] Data { get; set; }
+        ///<summary>
+        /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type.
+        ///</summary>
+        public QBEvalResult Cursor_Evaluate()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_Evaluate(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the argument cursor of a function or method.
+        ///</summary>
+        public QBCursor Cursor_getArgument(uint i)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getArgument(ToInternal(), i);
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a documentable entity (e.g., declaration), return the associated first paragraph.
+        ///</summary>
+        public QBString Cursor_getBriefCommentText()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getBriefCommentText(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a declaration, return the associated comment's source range. The range may include multiple consecutive comments with whitespace in between.
+        ///</summary>
+        public QBSourceRange Cursor_getCommentRange()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getCommentRange(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the CXStrings representing the mangled symbols of the C++ constructor or destructor at the cursor.
+        ///</summary>
+        public QBStringSet Cursor_getCXXManglings()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getCXXManglings(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the CXString representing the mangled name of the cursor.
+        ///</summary>
+        public QBString Cursor_getMangling()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getMangling(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a CXCursor_ModuleImportDecl cursor, return the associated module.
+        ///</summary>
+        public QBModule Cursor_getModule()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getModule(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the number of non-variadic arguments associated with a given cursor.
+        ///</summary>
+        public int Cursor_getNumArguments()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getNumArguments(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the number of template args of a function decl representing a template specialization.
+        ///</summary>
+        public int Cursor_getNumTemplateArguments()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getNumTemplateArguments(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents an Objective-C method or parameter declaration, return the associated Objective-C qualifiers for the return type or the parameter respectively. The bits are formed from CXObjCDeclQualifierKind.
+        ///</summary>
+        public uint Cursor_getObjCDeclQualifiers()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getObjCDeclQualifiers(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the CXStrings representing the mangled symbols of the ObjC class interface or implementation at the cursor.
+        ///</summary>
+        public QBStringSet Cursor_getObjCManglings()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getObjCManglings(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a property declaration, return the associated property attributes. The bits are formed from CXObjCPropertyAttrKind.
+        ///</summary>
+        public uint Cursor_getObjCPropertyAttributes(uint reserved)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getObjCPropertyAttributes(ToInternal(), reserved);
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a property declaration, return the name of the method that implements the getter.
+        ///</summary>
+        public QBString Cursor_getObjCPropertyGetterName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getObjCPropertyGetterName(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a property declaration, return the name of the method that implements the setter, if any.
+        ///</summary>
+        public QBString Cursor_getObjCPropertySetterName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getObjCPropertySetterName(ToInternal());
+        }
+
+        ///<summary>
+        /// If the cursor points to a selector identifier in an Objective-C method or message expression, this returns the selector index.
+        ///</summary>
+        public int Cursor_getObjCSelectorIndex()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getObjCSelectorIndex(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the offset of the field represented by the Cursor.
+        ///</summary>
+        public long Cursor_getOffsetOfField()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getOffsetOfField(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a documentable entity (e.g., declaration), return the associated parsed comment as a CXComment_FullComment AST node.
+        ///</summary>
+        public QBComment Cursor_getParsedComment()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getParsedComment(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a declaration, return the associated comment text, including comment markers.
+        ///</summary>
+        public QBString Cursor_getRawCommentText()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getRawCommentText(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor pointing to an Objective-C message or property reference, or C++ method call, returns the CXType of the receiver.
+        ///</summary>
+        public QBType Cursor_getReceiverType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getReceiverType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve a range for a piece that forms the cursors spelling name. Most of the times there is only one range for the complete spelling but for Objective-C methods and Objective-C message expressions, there are multiple pieces for each selector identifier.
+        ///</summary>
+        public QBSourceRange Cursor_getSpellingNameRange(uint pieceIndex, uint options)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getSpellingNameRange(ToInternal(), pieceIndex, options);
+        }
+
+        ///<summary>
+        /// Returns the storage class for a function or variable declaration.
+        ///</summary>
+        public CX_StorageClass Cursor_getStorageClass()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getStorageClass(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the kind of the I'th template argument of the CXCursor C.
+        ///</summary>
+        public CXTemplateArgumentKind Cursor_getTemplateArgumentKind(uint I)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getTemplateArgumentKind(ToInternal(), I);
+        }
+
+        ///<summary>
+        /// Retrieve a CXType representing the type of a TemplateArgument of a function decl representing a template specialization.
+        ///</summary>
+        public QBType Cursor_getTemplateArgumentType(uint I)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getTemplateArgumentType(ToInternal(), I);
+        }
+
+        ///<summary>
+        /// Retrieve the value of an Integral TemplateArgument (of a function decl representing a template specialization) as an unsigned long long.
+        ///</summary>
+        public ulong Cursor_getTemplateArgumentUnsignedValue(uint I)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getTemplateArgumentUnsignedValue(ToInternal(), I);
+        }
+
+        ///<summary>
+        /// Retrieve the value of an Integral TemplateArgument (of a function decl representing a template specialization) as a signed long long.
+        ///</summary>
+        public long Cursor_getTemplateArgumentValue(uint I)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getTemplateArgumentValue(ToInternal(), I);
+        }
+
+        ///<summary>
+        /// Returns the translation unit that a cursor originated from.
+        ///</summary>
+        public QBTranslationUnit Cursor_getTranslationUnit()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getTranslationUnit(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether the given cursor has any attributes.
+        ///</summary>
+        public uint Cursor_hasAttrs()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_hasAttrs(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether the given cursor represents an anonymous record declaration.
+        ///</summary>
+        public uint Cursor_isAnonymous()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isAnonymous(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if the cursor specifies a Record member that is a bitfield.
+        ///</summary>
+        public uint Cursor_isBitField()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isBitField(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor pointing to a C++ method call or an Objective-C message, returns non-zero if the method/message is "dynamic", meaning:
+        ///</summary>
+        public int Cursor_isDynamicCall()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isDynamicCall(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if the given cursor points to a symbol marked with external_source_symbol attribute.
+        ///</summary>
+        public uint Cursor_isExternalSymbol(QBString language, QBString definedIn, ref uint isGenerated)
+        {
+            var arg1 = ReferenceEquals(language, null) ? System.IntPtr.Zero : MarshalUtils.MarshalStructToPtr(language.ToInternal());
+            var arg2 = ReferenceEquals(definedIn, null) ? System.IntPtr.Zero : MarshalUtils.MarshalStructToPtr(definedIn.ToInternal());
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isExternalSymbol(ToInternal(), arg1, arg2, ref isGenerated);
+            language?.Dispose();
+            Marshal.FreeHGlobal(arg1);
+            definedIn?.Dispose();
+            Marshal.FreeHGlobal(arg2);
+            return result;
+        }
+
+        ///<summary>
+        /// Determine whether a CXCursor that is a function declaration, is an inline declaration.
+        ///</summary>
+        public uint Cursor_isFunctionInlined()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isFunctionInlined(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether a CXCursor that is a macro, is a builtin one.
+        ///</summary>
+        public uint Cursor_isMacroBuiltin()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isMacroBuiltin(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether a CXCursor that is a macro, is function like.
+        ///</summary>
+        public uint Cursor_isMacroFunctionLike()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isMacroFunctionLike(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if cursor is null.
+        ///</summary>
+        public int Cursor_isNull()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isNull(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents an Objective-C method or property declaration, return non-zero if the declaration was affected by "@optional". Returns zero if the cursor is not such a declaration or it is "@required".
+        ///</summary>
+        public uint Cursor_isObjCOptional()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isObjCOptional(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if the given cursor is a variadic function or method.
+        ///</summary>
+        public uint Cursor_isVariadic()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isVariadic(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ constructor is a converting constructor.
+        ///</summary>
+        public uint CXXConstructor_isConvertingConstructor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXConstructor_isConvertingConstructor(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ constructor is a copy constructor.
+        ///</summary>
+        public uint CXXConstructor_isCopyConstructor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXConstructor_isCopyConstructor(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ constructor is the default constructor.
+        ///</summary>
+        public uint CXXConstructor_isDefaultConstructor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXConstructor_isDefaultConstructor(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ constructor is a move constructor.
+        ///</summary>
+        public uint CXXConstructor_isMoveConstructor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXConstructor_isMoveConstructor(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ field is declared 'mutable'.
+        ///</summary>
+        public uint CXXField_isMutable()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXField_isMutable(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ member function or member function template is declared 'const'.
+        ///</summary>
+        public uint CXXMethod_isConst()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXMethod_isConst(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ method is declared '= default'.
+        ///</summary>
+        public uint CXXMethod_isDefaulted()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXMethod_isDefaulted(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ member function or member function template is pure virtual.
+        ///</summary>
+        public uint CXXMethod_isPureVirtual()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXMethod_isPureVirtual(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ member function or member function template is declared 'static'.
+        ///</summary>
+        public uint CXXMethod_isStatic()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXMethod_isStatic(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ member function or member function template is explicitly declared 'virtual' or if it overrides a virtual method from one of the base classes.
+        ///</summary>
+        public uint CXXMethod_isVirtual()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXMethod_isVirtual(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine if a C++ record is abstract, i.e. whether a class or struct has a pure virtual member function.
+        ///</summary>
+        public uint CXXRecord_isAbstract()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXXRecord_isAbstract(ToInternal());
+        }
+
+        ///<summary>
+        /// Free the set of overridden cursors returned by clang_getOverriddenCursors().
+        ///</summary>
+        public void disposeOverriddenCursors()
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeOverriddenCursors(arg0);
+            Marshal.FreeHGlobal(arg0);
+        }
+
+        ///<summary>
+        /// Determine if an enum declaration refers to a scoped enum.
+        ///</summary>
+        public uint EnumDecl_isScoped()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_EnumDecl_isScoped(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether two cursors are equivalent.
+        ///</summary>
+        public uint equalCursors(QBCursor param1)
+        {
+            var arg1 = ReferenceEquals(param1, null) ? new QuantumBinding.Clang.Interop.CXCursor() : param1.ToInternal();
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalCursors(ToInternal(), arg1);
+            return result;
+        }
+
+        ///<summary>
+        /// Find references of a declaration in a specific file.
+        ///</summary>
+        public CXResult findReferencesInFile(QuantumBinding.Clang.QBFile file, QBCursorAndRangeVisitor visitor)
+        {
+            var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
+            var arg2 = ReferenceEquals(visitor, null) ? new QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor() : visitor.ToInternal();
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_findReferencesInFile(ToInternal(), arg1, arg2);
+            visitor?.Dispose();
+            return result;
+        }
+
+        ///<summary>
+        /// Retrieve the canonical cursor corresponding to the given cursor.
+        ///</summary>
+        public QBCursor getCanonicalCursor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCanonicalCursor(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the availability of the entity that this cursor refers to, taking the current target platform into account.
+        ///</summary>
+        public CXAvailabilityKind getCursorAvailability()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorAvailability(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve a completion string for an arbitrary declaration or macro definition cursor.
+        ///</summary>
+        public QBCompletionString getCursorCompletionString()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorCompletionString(ToInternal());
+        }
+
+        ///<summary>
+        /// For a cursor that is either a reference to or a declaration of some entity, retrieve a cursor that describes the definition of that entity.
+        ///</summary>
+        public QBCursor getCursorDefinition()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorDefinition(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the display name for the entity referenced by this cursor.
+        ///</summary>
+        public QBString getCursorDisplayName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorDisplayName(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the exception specification type associated with a given cursor. This is a value of type CXCursor_ExceptionSpecificationKind.
+        ///</summary>
+        public int getCursorExceptionSpecificationType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorExceptionSpecificationType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the physical extent of the source construct referenced by the given cursor.
+        ///</summary>
+        public QBSourceRange getCursorExtent()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorExtent(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the kind of the given cursor.
+        ///</summary>
+        public CXCursorKind getCursorKind()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorKind(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the "language" of the entity referred to by a given cursor.
+        ///</summary>
+        public CXLanguageKind getCursorLanguage()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorLanguage(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the lexical parent of the given cursor.
+        ///</summary>
+        public QBCursor getCursorLexicalParent()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorLexicalParent(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the linkage of the entity referred to by a given cursor.
+        ///</summary>
+        public CXLinkageKind getCursorLinkage()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorLinkage(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the physical location of the source constructor referenced by the given cursor.
+        ///</summary>
+        public QBSourceLocation getCursorLocation()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorLocation(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the availability of the entity that this cursor refers to on any platforms for which availability information is known.
+        ///</summary>
+        public int getCursorPlatformAvailability(int always_deprecated, QBString deprecated_message, ref int always_unavailable, QBString unavailable_message, QBPlatformAvailability[] availability, int availability_size)
+        {
+            var arg1 = ReferenceEquals(deprecated_message, null) ? System.IntPtr.Zero : MarshalUtils.MarshalStructToPtr(deprecated_message.ToInternal());
+            var arg2 = ReferenceEquals(unavailable_message, null) ? System.IntPtr.Zero : MarshalUtils.MarshalStructToPtr(unavailable_message.ToInternal());
+            QuantumBinding.Clang.Interop.CXPlatformAvailability[] arg3 = null;
+            arg3 = ReferenceEquals(availability, null) ? null : new QuantumBinding.Clang.Interop.CXPlatformAvailability[availability.Length];
+            if (!ReferenceEquals(availability, null))
+            {
+                for (var i = 0U; i < availability.Length; ++i)
+                {
+                    arg3[i] = availability[i].ToInternal();
+                }
+            }
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPlatformAvailability(ToInternal(), always_deprecated, arg1, ref always_unavailable, arg2, arg3, availability_size);
+            deprecated_message?.Dispose();
+            Marshal.FreeHGlobal(arg1);
+            unavailable_message?.Dispose();
+            Marshal.FreeHGlobal(arg2);
+            return result;
+        }
+
+        ///<summary>
+        /// Pretty print declarations.
+        ///</summary>
+        public QBString getCursorPrettyPrinted(QuantumBinding.Clang.QBPrintingPolicy Policy)
+        {
+            var arg1 = ReferenceEquals(Policy, null) ? new CXPrintingPolicyImpl() : (CXPrintingPolicyImpl)Policy;
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPrettyPrinted(ToInternal(), arg1);
+        }
+
+        ///<summary>
+        /// Retrieve the default policy for the cursor.
+        ///</summary>
+        public QBPrintingPolicy getCursorPrintingPolicy()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPrintingPolicy(ToInternal());
+        }
+
+        ///<summary>
+        /// For a cursor that is a reference, retrieve a cursor representing the entity that it references.
+        ///</summary>
+        public QBCursor getCursorReferenced()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorReferenced(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that references something else, return the source range covering that reference.
+        ///</summary>
+        public QBSourceRange getCursorReferenceNameRange(uint NameFlags, uint PieceIndex)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorReferenceNameRange(ToInternal(), NameFlags, PieceIndex);
+        }
+
+        ///<summary>
+        /// Retrieve the return type associated with a given cursor.
+        ///</summary>
+        public QBType getCursorResultType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorResultType(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the semantic parent of the given cursor.
+        ///</summary>
+        public QBCursor getCursorSemanticParent()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorSemanticParent(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve a name for the entity referenced by this cursor.
+        ///</summary>
+        public QBString getCursorSpelling()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorSpelling(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the "thread-local storage (TLS) kind" of the declaration referred to by a cursor.
+        ///</summary>
+        public CXTLSKind getCursorTLSKind()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorTLSKind(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the type of a CXCursor (if any).
+        ///</summary>
+        public QBType getCursorType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve a Unified Symbol Resolution (USR) for the entity referenced by the given cursor.
+        ///</summary>
+        public QBString getCursorUSR()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorUSR(ToInternal());
+        }
+
+        ///<summary>
+        /// Describe the visibility of the entity referred to by a cursor.
+        ///</summary>
+        public CXVisibilityKind getCursorVisibility()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorVisibility(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the access control level for the referenced object.
+        ///</summary>
+        public CX_CXXAccessSpecifier getCXXAccessSpecifier()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCXXAccessSpecifier(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the Objective-C type encoding for the specified declaration.
+        ///</summary>
+        public QBString getDeclObjCTypeEncoding()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getDeclObjCTypeEncoding(ToInternal());
+        }
+
+        public void getDefinitionSpellingAndExtent(in string[] startBuf, in string[] endBuf, ref uint startLine, ref uint startColumn, ref uint endLine, ref uint endColumn)
+        {
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getDefinitionSpellingAndExtent(ToInternal(), startBuf, endBuf, ref startLine, ref startColumn, ref endLine, ref endColumn);
+        }
+
+        ///<summary>
+        /// Retrieve the integer value of an enum constant declaration as an unsigned long long.
+        ///</summary>
+        public ulong getEnumConstantDeclUnsignedValue()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getEnumConstantDeclUnsignedValue(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the integer value of an enum constant declaration as a signed long long.
+        ///</summary>
+        public long getEnumConstantDeclValue()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getEnumConstantDeclValue(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the integer type of an enum declaration.
+        ///</summary>
+        public QBType getEnumDeclIntegerType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getEnumDeclIntegerType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the bit width of a bit field declaration as an integer.
+        ///</summary>
+        public int getFieldDeclBitWidth()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getFieldDeclBitWidth(ToInternal());
+        }
+
+        ///<summary>
+        /// For cursors representing an iboutletcollection attribute, this function returns the collection element type.
+        ///</summary>
+        public QBType getIBOutletCollectionType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getIBOutletCollectionType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the file that is included by the given inclusion directive cursor.
+        ///</summary>
+        public QBFile getIncludedFile()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getIncludedFile(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine the number of overloaded declarations referenced by a CXCursor_OverloadedDeclRef cursor.
+        ///</summary>
+        public uint getNumOverloadedDecls()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumOverloadedDecls(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve a cursor for one of the overloaded declarations referenced by a CXCursor_OverloadedDeclRef cursor.
+        ///</summary>
+        public QBCursor getOverloadedDecl(uint index)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getOverloadedDecl(ToInternal(), index);
+        }
+
+        ///<summary>
+        /// Determine the set of methods that are overridden by the given method.
+        ///</summary>
+        public void getOverriddenCursors(out QBCursor[] overridden, out uint num_overridden)
+        {
+            var arg1 = System.IntPtr.Zero;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getOverriddenCursors(ToInternal(), ref arg1, out num_overridden);
+            var _overridden = new QuantumBinding.Clang.Interop.CXCursor[num_overridden];
+            MarshalUtils.IntPtrToManagedArray<QuantumBinding.Clang.Interop.CXCursor>(arg1, _overridden);
+            overridden = new QBCursor[num_overridden];
+            for (var i = 0U; i< num_overridden; ++i)
+            {
+                overridden[i] = new QBCursor(_overridden[i]);
+            }
+        }
+
+        ///<summary>
+        /// Given a cursor that may represent a specialization or instantiation of a template, retrieve the cursor that represents the template that it specializes or from which it was instantiated.
+        ///</summary>
+        public QBCursor getSpecializedCursorTemplate()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getSpecializedCursorTemplate(ToInternal());
+        }
+
+        ///<summary>
+        /// Given a cursor that represents a template, determine the cursor kind of the specializations would be generated by instantiating the template.
+        ///</summary>
+        public CXCursorKind getTemplateCursorKind()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTemplateCursorKind(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the underlying type of a typedef declaration.
+        ///</summary>
+        public QBType getTypedefDeclUnderlyingType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypedefDeclUnderlyingType(ToInternal());
+        }
+
+        ///<summary>
+        /// Compute a hash value for the given cursor.
+        ///</summary>
+        public uint hashCursor()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_hashCursor(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether the declaration pointed to by this cursor is also a definition of that entity.
+        ///</summary>
+        public uint isCursorDefinition()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isCursorDefinition(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether the given declaration is invalid.
+        ///</summary>
+        public uint isInvalidDeclaration()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isInvalidDeclaration(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns 1 if the base class specified by the cursor with kind CX_CXXBaseSpecifier is virtual.
+        ///</summary>
+        public uint isVirtualBase()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isVirtualBase(ToInternal());
+        }
+
+        ///<summary>
+        /// Visit the children of a particular cursor.
+        ///</summary>
+        public uint visitChildren(System.IntPtr visitor, QuantumBinding.Clang.QBClientData client_data)
+        {
+            var arg1 = ReferenceEquals(client_data, null) ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_visitChildren(ToInternal(), visitor, arg1);
+        }
+
 
         public QuantumBinding.Clang.Interop.CXCursor ToInternal()
         {
@@ -418,6 +1435,11 @@ namespace QuantumBinding.Clang
             }
             return _internal;
         }
+        public static implicit operator QBCursor(QuantumBinding.Clang.Interop.CXCursor q)
+        {
+            return new QBCursor(q);
+        }
+
     }
 
     public partial class QBPlatformAvailability
@@ -442,6 +1464,16 @@ namespace QuantumBinding.Clang
         public QBVersion Obsoleted { get; set; }
         public int Unavailable { get; set; }
         public QBString Message { get; set; }
+        ///<summary>
+        /// Free the memory associated with a CXPlatformAvailability structure.
+        ///</summary>
+        public void disposeCXPlatformAvailability()
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCXPlatformAvailability(arg0);
+            Marshal.FreeHGlobal(arg0);
+        }
+
 
         public QuantumBinding.Clang.Interop.CXPlatformAvailability ToInternal()
         {
@@ -469,6 +1501,11 @@ namespace QuantumBinding.Clang
             }
             return _internal;
         }
+        public static implicit operator QBPlatformAvailability(QuantumBinding.Clang.Interop.CXPlatformAvailability q)
+        {
+            return new QBPlatformAvailability(q);
+        }
+
     }
 
     public partial class QBType
@@ -489,6 +1526,321 @@ namespace QuantumBinding.Clang
 
         public CXTypeKind Kind { get; set; }
         public System.IntPtr[] Data { get; set; }
+        ///<summary>
+        /// Determine whether two CXTypes represent the same type.
+        ///</summary>
+        public uint equalTypes(QBType B)
+        {
+            var arg1 = ReferenceEquals(B, null) ? new QuantumBinding.Clang.Interop.CXType() : B.ToInternal();
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalTypes(ToInternal(), arg1);
+            return result;
+        }
+
+        ///<summary>
+        /// Returns the address space of the given type.
+        ///</summary>
+        public uint getAddressSpace()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getAddressSpace(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the type of a parameter of a function type.
+        ///</summary>
+        public QBType getArgType(uint i)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getArgType(ToInternal(), i);
+        }
+
+        ///<summary>
+        /// Return the element type of an array type.
+        ///</summary>
+        public QBType getArrayElementType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getArrayElementType(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the array size of a constant array.
+        ///</summary>
+        public long getArraySize()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getArraySize(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the canonical type for a CXType.
+        ///</summary>
+        public QBType getCanonicalType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCanonicalType(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the element type of an array, complex, or vector type.
+        ///</summary>
+        public QBType getElementType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getElementType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the exception specification type associated with a function type. This is a value of type CXCursor_ExceptionSpecificationKind.
+        ///</summary>
+        public int getExceptionSpecificationType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getExceptionSpecificationType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the calling convention associated with a function type.
+        ///</summary>
+        public CXCallingConv getFunctionTypeCallingConv()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getFunctionTypeCallingConv(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the number of non-variadic parameters associated with a function type.
+        ///</summary>
+        public int getNumArgTypes()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumArgTypes(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the number of elements of an array or vector type.
+        ///</summary>
+        public long getNumElements()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumElements(ToInternal());
+        }
+
+        ///<summary>
+        /// For pointer types, returns the type of the pointee.
+        ///</summary>
+        public QBType getPointeeType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getPointeeType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the return type associated with a function type.
+        ///</summary>
+        public QBType getResultType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getResultType(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the cursor for the declaration of the given type.
+        ///</summary>
+        public QBCursor getTypeDeclaration()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypeDeclaration(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the typedef name of the given type.
+        ///</summary>
+        public QBString getTypedefName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypedefName(ToInternal());
+        }
+
+        ///<summary>
+        /// Pretty-print the underlying type using the rules of the language of the translation unit from which it came.
+        ///</summary>
+        public QBString getTypeSpelling()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypeSpelling(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether a CXType has the "const" qualifier set, without looking through typedefs that may have added "const" at a different level.
+        ///</summary>
+        public uint isConstQualifiedType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isConstQualifiedType(ToInternal());
+        }
+
+        ///<summary>
+        /// Return 1 if the CXType is a variadic function type, and 0 otherwise.
+        ///</summary>
+        public uint isFunctionTypeVariadic()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isFunctionTypeVariadic(ToInternal());
+        }
+
+        ///<summary>
+        /// Return 1 if the CXType is a POD (plain old data) type, and 0 otherwise.
+        ///</summary>
+        public uint isPODType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isPODType(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether a CXType has the "restrict" qualifier set, without looking through typedefs that may have added "restrict" at a different level.
+        ///</summary>
+        public uint isRestrictQualifiedType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isRestrictQualifiedType(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether a CXType has the "volatile" qualifier set, without looking through typedefs that may have added "volatile" at a different level.
+        ///</summary>
+        public uint isVolatileQualifiedType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isVolatileQualifiedType(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the alignment of a type in bytes as per C++[expr.alignof] standard.
+        ///</summary>
+        public long Type_getAlignOf()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getAlignOf(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the class type of an member pointer type.
+        ///</summary>
+        public QBType Type_getClassType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getClassType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the ref-qualifier kind of a function or method.
+        ///</summary>
+        public CXRefQualifierKind Type_getCXXRefQualifier()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getCXXRefQualifier(ToInternal());
+        }
+
+        ///<summary>
+        /// Return the type that was modified by this attributed type.
+        ///</summary>
+        public QBType Type_getModifiedType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getModifiedType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the type named by the qualified-id.
+        ///</summary>
+        public QBType Type_getNamedType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNamedType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the nullability kind of a pointer type.
+        ///</summary>
+        public CXTypeNullabilityKind Type_getNullability()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNullability(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the number of protocol references associated with an ObjC object/id.
+        ///</summary>
+        public uint Type_getNumObjCProtocolRefs()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumObjCProtocolRefs(ToInternal());
+        }
+
+        ///<summary>
+        /// Retreive the number of type arguments associated with an ObjC object.
+        ///</summary>
+        public uint Type_getNumObjCTypeArgs()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumObjCTypeArgs(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the number of template arguments for given template specialization, or -1 if type T is not a template specialization.
+        ///</summary>
+        public int Type_getNumTemplateArguments()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumTemplateArguments(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the Objective-C type encoding for the specified CXType.
+        ///</summary>
+        public QBString Type_getObjCEncoding()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCEncoding(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieves the base type of the ObjCObjectType.
+        ///</summary>
+        public QBType Type_getObjCObjectBaseType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCObjectBaseType(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the decl for a protocol reference for an ObjC object/id.
+        ///</summary>
+        public QBCursor Type_getObjCProtocolDecl(uint i)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCProtocolDecl(ToInternal(), i);
+        }
+
+        ///<summary>
+        /// Retrieve a type argument associated with an ObjC object.
+        ///</summary>
+        public QBType Type_getObjCTypeArg(uint i)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCTypeArg(ToInternal(), i);
+        }
+
+        ///<summary>
+        /// Return the offset of a field named S in a record of type T in bits as it would be returned by __offsetof__ as per C++11[18.2p4]
+        ///</summary>
+        public long Type_getOffsetOf(string S)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getOffsetOf(ToInternal(), S);
+        }
+
+        ///<summary>
+        /// Return the size of a type in bytes as per C++[expr.sizeof] standard.
+        ///</summary>
+        public long Type_getSizeOf()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getSizeOf(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the type template argument of a template class specialization at given index.
+        ///</summary>
+        public QBType Type_getTemplateArgumentAsType(uint i)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getTemplateArgumentAsType(ToInternal(), i);
+        }
+
+        ///<summary>
+        /// Determine if a typedef is 'transparent' tag.
+        ///</summary>
+        public uint Type_isTransparentTagTypedef()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_isTransparentTagTypedef(ToInternal());
+        }
+
+        ///<summary>
+        /// Visit the fields of a particular type.
+        ///</summary>
+        public uint Type_visitFields(System.IntPtr visitor, QuantumBinding.Clang.QBClientData client_data)
+        {
+            var arg1 = ReferenceEquals(client_data, null) ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_visitFields(ToInternal(), visitor, arg1);
+        }
+
 
         public QuantumBinding.Clang.Interop.CXType ToInternal()
         {
@@ -507,6 +1859,11 @@ namespace QuantumBinding.Clang
             }
             return _internal;
         }
+        public static implicit operator QBType(QuantumBinding.Clang.Interop.CXType q)
+        {
+            return new QBType(q);
+        }
+
     }
 
     public partial class QBToken : QBDisposableObject
@@ -531,6 +1888,14 @@ namespace QuantumBinding.Clang
 
         public uint[] Int_data { get; set; }
         public System.IntPtr Ptr_data { get; set; }
+        ///<summary>
+        /// Determine the kind of the given token.
+        ///</summary>
+        public CXTokenKind getTokenKind()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenKind(ToInternal());
+        }
+
 
         public QuantumBinding.Clang.Interop.CXToken ToInternal()
         {
@@ -555,6 +1920,11 @@ namespace QuantumBinding.Clang
             _internal.ptr_data = Ptr_data;
             return _internal;
         }
+        public static implicit operator QBToken(QuantumBinding.Clang.Interop.CXToken q)
+        {
+            return new QBToken(q);
+        }
+
     }
 
     public partial class QBCompletionResult
@@ -579,6 +1949,11 @@ namespace QuantumBinding.Clang
             _internal.CompletionString = CompletionString;
             return _internal;
         }
+        public static implicit operator QBCompletionResult(QuantumBinding.Clang.Interop.CXCompletionResult q)
+        {
+            return new QBCompletionResult(q);
+        }
+
     }
 
     public partial class QBCodeCompleteResults : QBDisposableObject
@@ -598,6 +1973,40 @@ namespace QuantumBinding.Clang
 
         public QBCompletionResult Results { get; set; }
         public uint NumResults { get; set; }
+        ///<summary>
+        /// Free the given set of code-completion results.
+        ///</summary>
+        public void disposeCodeCompleteResults()
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCodeCompleteResults(arg0);
+            Marshal.FreeHGlobal(arg0);
+        }
+
+        ///<summary>
+        /// Fix-its that *must* be applied before inserting the text for the corresponding completion.
+        ///</summary>
+        public QBString getCompletionFixIt(uint completion_index, uint fixit_index, QBSourceRange replacement_range)
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            var arg1 = ReferenceEquals(replacement_range, null) ? System.IntPtr.Zero : MarshalUtils.MarshalStructToPtr(replacement_range.ToInternal());
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionFixIt(arg0, completion_index, fixit_index, arg1);
+            Marshal.FreeHGlobal(arg0);
+            Marshal.FreeHGlobal(arg1);
+            return result;
+        }
+
+        ///<summary>
+        /// Retrieve the number of fix-its for the given completion index.
+        ///</summary>
+        public uint getCompletionNumFixIts(uint completion_index)
+        {
+            var arg0 = MarshalUtils.MarshalStructToPtr(ToInternal());
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionNumFixIts(arg0, completion_index);
+            Marshal.FreeHGlobal(arg0);
+            return result;
+        }
+
 
         public QuantumBinding.Clang.Interop.CXCodeCompleteResults ToInternal()
         {
@@ -616,6 +2025,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refResults?.Dispose();
+        }
+
+        public static implicit operator QBCodeCompleteResults(QuantumBinding.Clang.Interop.CXCodeCompleteResults q)
+        {
+            return new QBCodeCompleteResults(q);
         }
 
     }
@@ -642,6 +2056,11 @@ namespace QuantumBinding.Clang
             _internal.visit = Visit;
             return _internal;
         }
+        public static implicit operator QBCursorAndRangeVisitor(QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor q)
+        {
+            return new QBCursorAndRangeVisitor(q);
+        }
+
     }
 
     public partial class QBIdxLoc
@@ -662,6 +2081,26 @@ namespace QuantumBinding.Clang
 
         public System.IntPtr[] Ptr_data { get; set; }
         public uint Int_data { get; set; }
+        ///<summary>
+        /// Retrieve the CXSourceLocation represented by the given CXIdxLoc.
+        ///</summary>
+        public QBSourceLocation indexLoc_getCXSourceLocation()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getCXSourceLocation(ToInternal());
+        }
+
+        ///<summary>
+        /// Retrieve the CXIdxFile, file, line, column, and offset represented by the given CXIdxLoc.
+        ///</summary>
+        public void indexLoc_getFileLocation(out QuantumBinding.Clang.QBIdxClientFile indexFile, out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
+        {
+            CXIdxClientFileImpl arg1;
+            CXFileImpl arg2;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getFileLocation(ToInternal(), out arg1, out arg2, out line, out column, out offset);
+            indexFile = new QBIdxClientFile(arg1);
+            file = new QBFile(arg2);
+        }
+
 
         public QuantumBinding.Clang.Interop.CXIdxLoc ToInternal()
         {
@@ -680,6 +2119,11 @@ namespace QuantumBinding.Clang
             _internal.int_data = Int_data;
             return _internal;
         }
+        public static implicit operator QBIdxLoc(QuantumBinding.Clang.Interop.CXIdxLoc q)
+        {
+            return new QBIdxLoc(q);
+        }
+
     }
 
     public partial class QBIdxIncludedFileInfo : QBDisposableObject
@@ -732,6 +2176,11 @@ namespace QuantumBinding.Clang
             reffilename?.Dispose();
         }
 
+        public static implicit operator QBIdxIncludedFileInfo(QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo q)
+        {
+            return new QBIdxIncludedFileInfo(q);
+        }
+
     }
 
     public partial class QBIdxImportedASTFileInfo
@@ -765,6 +2214,11 @@ namespace QuantumBinding.Clang
             _internal.isImplicit = IsImplicit;
             return _internal;
         }
+        public static implicit operator QBIdxImportedASTFileInfo(QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo q)
+        {
+            return new QBIdxImportedASTFileInfo(q);
+        }
+
     }
 
     public partial class QBIdxAttrInfo
@@ -798,6 +2252,11 @@ namespace QuantumBinding.Clang
             }
             return _internal;
         }
+        public static implicit operator QBIdxAttrInfo(QuantumBinding.Clang.Interop.CXIdxAttrInfo q)
+        {
+            return new QBIdxAttrInfo(q);
+        }
+
     }
 
     public partial class QBIdxEntityInfo : QBDisposableObject
@@ -884,6 +2343,11 @@ namespace QuantumBinding.Clang
             refattributes?.Dispose();
         }
 
+        public static implicit operator QBIdxEntityInfo(QuantumBinding.Clang.Interop.CXIdxEntityInfo q)
+        {
+            return new QBIdxEntityInfo(q);
+        }
+
     }
 
     public partial class QBIdxContainerInfo
@@ -908,6 +2372,11 @@ namespace QuantumBinding.Clang
             }
             return _internal;
         }
+        public static implicit operator QBIdxContainerInfo(QuantumBinding.Clang.Interop.CXIdxContainerInfo q)
+        {
+            return new QBIdxContainerInfo(q);
+        }
+
     }
 
     public partial class QBIdxIBOutletCollectionAttrInfo : QBDisposableObject
@@ -967,6 +2436,11 @@ namespace QuantumBinding.Clang
         {
             refattrInfo?.Dispose();
             refobjcClass?.Dispose();
+        }
+
+        public static implicit operator QBIdxIBOutletCollectionAttrInfo(QuantumBinding.Clang.Interop.CXIdxIBOutletCollectionAttrInfo q)
+        {
+            return new QBIdxIBOutletCollectionAttrInfo(q);
         }
 
     }
@@ -1097,6 +2571,11 @@ namespace QuantumBinding.Clang
             refattributes?.Dispose();
         }
 
+        public static implicit operator QBIdxDeclInfo(QuantumBinding.Clang.Interop.CXIdxDeclInfo q)
+        {
+            return new QBIdxDeclInfo(q);
+        }
+
     }
 
     public partial class QBIdxObjCContainerDeclInfo : QBDisposableObject
@@ -1134,6 +2613,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refdeclInfo?.Dispose();
+        }
+
+        public static implicit operator QBIdxObjCContainerDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCContainerDeclInfo q)
+        {
+            return new QBIdxObjCContainerDeclInfo(q);
         }
 
     }
@@ -1184,6 +2668,11 @@ namespace QuantumBinding.Clang
             refbase?.Dispose();
         }
 
+        public static implicit operator QBIdxBaseClassInfo(QuantumBinding.Clang.Interop.CXIdxBaseClassInfo q)
+        {
+            return new QBIdxBaseClassInfo(q);
+        }
+
     }
 
     public partial class QBIdxObjCProtocolRefInfo : QBDisposableObject
@@ -1230,6 +2719,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refprotocol?.Dispose();
+        }
+
+        public static implicit operator QBIdxObjCProtocolRefInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo q)
+        {
+            return new QBIdxObjCProtocolRefInfo(q);
         }
 
     }
@@ -1279,6 +2773,11 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             refprotocols?.Dispose();
+        }
+
+        public static implicit operator QBIdxObjCProtocolRefListInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo q)
+        {
+            return new QBIdxObjCProtocolRefListInfo(q);
         }
 
     }
@@ -1341,6 +2840,11 @@ namespace QuantumBinding.Clang
             refcontainerInfo?.Dispose();
             refsuperInfo?.Dispose();
             refprotocols?.Dispose();
+        }
+
+        public static implicit operator QBIdxObjCInterfaceDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo q)
+        {
+            return new QBIdxObjCInterfaceDeclInfo(q);
         }
 
     }
@@ -1417,6 +2921,11 @@ namespace QuantumBinding.Clang
             refprotocols?.Dispose();
         }
 
+        public static implicit operator QBIdxObjCCategoryDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCCategoryDeclInfo q)
+        {
+            return new QBIdxObjCCategoryDeclInfo(q);
+        }
+
     }
 
     public partial class QBIdxObjCPropertyDeclInfo : QBDisposableObject
@@ -1479,6 +2988,11 @@ namespace QuantumBinding.Clang
             refsetter?.Dispose();
         }
 
+        public static implicit operator QBIdxObjCPropertyDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCPropertyDeclInfo q)
+        {
+            return new QBIdxObjCPropertyDeclInfo(q);
+        }
+
     }
 
     public partial class QBIdxCXXClassDeclInfo : QBDisposableObject
@@ -1539,6 +3053,11 @@ namespace QuantumBinding.Clang
         {
             refdeclInfo?.Dispose();
             refbases?.Dispose();
+        }
+
+        public static implicit operator QBIdxCXXClassDeclInfo(QuantumBinding.Clang.Interop.CXIdxCXXClassDeclInfo q)
+        {
+            return new QBIdxCXXClassDeclInfo(q);
         }
 
     }
@@ -1621,6 +3140,11 @@ namespace QuantumBinding.Clang
             refcontainer?.Dispose();
         }
 
+        public static implicit operator QBIdxEntityRefInfo(QuantumBinding.Clang.Interop.CXIdxEntityRefInfo q)
+        {
+            return new QBIdxEntityRefInfo(q);
+        }
+
     }
 
     public partial class IndexerCallbacks : QBDisposableObject
@@ -1663,6 +3187,11 @@ namespace QuantumBinding.Clang
             _internal.indexEntityReference = IndexEntityReference;
             return _internal;
         }
+        public static implicit operator IndexerCallbacks(QuantumBinding.Clang.Interop.IndexerCallbacks i)
+        {
+            return new IndexerCallbacks(i);
+        }
+
     }
 
     public partial class QBComment : QBDisposableObject
@@ -1679,6 +3208,270 @@ namespace QuantumBinding.Clang
 
         public System.IntPtr ASTNode { get; set; }
         public QBTranslationUnit TranslationUnit { get; set; }
+        ///<summary>
+        /// Returns text of the specified word-like argument.
+        ///</summary>
+        public QBString BlockCommandComment_getArgText(uint ArgIdx)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getArgText(ToInternal(), ArgIdx);
+        }
+
+        ///<summary>
+        /// Returns name of the block command.
+        ///</summary>
+        public QBString BlockCommandComment_getCommandName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getCommandName(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns number of word-like arguments.
+        ///</summary>
+        public uint BlockCommandComment_getNumArgs()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getNumArgs(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns paragraph argument of the block command.
+        ///</summary>
+        public QBComment BlockCommandComment_getParagraph()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getParagraph(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the specified child of the AST node.
+        ///</summary>
+        public QBComment Comment_getChild(uint ChildIdx)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getChild(ToInternal(), ChildIdx);
+        }
+
+        ///<summary>
+        /// Returns the type of the AST node.
+        ///</summary>
+        public CXCommentKind Comment_getKind()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getKind(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns number of children of the AST node.
+        ///</summary>
+        public uint Comment_getNumChildren()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getNumChildren(ToInternal());
+        }
+
+        ///<summary>
+        /// A CXComment_Paragraph node is considered whitespace if it contains only CXComment_Text nodes that are empty or whitespace.
+        ///</summary>
+        public uint Comment_isWhitespace()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_isWhitespace(ToInternal());
+        }
+
+        ///<summary>
+        /// Convert a given full parsed comment to an HTML fragment.
+        ///</summary>
+        public QBString FullComment_getAsHTML()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_FullComment_getAsHTML(ToInternal());
+        }
+
+        ///<summary>
+        /// Convert a given full parsed comment to an XML document.
+        ///</summary>
+        public QBString FullComment_getAsXML()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_FullComment_getAsXML(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns name of the specified attribute.
+        ///</summary>
+        public QBString HTMLStartTag_getAttrName(uint AttrIdx)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getAttrName(ToInternal(), AttrIdx);
+        }
+
+        ///<summary>
+        /// Returns value of the specified attribute.
+        ///</summary>
+        public QBString HTMLStartTag_getAttrValue(uint AttrIdx)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getAttrValue(ToInternal(), AttrIdx);
+        }
+
+        ///<summary>
+        /// Returns number of attributes (name-value pairs) attached to the start tag.
+        ///</summary>
+        public uint HTMLStartTag_getNumAttrs()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getNumAttrs(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if tag is self-closing (for example, <br />).
+        ///</summary>
+        public uint HTMLStartTagComment_isSelfClosing()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTagComment_isSelfClosing(ToInternal());
+        }
+
+        ///<summary>
+        /// Convert an HTML tag AST node to string.
+        ///</summary>
+        public QBString HTMLTagComment_getAsString()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLTagComment_getAsString(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns HTML tag name.
+        ///</summary>
+        public QBString HTMLTagComment_getTagName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLTagComment_getTagName(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns text of the specified argument.
+        ///</summary>
+        public QBString InlineCommandComment_getArgText(uint ArgIdx)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getArgText(ToInternal(), ArgIdx);
+        }
+
+        ///<summary>
+        /// Returns name of the inline command.
+        ///</summary>
+        public QBString InlineCommandComment_getCommandName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getCommandName(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns number of command arguments.
+        ///</summary>
+        public uint InlineCommandComment_getNumArgs()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getNumArgs(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns the most appropriate rendering mode, chosen on command semantics in Doxygen.
+        ///</summary>
+        public CXCommentInlineCommandRenderKind InlineCommandComment_getRenderKind()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getRenderKind(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if Comment is inline content and has a newline immediately following it in the comment text. Newlines between paragraphs do not count.
+        ///</summary>
+        public uint InlineContentComment_hasTrailingNewline()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineContentComment_hasTrailingNewline(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns parameter passing direction.
+        ///</summary>
+        public CXCommentParamPassDirection ParamCommandComment_getDirection()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getDirection(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns zero-based parameter index in function prototype.
+        ///</summary>
+        public uint ParamCommandComment_getParamIndex()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getParamIndex(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns parameter name.
+        ///</summary>
+        public QBString ParamCommandComment_getParamName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getParamName(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if parameter passing direction was specified explicitly in the comment.
+        ///</summary>
+        public uint ParamCommandComment_isDirectionExplicit()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_isDirectionExplicit(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if the parameter that this AST node represents was found in the function prototype and clang_ParamCommandComment_getParamIndex function will return a meaningful value.
+        ///</summary>
+        public uint ParamCommandComment_isParamIndexValid()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_isParamIndexValid(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns text contained in the AST node.
+        ///</summary>
+        public QBString TextComment_getText()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_TextComment_getText(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns zero-based nesting depth of this parameter in the template parameter list.
+        ///</summary>
+        public uint TParamCommandComment_getDepth()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getDepth(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns zero-based parameter index in the template parameter list at a given nesting depth.
+        ///</summary>
+        public uint TParamCommandComment_getIndex(uint Depth)
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getIndex(ToInternal(), Depth);
+        }
+
+        ///<summary>
+        /// Returns template parameter name.
+        ///</summary>
+        public QBString TParamCommandComment_getParamName()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getParamName(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns non-zero if the parameter that this AST node represents was found in the template parameter list and clang_TParamCommandComment_getDepth and clang_TParamCommandComment_getIndex functions will return a meaningful value.
+        ///</summary>
+        public uint TParamCommandComment_isParamPositionValid()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_isParamPositionValid(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns text contained in the AST node.
+        ///</summary>
+        public QBString VerbatimBlockLineComment_getText()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_VerbatimBlockLineComment_getText(ToInternal());
+        }
+
+        ///<summary>
+        /// Returns text contained in the AST node.
+        ///</summary>
+        public QBString VerbatimLineComment_getText()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_VerbatimLineComment_getText(ToInternal());
+        }
+
 
         public QuantumBinding.Clang.Interop.CXComment ToInternal()
         {
@@ -1687,6 +3480,11 @@ namespace QuantumBinding.Clang
             _internal.TranslationUnit = TranslationUnit;
             return _internal;
         }
+        public static implicit operator QBComment(QuantumBinding.Clang.Interop.CXComment q)
+        {
+            return new QBComment(q);
+        }
+
     }
 
 

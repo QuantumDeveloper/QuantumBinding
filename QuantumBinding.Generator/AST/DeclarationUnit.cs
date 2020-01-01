@@ -178,10 +178,6 @@ namespace QuantumBinding.Generator.AST
                             decl = Unions.FirstOrDefault(x => x.Name == declaration.Name);
                             break;
                         case ClassType.StructWrapper:
-                            if (declaration.Name == "VkBaseOutStructure")
-                            {
-
-                            }
                             decl = StructWrappers.FirstOrDefault(x => x.Name == declaration.Name);
                             break;
                         case ClassType.UnionWrapper:

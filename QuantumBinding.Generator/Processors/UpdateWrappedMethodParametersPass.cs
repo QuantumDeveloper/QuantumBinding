@@ -25,53 +25,69 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
+            UpdateReturnType(method);
             UpdateMethodParameters(method);
 
             return true;
         }
 
 
+        private void UpdateReturnType(Method method)
+        {
+            if (method.ReturnType.Declaration is Class decl)
+            {
+                if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return;
+
+                var declaration = FindDeclaration(method.ReturnType);
+
+                var returnType = (BindingType)method.ReturnType.Clone();
+                returnType.Declaration = declaration;
+                method.ReturnType = returnType;
+            }
+        }
+
         private void UpdateMethodParameters(Method method)
         {
-            if (method.Name == "Clang_getExpansionLocation")
-            {
-
-            }
-
             foreach (var parameter in method.Parameters)
             {
-                var decl = parameter.Type.Declaration as Class;
-                if (decl == null || (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)) continue;
-                if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) continue;
-
-                Class declaration = null;
-                foreach (var unit in AstContext.TranslationUnits)
+                var declaration = FindDeclaration(parameter.Type);
+                if (declaration != null)
                 {
-                    if (decl.ClassType == ClassType.Struct)
-                    {
-                        declaration = unit.StructWrappers.FirstOrDefault(x => x.Id == decl.Id);
+                    var wrappedType = parameter.Type;
+                    parameter.WrappedType = wrappedType;
+                    parameter.Type = (BindingType)wrappedType.Clone();
+                    parameter.Type.Declaration = declaration;
+                }
+            }
+        }
 
-                        if (declaration == null)
-                        {
-                            declaration = unit.Classes.FirstOrDefault(x => x.Id == decl.Id);
-                        }
-                    }
-                    else if (decl.ClassType == ClassType.Union)
-                    {
-                        declaration = unit.UnionWrappers.FirstOrDefault(x => x.Id == decl.Id);
-                    }
+        private Declaration FindDeclaration(BindingType type)
+        {
+            var decl = type.Declaration as Class;
+            if (decl == null || (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)) return null;
+            if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return null;
 
-                    if (declaration != null) break;
+            Class declaration = null;
+            foreach (var unit in AstContext.TranslationUnits)
+            {
+                if (decl.ClassType == ClassType.Struct)
+                {
+                    declaration = unit.StructWrappers.FirstOrDefault(x => x.Id == decl.Id);
+
+                    if (declaration == null)
+                    {
+                        declaration = unit.Classes.FirstOrDefault(x => x.Id == decl.Id);
+                    }
+                }
+                else if (decl.ClassType == ClassType.Union)
+                {
+                    declaration = unit.UnionWrappers.FirstOrDefault(x => x.Id == decl.Id);
                 }
 
-                if (declaration == null) continue;
-
-                var wrappedType = parameter.Type;
-                parameter.WrappedType = wrappedType;
-                parameter.Type = (BindingType) wrappedType.Clone();
-                parameter.Type.Declaration = declaration;
-
+                if (declaration != null) break;
             }
+
+            return declaration;
         }
     }
 }

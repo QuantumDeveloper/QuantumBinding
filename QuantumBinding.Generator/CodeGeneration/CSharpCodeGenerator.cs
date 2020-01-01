@@ -417,7 +417,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
-        private void GenerateMethods(Class @class)
+        protected void GenerateMethods(Class @class)
         {
             foreach (var method in @class.Methods.OrderBy(x=>x.Name))
             {
@@ -425,7 +425,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
-        private void GenerateExtensionMethods(Class @class)
+        protected void GenerateExtensionMethods(Class @class)
         {
             foreach (var method in @class.ExtensionMethods)
             {
@@ -593,17 +593,25 @@ namespace QuantumBinding.Generator.CodeGeneration
             bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
             int index = 0;
             var wrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
+            var isInstanceMethod = method.Class != null;
 
-            for (var i = 0; i < method.Function.Parameters.Count; i++)
+            for (var paramIndex = 0; paramIndex < method.Function.Parameters.Count; paramIndex++)
             {
-                var parameter = method.Function.Parameters[i];
+                var parameter = method.Function.Parameters[paramIndex];
                 var classDecl = parameter.Type.Declaration as Class;
                 if (wrapInteropObjects)
                 {
                     if (classDecl != null && (classDecl.ClassType == ClassType.Struct || classDecl.ClassType == ClassType.Union))
                     {
-                        parameter = method.Parameters.FirstOrDefault(x=>x.Id == parameter.Id);
-                        classDecl = parameter.Type.Declaration as Class;
+                        if (paramIndex == 0 && isInstanceMethod)
+                        {
+                            classDecl = method.Class;
+                        }
+                        else
+                        {
+                            parameter = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
+                            classDecl = parameter.Type.Declaration as Class;
+                        }
                     }
                 }
 
@@ -660,7 +668,16 @@ namespace QuantumBinding.Generator.CodeGeneration
                         }
                         else if (classDecl.ClassType == ClassType.StructWrapper || classDecl.ClassType == ClassType.UnionWrapper)
                         {
-                            WriteWrappedStruct();
+                            if ((parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly) && 
+                                paramIndex == 0 && 
+                                isInstanceMethod)
+                            {
+                                argumentName = $"{ConversionMethodName}";
+                            }
+                            else
+                            {
+                                WriteWrappedStruct();
+                            }
                         }
                         else // structs without pointers, simple types
                         {
@@ -890,9 +907,16 @@ namespace QuantumBinding.Generator.CodeGeneration
                                     break;
                                 case ClassType.StructWrapper:
                                 case ClassType.UnionWrapper:
-                                    textGenerator.WriteLine(
+                                    if (paramIndex == 0 && isInstanceMethod)
+                                    {
+                                        textGenerator.WriteLine($"var {argumentName} = MarshalUtils.MarshalStructToPtr({ConversionMethodName});");
+                                    }
+                                    else
+                                    {
+                                        textGenerator.WriteLine(
                                         $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name}.{ConversionMethodName});");
-                                    actions.Add(DisposeWrapper);
+                                        actions.Add(DisposeWrapper);
+                                    }
                                     break;
                             }
                             if (parameter.ParameterKind == ParameterKind.InOut)

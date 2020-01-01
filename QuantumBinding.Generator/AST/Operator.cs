@@ -1,4 +1,6 @@
-﻿namespace QuantumBinding.Generator.AST
+﻿using QuantumBinding.Generator.Types;
+
+namespace QuantumBinding.Generator.AST
 {
     public class Operator
     {
@@ -8,7 +10,9 @@
 
         public Class Class { get; set; }
 
-        public Field Field { get; set; }
+        public BindingType Type { get; set; }
+
+        public string FieldName { get; set; }
 
         public bool PassValueToConstructor { get; set; }
     }

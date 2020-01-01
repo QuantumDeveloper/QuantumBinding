@@ -4,9 +4,9 @@ using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.Processors
 {
-    public class FunctionToInstanceMethodAction : PreGeneratorPass
+    public class FunctionToInstanceMethodPass : PreGeneratorPass
     {
-        public FunctionToInstanceMethodAction()
+        public FunctionToInstanceMethodPass()
         {
             Options.VisitFunctions = true;
         }
