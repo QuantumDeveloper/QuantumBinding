@@ -6,6 +6,6 @@ namespace QuantumBinding.Generator.Parser
 {
     internal interface ICXCursorVisitor
     {
-        CXChildVisitResult Visit(CXCursor cursor, CXCursor parent, CXClientData client_data);
+        CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl client_data);
     }
 }

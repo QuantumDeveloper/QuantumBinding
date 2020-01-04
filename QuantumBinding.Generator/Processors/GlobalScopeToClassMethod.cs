@@ -20,11 +20,6 @@ namespace QuantumBinding.Generator.Processors
 
         public override bool VisitMethod(Method method)
         {
-            if (method.Name == "Clang_sortCodeCompletionResults")
-            {
-
-            }
-
             if (method.Class != null) return false;
 
             if (method.Parameters.Count == 0 || method.IsExtensionMethod) return false;

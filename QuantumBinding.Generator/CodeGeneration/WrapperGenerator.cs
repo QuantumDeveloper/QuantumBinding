@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.CodeGeneration
 {
@@ -931,7 +932,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             else if (arrayType.ElementType.IsPurePointer())
             {
                 var propertyArrayElementType = arrayType.ElementType.Visit(TypePrinter);
-                WriteLine($"{property.Name} = new {propertyArrayElementType}[{size}];");
+                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = new {propertyArrayElementType}[{size}];");
                 WriteLine($"for (int i = 0; i < {size}; ++i)");
                 WriteOpenBraceAndIndent();
                 WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = {property.Name}[i];");

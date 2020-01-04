@@ -58,7 +58,7 @@ namespace QuantumBinding.Generator
                     throw new ArgumentNullException("InteropClassName should not be empty");
                 }
 
-                var createIndex = clang.createIndex(0, 0);
+                var clangIndex = clang.createIndex(0, 0);
                 List<string> arguments = new List<string>
                 {
                     "-x",
@@ -83,7 +83,7 @@ namespace QuantumBinding.Generator
                     foreach (var file in module.Files)
                     {
                         TranslationUnit unit = new TranslationUnit(file, module);
-                        unit.Parse(createIndex, arguments);
+                        unit.Parse(clangIndex, arguments);
                         if (unit.IsValid)
                         {
                             translationUnits.Add(unit);
@@ -153,7 +153,7 @@ namespace QuantumBinding.Generator
                 }
                 finally
                 {
-                    clang.disposeIndex(createIndex);
+                    clangIndex.disposeIndex();
                 }
             }
         }

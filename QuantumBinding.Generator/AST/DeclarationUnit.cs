@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.AST
 {
