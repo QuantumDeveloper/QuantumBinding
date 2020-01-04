@@ -1,4 +1,5 @@
 ﻿using QuantumBinding.Generator.AST;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -26,7 +27,7 @@ namespace QuantumBinding.Generator.Processors
                 macro.Value = macro.Value[1..^1];
             }
 
-            macro.Type = ClangUtils.GetMacroType(macro.Value);
+            macro.Type = ClangUtils2.GetMacroType(macro.Value);
 
             return true;
         }

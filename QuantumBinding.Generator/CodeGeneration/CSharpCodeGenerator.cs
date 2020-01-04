@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
+using QuantumBinding.Generator.Utils;
 using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.CodeGeneration

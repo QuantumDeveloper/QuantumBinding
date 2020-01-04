@@ -359,7 +359,7 @@ namespace QuantumBinding.Clang
                 if (Ptr_data.Length > 2)
                     throw new System.ArgumentOutOfRangeException(nameof(Ptr_data), "Array is out of bounds. Size should not be more than 2");
 
-                Ptr_data = new System.IntPtr[2];
+                _internal.ptr_data = new System.IntPtr[2];
                 for (int i = 0; i < 2; ++i)
                 {
                     _internal.ptr_data[i] = Ptr_data[i];
@@ -438,7 +438,7 @@ namespace QuantumBinding.Clang
                 if (Ptr_data.Length > 2)
                     throw new System.ArgumentOutOfRangeException(nameof(Ptr_data), "Array is out of bounds. Size should not be more than 2");
 
-                Ptr_data = new System.IntPtr[2];
+                _internal.ptr_data = new System.IntPtr[2];
                 for (int i = 0; i < 2; ++i)
                 {
                     _internal.ptr_data[i] = Ptr_data[i];
@@ -1427,7 +1427,7 @@ namespace QuantumBinding.Clang
                 if (Data.Length > 3)
                     throw new System.ArgumentOutOfRangeException(nameof(Data), "Array is out of bounds. Size should not be more than 3");
 
-                Data = new System.IntPtr[3];
+                _internal.data = new System.IntPtr[3];
                 for (int i = 0; i < 3; ++i)
                 {
                     _internal.data[i] = Data[i];
@@ -1851,7 +1851,7 @@ namespace QuantumBinding.Clang
                 if (Data.Length > 2)
                     throw new System.ArgumentOutOfRangeException(nameof(Data), "Array is out of bounds. Size should not be more than 2");
 
-                Data = new System.IntPtr[2];
+                _internal.data = new System.IntPtr[2];
                 for (int i = 0; i < 2; ++i)
                 {
                     _internal.data[i] = Data[i];
@@ -2110,7 +2110,7 @@ namespace QuantumBinding.Clang
                 if (Ptr_data.Length > 2)
                     throw new System.ArgumentOutOfRangeException(nameof(Ptr_data), "Array is out of bounds. Size should not be more than 2");
 
-                Ptr_data = new System.IntPtr[2];
+                _internal.ptr_data = new System.IntPtr[2];
                 for (int i = 0; i < 2; ++i)
                 {
                     _internal.ptr_data[i] = Ptr_data[i];

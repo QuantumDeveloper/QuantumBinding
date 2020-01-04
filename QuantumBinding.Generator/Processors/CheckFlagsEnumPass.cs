@@ -1,5 +1,6 @@
 ﻿using System;
 using QuantumBinding.Generator.AST;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -26,7 +27,7 @@ namespace QuantumBinding.Generator.Processors
                         return false;
                     }
 
-                    if (!ClangUtils.IsPowerOfTwo((uint)value) && value != int.MaxValue)
+                    if (!ClangUtils2.IsPowerOfTwo((uint)value) && value != int.MaxValue)
                     {
                         return false;
                     }

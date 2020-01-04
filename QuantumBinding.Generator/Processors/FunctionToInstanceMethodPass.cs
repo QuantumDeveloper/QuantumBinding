@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -25,7 +26,7 @@ namespace QuantumBinding.Generator.Processors
             {
                 var globalMethod = new Method();
                 globalMethod.Function = function;
-                globalMethod.Name = ClangUtils.ChangeStringStyle(function.Name, NamingStyle.FirstLetterUpperCase);
+                globalMethod.Name = ClangUtils2.ChangeStringStyle(function.Name, NamingStyle.FirstLetterUpperCase);
                 globalMethod.IsStatic = true;
                 globalMethod.ReturnType = function.ReturnType;
                 globalMethod.AccessSpecifier = AccessSpecifier.Public;
@@ -72,7 +73,7 @@ namespace QuantumBinding.Generator.Processors
             }
 
             method.Function = function;
-            method.Name = ClangUtils.ChangeStringStyle(function.Name, NamingStyle.FirstLetterUpperCase);
+            method.Name = ClangUtils2.ChangeStringStyle(function.Name, NamingStyle.FirstLetterUpperCase);
             method.ReturnType = function.ReturnType;
             method.AccessSpecifier = AccessSpecifier.Public;
             method.Owner = function.Owner;
