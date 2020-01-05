@@ -38,7 +38,7 @@ namespace QuantumBinding.Generator.AST
 
         public void Parse(QBIndex index, List<string> arguments)
         {
-            var parser = new ClangParser2(this);
+            var parser = new ClangParser(this);
             if (!File.Exists(FilePath))
             {
                 Console.WriteLine($"File {FilePath} does not exist.");
