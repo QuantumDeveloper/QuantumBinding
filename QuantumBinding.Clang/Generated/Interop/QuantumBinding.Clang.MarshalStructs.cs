@@ -32,122 +32,74 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// Object encapsulating information about overlaying virtual file/directories over the real file system.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXVirtualFileOverlay
+    public partial struct CXVirtualFileOverlayImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXVirtualFileOverlay c)
+        public CXVirtualFileOverlayImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXVirtualFileOverlay(System.IntPtr c)
-        {
-            return new CXVirtualFileOverlay(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// Object encapsulating information about a module.map file.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXModuleMapDescriptor
+    public partial struct CXModuleMapDescriptorImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXModuleMapDescriptor c)
+        public CXModuleMapDescriptorImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXModuleMapDescriptor(System.IntPtr c)
-        {
-            return new CXModuleMapDescriptor(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// An "index" that consists of a set of translation units that would typically be linked together into an executable or library.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXIndex
+    public partial struct CXIndexImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXIndex c)
+        public CXIndexImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXIndex(System.IntPtr c)
-        {
-            return new CXIndex(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// An opaque type representing target information for a given translation unit.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXTargetInfo
+    public partial struct CXTargetInfoImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXTargetInfo c)
+        public CXTargetInfoImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXTargetInfo(System.IntPtr c)
-        {
-            return new CXTargetInfo(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// A single translation unit, which resides in an index.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXTranslationUnit
+    public partial struct CXTranslationUnitImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXTranslationUnit c)
+        public CXTranslationUnitImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXTranslationUnit(System.IntPtr c)
-        {
-            return new CXTranslationUnit(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// Opaque pointer representing client data that will be passed through to various callbacks and visitors.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXClientData
+    public partial struct CXClientDataImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXClientData c)
+        public CXClientDataImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXClientData(System.IntPtr c)
-        {
-            return new CXClientData(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -198,22 +150,14 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// A particular source file that is part of a translation unit.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXFile
+    public partial struct CXFileImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXFile c)
+        public CXFileImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXFile(System.IntPtr c)
-        {
-            return new CXFile(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -274,42 +218,26 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// A single diagnostic, containing the diagnostic's severity, location, text, source ranges, and fix-it hints.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXDiagnostic
+    public partial struct CXDiagnosticImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXDiagnostic c)
+        public CXDiagnosticImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXDiagnostic(System.IntPtr c)
-        {
-            return new CXDiagnostic(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// A group of CXDiagnostics.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXDiagnosticSet
+    public partial struct CXDiagnosticSetImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXDiagnosticSet c)
+        public CXDiagnosticSetImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXDiagnosticSet(System.IntPtr c)
-        {
-            return new CXDiagnosticSet(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -320,7 +248,7 @@ namespace QuantumBinding.Clang.Interop
         ///<summary>
         /// The memory usage category.
         ///</summary>
-        public CXTUResourceUsageKind kind;
+        public uint kind;
 
         ///<summary>
         /// Amount of resources used. The units will depend on the resource kind.
@@ -358,7 +286,7 @@ namespace QuantumBinding.Clang.Interop
     [StructLayout(LayoutKind.Sequential)]
     public partial struct CXCursor
     {
-        public CXCursorKind kind;
+        public uint kind;
 
         public int xdata;
 
@@ -405,22 +333,14 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// A fast container representing a set of CXCursors.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXCursorSet
+    public partial struct CXCursorSetImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXCursorSet c)
+        public CXCursorSetImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXCursorSet(System.IntPtr c)
-        {
-            return new CXCursorSet(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -431,49 +351,33 @@ namespace QuantumBinding.Clang.Interop
     [StructLayout(LayoutKind.Sequential)]
     public partial struct CXType
     {
-        public CXTypeKind kind;
+        public uint kind;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
         public System.IntPtr[] data;
 
     }
 
-    ///<summary>
-    /// Opaque pointer representing a policy that controls pretty printing for clang_getCursorPrettyPrinted.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXPrintingPolicy
+    public partial struct CXPrintingPolicyImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXPrintingPolicy c)
+        public CXPrintingPolicyImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXPrintingPolicy(System.IntPtr c)
-        {
-            return new CXPrintingPolicy(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// The functions in this group provide access to information about modules.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXModule
+    public partial struct CXModuleImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXModule c)
+        public CXModuleImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXModule(System.IntPtr c)
-        {
-            return new CXModule(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -490,22 +394,14 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// A semantic string that describes a code-completion result.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXCompletionString
+    public partial struct CXCompletionStringImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXCompletionString c)
+        public CXCompletionStringImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXCompletionString(System.IntPtr c)
-        {
-            return new CXCompletionString(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -519,12 +415,12 @@ namespace QuantumBinding.Clang.Interop
         ///<summary>
         /// The kind of entity that this completion refers to.
         ///</summary>
-        public CXCursorKind CursorKind;
+        public uint CursorKind;
 
         ///<summary>
         /// The code-completion string that describes how to insert this code-completion result into the editing buffer.
         ///</summary>
-        public CXCompletionString CompletionString;
+        public CXCompletionStringImpl CompletionString;
 
     }
 
@@ -546,42 +442,26 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// Evaluation result of a cursor
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXEvalResult
+    public partial struct CXEvalResultImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXEvalResult c)
+        public CXEvalResultImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXEvalResult(System.IntPtr c)
-        {
-            return new CXEvalResult(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// A remapping of original source files and their translated files.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXRemapping
+    public partial struct CXRemappingImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXRemapping c)
+        public CXRemappingImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXRemapping(System.IntPtr c)
-        {
-            return new CXRemapping(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -595,82 +475,50 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// The client's data object that is associated with a CXFile.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXIdxClientFile
+    public partial struct CXIdxClientFileImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXIdxClientFile c)
+        public CXIdxClientFileImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXIdxClientFile(System.IntPtr c)
-        {
-            return new CXIdxClientFile(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// The client's data object that is associated with a semantic entity.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXIdxClientEntity
+    public partial struct CXIdxClientEntityImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXIdxClientEntity c)
+        public CXIdxClientEntityImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXIdxClientEntity(System.IntPtr c)
-        {
-            return new CXIdxClientEntity(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// The client's data object that is associated with a semantic container of entities.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXIdxClientContainer
+    public partial struct CXIdxClientContainerImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXIdxClientContainer c)
+        public CXIdxClientContainerImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXIdxClientContainer(System.IntPtr c)
-        {
-            return new CXIdxClientContainer(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
 
-    ///<summary>
-    /// The client's data object that is associated with an AST file (PCH or module).
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXIdxClientASTFile
+    public partial struct CXIdxClientASTFileImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXIdxClientASTFile c)
+        public CXIdxClientASTFileImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXIdxClientASTFile(System.IntPtr c)
-        {
-            return new CXIdxClientASTFile(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -707,7 +555,7 @@ namespace QuantumBinding.Clang.Interop
         ///<summary>
         /// The actual file that the #include/#import directive resolved to.
         ///</summary>
-        public CXFile file;
+        public CXFileImpl file;
 
         public int isImport;
 
@@ -729,12 +577,12 @@ namespace QuantumBinding.Clang.Interop
         ///<summary>
         /// Top level AST file containing the imported PCH, module or submodule.
         ///</summary>
-        public CXFile file;
+        public CXFileImpl file;
 
         ///<summary>
         /// The imported module or NULL if the AST file is a PCH.
         ///</summary>
-        public CXModule module;
+        public CXModuleImpl module;
 
         ///<summary>
         /// Location where the file is imported. Applicable only for modules.
@@ -751,7 +599,7 @@ namespace QuantumBinding.Clang.Interop
     [StructLayout(LayoutKind.Sequential)]
     public partial struct CXIdxAttrInfo
     {
-        public CXIdxAttrKind kind;
+        public uint kind;
 
         public CXCursor cursor;
 
@@ -762,11 +610,11 @@ namespace QuantumBinding.Clang.Interop
     [StructLayout(LayoutKind.Sequential)]
     public partial struct CXIdxEntityInfo
     {
-        public CXIdxEntityKind kind;
+        public uint kind;
 
-        public CXIdxEntityCXXTemplateKind templateKind;
+        public uint templateKind;
 
-        public CXIdxEntityLanguage lang;
+        public uint lang;
 
         public System.IntPtr name;
 
@@ -842,7 +690,7 @@ namespace QuantumBinding.Clang.Interop
     {
         public System.IntPtr declInfo;
 
-        public CXIdxObjCContainerKind kind;
+        public uint kind;
 
     }
 
@@ -931,7 +779,7 @@ namespace QuantumBinding.Clang.Interop
     [StructLayout(LayoutKind.Sequential)]
     public partial struct CXIdxEntityRefInfo
     {
-        public CXIdxEntityRefKind kind;
+        public uint kind;
 
         ///<summary>
         /// Reference cursor.
@@ -958,7 +806,7 @@ namespace QuantumBinding.Clang.Interop
         ///<summary>
         /// Sets of symbol roles of the reference.
         ///</summary>
-        public CXSymbolRole role;
+        public uint role;
 
     }
 
@@ -1004,22 +852,14 @@ namespace QuantumBinding.Clang.Interop
 
     }
 
-    ///<summary>
-    /// An indexing action/session, to be applied to one or multiple translation units.
-    ///</summary>
     [StructLayout(LayoutKind.Sequential)]
-    public partial struct CXIndexAction
+    public partial struct CXIndexActionImpl
     {
         public System.IntPtr pointer;
 
-        public static implicit operator System.IntPtr(CXIndexAction c)
+        public CXIndexActionImpl(System.IntPtr pointer)
         {
-            return c.pointer;
-        }
-
-        public static implicit operator CXIndexAction(System.IntPtr c)
-        {
-            return new CXIndexAction(){pointer = c};
+            this.pointer = pointer;
         }
 
     }
@@ -1032,7 +872,7 @@ namespace QuantumBinding.Clang.Interop
     {
         public System.IntPtr ASTNode;
 
-        public CXTranslationUnit TranslationUnit;
+        public CXTranslationUnitImpl TranslationUnit;
 
     }
 

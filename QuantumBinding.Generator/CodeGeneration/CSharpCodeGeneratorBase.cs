@@ -245,6 +245,11 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateOverloads(Class @class)
         {
+            if (@class.Operators.Count > 0)
+            {
+                NewLine();
+            }
+
             // Temporary disable Char to Bool convertion during generating an overloads to keep in sync with fields 
             // in case we really want use byte values
             var prev = CurrentTranslationUnit.Module.CharAsBoolForMethods;

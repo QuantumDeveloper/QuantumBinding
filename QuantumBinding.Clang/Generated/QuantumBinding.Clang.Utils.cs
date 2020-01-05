@@ -12,7 +12,17 @@ namespace QuantumBinding.Clang
 
     public static class MarshalUtils
     {
-        public static void IntPtrToManagedArray<T>(IntPtr unmanagedArray, T[] managedArray)
+        public static void IntPtrToManagedArray2<T>(IntPtr unmanagedArray, T[] managedArray) where T : struct
+        {
+            var size = Marshal.SizeOf(typeof(T));
+            for (int i = 0; i < managedArray.Length; i++)
+            {
+                IntPtr ins = new IntPtr(unmanagedArray.ToInt64() + i * size);
+                managedArray[i] = (T)Activator.CreateInstance(typeof(T), ins);
+            }
+        }
+
+        public static void IntPtrToManagedArray<T>(IntPtr unmanagedArray, T[] managedArray) where T: struct
         {
             var size = Marshal.SizeOf(typeof(T));
             for (int i = 0; i < managedArray.Length; i++)
@@ -82,7 +92,7 @@ namespace QuantumBinding.Clang
         }
     }
 
-    public class DisposableObject: IDisposable
+    public class QBDisposableObject: IDisposable
     {
         public bool IsDisposed { get; private set; }
 
@@ -107,7 +117,7 @@ namespace QuantumBinding.Clang
 
         protected virtual void UnmanagedDisposeOverride() { }
 
-        ~DisposableObject()
+        ~QBDisposableObject()
         {
             Dispose(false);
         }
@@ -119,18 +129,26 @@ namespace QuantumBinding.Clang
         }
     }
 
-    public class GCHandleReference : DisposableObject
+    public class GCHandleReference : QBDisposableObject
     {
-        bool isInitialized;
         GCHandle reference;
 
-        public IntPtr Handle => reference.AddrOfPinnedObject();
+        public IntPtr Handle
+        {
+            get
+            {
+                if (reference.IsAllocated)
+                {
+                    return reference.AddrOfPinnedObject();
+                }
+                return IntPtr.Zero;
+            }
+        }
 
         public GCHandleReference(object obj)
         {
             if (obj != null)
             {
-                isInitialized = true;
                 reference = GCHandle.Alloc(obj, GCHandleType.Pinned);
             }
         }
@@ -138,14 +156,14 @@ namespace QuantumBinding.Clang
         protected override void UnmanagedDisposeOverride()
         {
             base.UnmanagedDisposeOverride();
-            if (isInitialized)
+            if (reference.IsAllocated)
             {
                 reference.Free();
             }
         }
     }
 
-    public class StringReference : DisposableObject
+    public class StringReference : QBDisposableObject
     {
         bool isInitialized;
         IntPtr reference;
@@ -180,13 +198,23 @@ namespace QuantumBinding.Clang
         }
     }
 
-    public class StringArrayReference : DisposableObject
+    public class StringArrayReference : QBDisposableObject
     {
         IntPtr[] stringReferences;
 
         GCHandle reference;
 
-        public IntPtr Handle => reference.AddrOfPinnedObject();
+        public IntPtr Handle
+        {
+            get
+            {
+                if (reference.IsAllocated)
+                {
+                    return reference.AddrOfPinnedObject();
+                }
+                return IntPtr.Zero;
+            }
+        }
 
         public StringArrayReference(in string[] strArray, bool isUnicode)
         {
@@ -223,7 +251,7 @@ namespace QuantumBinding.Clang
         }
     }
 
-    public class StructReference : DisposableObject
+    public class StructReference : QBDisposableObject
     {
         bool isInitialized;
         IntPtr reference;
