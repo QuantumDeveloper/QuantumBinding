@@ -27,7 +27,7 @@ namespace QuantumBinding.Generator.Processors
                         return false;
                     }
 
-                    if (!ClangUtils2.IsPowerOfTwo((uint)value) && value != int.MaxValue)
+                    if (!ClangUtils.IsPowerOfTwo((uint)value) && value != int.MaxValue)
                     {
                         return false;
                     }
