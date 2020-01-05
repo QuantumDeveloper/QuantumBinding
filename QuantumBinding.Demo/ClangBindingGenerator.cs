@@ -15,7 +15,7 @@ namespace QuantumBinding.ClangGenerator
         public override void OnSetup(BindingOptions options)
         {
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
-            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
+            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
             string library = "libclang";
             options.GenerateSequentialLayout = true;
             options.DebugMode = false;
@@ -26,7 +26,6 @@ namespace QuantumBinding.ClangGenerator
             clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include");
             clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c");
             clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c\Documentation.h");
-            //clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c\Documentation.h");
             clangModule.ForceCallingConvention = true;
             clangModule.AllowConvertStructToClass = true;
             clangModule.CallingConvention = CallingConvention.Cdecl;

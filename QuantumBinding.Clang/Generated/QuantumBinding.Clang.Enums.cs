@@ -13,7 +13,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Error codes returned by libclang routines.
     ///</summary>
-    public enum CXErrorCode : int
+    public enum CXErrorCode : uint
     {
         ///<summary>
         /// No error.
@@ -45,7 +45,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the availability of a particular entity, which indicates whether the use of this entity will result in a warning or error due to it being deprecated or unavailable.
     ///</summary>
-    public enum CXAvailabilityKind : int
+    public enum CXAvailabilityKind : uint
     {
         ///<summary>
         /// The entity is available.
@@ -72,7 +72,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the exception specification of a cursor.
     ///</summary>
-    public enum CXCursor_ExceptionSpecificationKind : int
+    public enum CXCursor_ExceptionSpecificationKind : uint
     {
         ///<summary>
         /// The cursor has no exception specification.
@@ -121,7 +121,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXGlobalOptFlags : int
+    public enum CXGlobalOptFlags : uint
     {
         ///<summary>
         /// Used to indicate that no special CXIndex options are needed.
@@ -148,7 +148,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the severity of a particular diagnostic.
     ///</summary>
-    public enum CXDiagnosticSeverity : int
+    public enum CXDiagnosticSeverity : uint
     {
         ///<summary>
         /// A diagnostic that has been suppressed, e.g., by a command-line option.
@@ -180,7 +180,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the kind of error that occurred (if any) in a call to clang_loadDiagnostics.
     ///</summary>
-    public enum CXLoadDiag_Error : int
+    public enum CXLoadDiag_Error : uint
     {
         ///<summary>
         /// Indicates that no error occurred.
@@ -208,7 +208,7 @@ namespace QuantumBinding.Clang
     /// Options to control the display of diagnostics.
     ///</summary>
     [Flags]
-    public enum CXDiagnosticDisplayOptions : int
+    public enum CXDiagnosticDisplayOptions : uint
     {
         ///<summary>
         /// Display the source-location information where the diagnostic was located.
@@ -246,7 +246,7 @@ namespace QuantumBinding.Clang
     /// Flags that control the creation of translation units.
     ///</summary>
     [Flags]
-    public enum CXTranslationUnit_Flags : int
+    public enum CXTranslationUnit_Flags : uint
     {
         ///<summary>
         /// Used to indicate that no special translation-unit options are needed.
@@ -329,7 +329,7 @@ namespace QuantumBinding.Clang
     /// Flags that control how translation units are saved.
     ///</summary>
     [Flags]
-    public enum CXSaveTranslationUnit_Flags : int
+    public enum CXSaveTranslationUnit_Flags : uint
     {
         ///<summary>
         /// Used to indicate that no special saving options are needed.
@@ -341,7 +341,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the kind of error that occurred (if any) in a call to clang_saveTranslationUnit().
     ///</summary>
-    public enum CXSaveError : int
+    public enum CXSaveError : uint
     {
         ///<summary>
         /// Indicates that no error occurred while saving a translation unit.
@@ -369,7 +369,7 @@ namespace QuantumBinding.Clang
     /// Flags that control the reparsing of translation units.
     ///</summary>
     [Flags]
-    public enum CXReparse_Flags : int
+    public enum CXReparse_Flags : uint
     {
         ///<summary>
         /// Used to indicate that no special reparsing options are needed.
@@ -381,7 +381,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Categorizes how memory is being used by a translation unit.
     ///</summary>
-    public enum CXTUResourceUsageKind : int
+    public enum CXTUResourceUsageKind : uint
     {
         CXTUResourceUsage_AST = 1,
 
@@ -424,7 +424,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the kind of entity that a cursor refers to.
     ///</summary>
-    public enum CXCursorKind : int
+    public enum CXCursorKind : uint
     {
         ///<summary>
         /// Declarations
@@ -1692,7 +1692,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describe the linkage of the entity referred to by a cursor.
     ///</summary>
-    public enum CXLinkageKind : int
+    public enum CXLinkageKind : uint
     {
         ///<summary>
         /// This value indicates that no linkage information is available for a provided CXCursor.
@@ -1721,7 +1721,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXVisibilityKind : int
+    public enum CXVisibilityKind : uint
     {
         ///<summary>
         /// This value indicates that no visibility information is available for a provided CXCursor.
@@ -1748,7 +1748,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describe the "language" of the entity referred to by a cursor.
     ///</summary>
-    public enum CXLanguageKind : int
+    public enum CXLanguageKind : uint
     {
         CXLanguage_Invalid = 0,
 
@@ -1764,7 +1764,7 @@ namespace QuantumBinding.Clang
     /// Describe the "thread-local storage (TLS) kind" of the declaration referred to by a cursor.
     ///</summary>
     [Flags]
-    public enum CXTLSKind : int
+    public enum CXTLSKind : uint
     {
         CXTLS_None = 0,
 
@@ -1777,7 +1777,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the kind of type
     ///</summary>
-    public enum CXTypeKind : int
+    public enum CXTypeKind : uint
     {
         ///<summary>
         /// Represents an invalid type (e.g., where no type is available).
@@ -2369,7 +2369,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the calling convention of a function type
     ///</summary>
-    public enum CXCallingConv : int
+    public enum CXCallingConv : uint
     {
         CXCallingConv_Default = 0,
 
@@ -2443,7 +2443,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the kind of a template argument.
     ///</summary>
-    public enum CXTemplateArgumentKind : int
+    public enum CXTemplateArgumentKind : uint
     {
         CXTemplateArgumentKind_Null = 0,
 
@@ -2470,7 +2470,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXTypeNullabilityKind : int
+    public enum CXTypeNullabilityKind : uint
     {
         ///<summary>
         /// Values of this type can never be null.
@@ -2532,7 +2532,7 @@ namespace QuantumBinding.Clang
     }
 
     [Flags]
-    public enum CXRefQualifierKind : int
+    public enum CXRefQualifierKind : uint
     {
         ///<summary>
         /// No ref-qualifier was provided.
@@ -2554,7 +2554,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Represents the C++ access control level to a base class for a cursor with kind CX_CXXBaseSpecifier.
     ///</summary>
-    public enum CX_CXXAccessSpecifier : int
+    public enum CX_CXXAccessSpecifier : uint
     {
         CX_CXXInvalidAccessSpecifier = 0,
 
@@ -2569,7 +2569,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Represents the storage classes as declared in the source. CX_SC_Invalid was added for the case that the passed cursor in not a declaration.
     ///</summary>
-    public enum CX_StorageClass : int
+    public enum CX_StorageClass : uint
     {
         CX_SC_Invalid = 0,
 
@@ -2593,7 +2593,7 @@ namespace QuantumBinding.Clang
     /// Describes how the traversal of the children of a particular cursor should proceed after visiting a particular child cursor.
     ///</summary>
     [Flags]
-    public enum CXChildVisitResult : int
+    public enum CXChildVisitResult : uint
     {
         ///<summary>
         /// Terminates the cursor traversal.
@@ -2615,7 +2615,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Properties for the printing policy.
     ///</summary>
-    public enum CXPrintingPolicyProperty : int
+    public enum CXPrintingPolicyProperty : uint
     {
         CXPrintingPolicy_Indentation = 0,
 
@@ -2677,7 +2677,7 @@ namespace QuantumBinding.Clang
     /// Property attributes for a CXCursor_ObjCPropertyDecl.
     ///</summary>
     [Flags]
-    public enum CXObjCPropertyAttrKind : int
+    public enum CXObjCPropertyAttrKind : uint
     {
         CXObjCPropertyAttr_noattr = 0,
 
@@ -2713,7 +2713,7 @@ namespace QuantumBinding.Clang
     /// 'Qualifiers' written next to the return and parameter types in Objective-C method declarations.
     ///</summary>
     [Flags]
-    public enum CXObjCDeclQualifierKind : int
+    public enum CXObjCDeclQualifierKind : uint
     {
         CXObjCDeclQualifier_None = 0,
 
@@ -2732,7 +2732,7 @@ namespace QuantumBinding.Clang
     }
 
     [Flags]
-    public enum CXNameRefFlags : int
+    public enum CXNameRefFlags : uint
     {
         ///<summary>
         /// Include the nested-name-specifier, e.g. Foo:: in x.Foo::y, in the range.
@@ -2754,7 +2754,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes a kind of token.
     ///</summary>
-    public enum CXTokenKind : int
+    public enum CXTokenKind : uint
     {
         ///<summary>
         /// A token that contains some kind of punctuation.
@@ -2786,7 +2786,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes a single piece of text within a code-completion string.
     ///</summary>
-    public enum CXCompletionChunkKind : int
+    public enum CXCompletionChunkKind : uint
     {
         ///<summary>
         /// A code-completion string that describes "optional" text that could be a part of the template (but is not required).
@@ -2899,7 +2899,7 @@ namespace QuantumBinding.Clang
     /// Flags that can be passed to clang_codeCompleteAt() to modify its behavior.
     ///</summary>
     [Flags]
-    public enum CXCodeComplete_Flags : int
+    public enum CXCodeComplete_Flags : uint
     {
         ///<summary>
         /// Whether to include macros within the set of code completions returned.
@@ -2931,7 +2931,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Bits that represent the context under which completion is occurring.
     ///</summary>
-    public enum CXCompletionContext : int
+    public enum CXCompletionContext : uint
     {
         ///<summary>
         /// The context for completions is unexposed, as only Clang results should be included. (This is equivalent to having no context bits set.)
@@ -3060,7 +3060,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXEvalResultKind : int
+    public enum CXEvalResultKind : uint
     {
         CXEval_Int = 1,
 
@@ -3082,7 +3082,7 @@ namespace QuantumBinding.Clang
     /// @{
     ///</summary>
     [Flags]
-    public enum CXVisitorResult : int
+    public enum CXVisitorResult : uint
     {
         CXVisit_Break = 0,
 
@@ -3091,7 +3091,7 @@ namespace QuantumBinding.Clang
     }
 
     [Flags]
-    public enum CXResult : int
+    public enum CXResult : uint
     {
         ///<summary>
         /// Function returned successfully.
@@ -3110,7 +3110,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXIdxEntityKind : int
+    public enum CXIdxEntityKind : uint
     {
         CXIdxEntity_Unexposed = 0,
 
@@ -3168,7 +3168,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXIdxEntityLanguage : int
+    public enum CXIdxEntityLanguage : uint
     {
         CXIdxEntityLang_None = 0,
 
@@ -3185,7 +3185,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Extra C++ template information for an entity. This can apply to: CXIdxEntity_Function CXIdxEntity_CXXClass CXIdxEntity_CXXStaticMethod CXIdxEntity_CXXInstanceMethod CXIdxEntity_CXXConstructor CXIdxEntity_CXXConversionFunction CXIdxEntity_CXXTypeAlias
     ///</summary>
-    public enum CXIdxEntityCXXTemplateKind : int
+    public enum CXIdxEntityCXXTemplateKind : uint
     {
         CXIdxEntity_NonTemplate = 0,
 
@@ -3197,7 +3197,7 @@ namespace QuantumBinding.Clang
 
     }
 
-    public enum CXIdxAttrKind : int
+    public enum CXIdxAttrKind : uint
     {
         CXIdxAttr_Unexposed = 0,
 
@@ -3210,14 +3210,14 @@ namespace QuantumBinding.Clang
     }
 
     [Flags]
-    public enum CXIdxDeclInfoFlags : int
+    public enum CXIdxDeclInfoFlags : uint
     {
         CXIdxDeclFlag_Skipped = 1,
 
     }
 
     [Flags]
-    public enum CXIdxObjCContainerKind : int
+    public enum CXIdxObjCContainerKind : uint
     {
         CXIdxObjCContainer_ForwardRef = 0,
 
@@ -3231,7 +3231,7 @@ namespace QuantumBinding.Clang
     /// Data for IndexerCallbacks#indexEntityReference.
     ///</summary>
     [Flags]
-    public enum CXIdxEntityRefKind : int
+    public enum CXIdxEntityRefKind : uint
     {
         ///<summary>
         /// The entity is referenced directly in user's code.
@@ -3249,7 +3249,7 @@ namespace QuantumBinding.Clang
     /// Roles that are attributed to symbol occurrences.
     ///</summary>
     [Flags]
-    public enum CXSymbolRole : int
+    public enum CXSymbolRole : uint
     {
         CXSymbolRole_None = 0,
 
@@ -3274,7 +3274,7 @@ namespace QuantumBinding.Clang
     }
 
     [Flags]
-    public enum CXIndexOptFlags : int
+    public enum CXIndexOptFlags : uint
     {
         ///<summary>
         /// Used to indicate that no special indexing options are needed.
@@ -3311,7 +3311,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// Describes the type of the comment AST node ( CXComment). A comment node can be considered block content (e. g., paragraph), inline content (plain text) or neither (the root AST node).
     ///</summary>
-    public enum CXCommentKind : int
+    public enum CXCommentKind : uint
     {
         ///<summary>
         /// Null comment. No AST node is constructed at the requested location because there is no text or a syntax error.
@@ -3383,7 +3383,7 @@ namespace QuantumBinding.Clang
     ///<summary>
     /// The most appropriate rendering mode for an inline command, chosen on command semantics in Doxygen.
     ///</summary>
-    public enum CXCommentInlineCommandRenderKind : int
+    public enum CXCommentInlineCommandRenderKind : uint
     {
         ///<summary>
         /// Command argument should be rendered in a normal font.
@@ -3411,7 +3411,7 @@ namespace QuantumBinding.Clang
     /// Describes parameter passing direction for \param or \arg command.
     ///</summary>
     [Flags]
-    public enum CXCommentParamPassDirection : int
+    public enum CXCommentParamPassDirection : uint
     {
         ///<summary>
         /// The parameter is an input parameter.

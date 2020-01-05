@@ -20,8 +20,4 @@
     <Compile Remove="QuantumBinding.Clang.Functions.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interop\" />
-  </ItemGroup>
-
 </Project>
