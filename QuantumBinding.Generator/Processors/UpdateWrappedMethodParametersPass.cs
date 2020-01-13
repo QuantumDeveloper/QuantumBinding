@@ -64,8 +64,13 @@ namespace QuantumBinding.Generator.Processors
         private Declaration FindDeclaration(BindingType type)
         {
             var decl = type.Declaration as Class;
-            if (decl == null || (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)) return null;
+            if (decl == null) return null;
             if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return null;
+
+            if (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)
+            {
+                return decl;
+            }
 
             Class declaration = null;
             foreach (var unit in AstContext.TranslationUnits)

@@ -141,11 +141,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine(classVisitResult);
             }
 
-            if (@class.Name == "QBCodeCompleteResults")
-            {
-
-            }
-
             WriteOpenBraceAndIndent();
 
             GenerateFields(@class);
