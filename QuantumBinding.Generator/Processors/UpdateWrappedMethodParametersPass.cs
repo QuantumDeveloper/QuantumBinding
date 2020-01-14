@@ -67,7 +67,7 @@ namespace QuantumBinding.Generator.Processors
             if (decl == null) return null;
             if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return null;
 
-            if (decl.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes)
+            if (decl.IsSimpleType)
             {
                 return decl;
             }
