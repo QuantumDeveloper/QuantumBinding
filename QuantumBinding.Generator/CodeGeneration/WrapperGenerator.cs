@@ -379,6 +379,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                         }
                         else if (property.Type.IsPointerToArray())
                         {
+                            if (@class.Name == "PipelineDynamicStateCreateInfo")
+                            {
+
+                            }
                             WritePointerToArraySetter(property, pairedFieldType, pointerArrayIndex);
                             pointerArrayIndex++;
                         }
@@ -833,6 +837,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var poinerType = property.Type as PointerType;
             var array = poinerType.Pointee as ArrayType;
             TypePrinter.PushMarshalType(MarshalTypes.NativeField);
+            array.ElementType.Declaration = property.Field.Type.Declaration;
             var arrayTypeName = array.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             var tmpArrayName = $"tmpArray{index}";
@@ -856,10 +861,13 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             WriteLine($"for (int i = 0; i < {property.Name}.Length; ++i)");
             WriteOpenBraceAndIndent();
-            if (decl != null && (decl.ClassType == ClassType.Class || decl.IsSimpleType)
-                || property.Type.IsPointerToArrayOfPrimitiveTypes()
-                || property.Type.IsEnum()
-                || property.Type.IsPointerToArrayOfEnums())
+            if (property.Type.IsEnum() || property.Type.IsPointerToArrayOfEnums())
+            {
+                var @enum = property.Field.Type.Declaration as Enumeration;
+                WriteLine($"{tmpArrayName}[i] = ({@enum.InheritanceType}){property.Name}[i];");
+            }
+            else if (decl != null && (decl.ClassType == ClassType.Class || decl.IsSimpleType)
+                || property.Type.IsPointerToArrayOfPrimitiveTypes())
             {
                 WriteLine($"{tmpArrayName}[i] = {property.Name}[i];");
             }
