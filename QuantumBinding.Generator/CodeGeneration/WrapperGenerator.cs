@@ -379,10 +379,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                         }
                         else if (property.Type.IsPointerToArray())
                         {
-                            if (@class.Name == "PipelineDynamicStateCreateInfo")
-                            {
-
-                            }
                             WritePointerToArraySetter(property, pairedFieldType, pointerArrayIndex);
                             pointerArrayIndex++;
                         }
