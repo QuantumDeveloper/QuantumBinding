@@ -19,7 +19,6 @@ namespace QuantumBinding.Generator.AST
             FilePath = filePath;
             Module = module;
             Name = Module.OutputNamespace;
-            IsValid = true;
         }
 
         public static NamespaceMapping InteropNamespaceExtension { get; }
@@ -46,9 +45,9 @@ namespace QuantumBinding.Generator.AST
             }
             
             ParseResult = parser.Parse(index, FilePath, arguments);
-            if (ParseResult != ParseResult.Success)
+            if (ParseResult == ParseResult.Success)
             {
-                IsValid = false;
+                IsValid = true;
             }
         }
 
