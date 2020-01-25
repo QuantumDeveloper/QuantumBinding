@@ -303,12 +303,12 @@ namespace QuantumBinding.Generator.Parser
         {
             var spelling = cursor.getCursorSpelling().ToString();
 
-            if (this.visitedTypeDefs.Contains(spelling))
+            if (visitedTypeDefs.Contains(spelling))
             {
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            this.visitedTypeDefs.Add(spelling);
+            visitedTypeDefs.Add(spelling);
 
             var type = cursor.getTypedefDeclUnderlyingType().getCanonicalType();
 
