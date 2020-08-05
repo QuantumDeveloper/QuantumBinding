@@ -246,6 +246,11 @@ namespace QuantumBinding.Generator.Parser
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
+            if (structName == "VkTransformMatrixKHR")
+            {
+
+            }
+
             var @class = new Class
             {
                 Name = structName,
@@ -319,6 +324,10 @@ namespace QuantumBinding.Generator.Parser
                 if (@class != null && @class.Name != spelling)
                 {
                     unit.AddDummyType(spelling, @class.Name);
+                }
+                else if (@class == null && type.Kind == CXTypeKind.CXType_Enum)
+                {
+                    unit.AddDummyType(spelling, type.ToString());
                 }
 
                 return CXChildVisitResult.CXChildVisit_Continue;

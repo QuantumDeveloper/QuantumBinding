@@ -146,8 +146,7 @@ namespace QuantumBinding.Generator.Utils
                         if (elementType.IsPrimitiveType())
                         {
                             var paramType = elementType.GetPrimitiveType();
-                            var t = new BuiltinType(paramType);
-                            arrayType.ElementType = t;
+                            arrayType.ElementType = new BuiltinType(paramType);
                         }
                         else
                         {
@@ -442,7 +441,7 @@ namespace QuantumBinding.Generator.Utils
                 return new BuiltinType(PrimitiveType.UInt32);
             }
 
-            return new BuiltinType(PrimitiveType.Int32);
+            return new BuiltinType(PrimitiveType.UInt32);
         }
     }
 }
