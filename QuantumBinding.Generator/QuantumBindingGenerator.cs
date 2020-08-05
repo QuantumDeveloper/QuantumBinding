@@ -61,8 +61,10 @@ namespace QuantumBinding.Generator
                 var clangIndex = clang.createIndex(0, 0);
                 List<string> arguments = new List<string>
                 {
-                    "-x",
-                    "c++",
+                    "-std=c++14",                           // The input files should be compiled for C++ 11
+                    "-xc++",                                // The input files are C++
+                    "-Wno-pragma-once-outside-header",       // We are processing files which may be header files
+                    "-v",
                     "-fparse-all-comments" //To make clang parse comments
                 };
 
