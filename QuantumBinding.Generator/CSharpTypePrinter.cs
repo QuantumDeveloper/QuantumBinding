@@ -74,7 +74,6 @@ namespace QuantumBinding.Generator
                 }
 
                 return Result($"{result}[]", "", attribute);
-
             }
 
             if (array.SizeType == ArraySizeType.Incomplete && 
@@ -609,11 +608,6 @@ namespace QuantumBinding.Generator
                 (parameter.Type.IsPointerToArray() || parameter.Type.IsArray())) // Do not write "ref" keyword for methods if parameter type is Array
             {
                 hasModifier = false;
-            }
-
-            if (parameter.Name == "pPipelines")
-            {
-
             }
 
             if (hasModifier)

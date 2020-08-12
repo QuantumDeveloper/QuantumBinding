@@ -246,7 +246,7 @@ namespace QuantumBinding.Generator.Parser
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            if (structName == "VkTransformMatrixKHR")
+            if (structName == "VkExtensionProperties")
             {
 
             }

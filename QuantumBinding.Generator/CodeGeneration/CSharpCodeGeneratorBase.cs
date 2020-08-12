@@ -151,7 +151,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateFields(Class @class)
         {
-            if (@class.Name == "SpvcMslSamplerYcbcrConversion")
+            if (@class.Name == "VkTransformMatrixKHR")
             {
 
             }
