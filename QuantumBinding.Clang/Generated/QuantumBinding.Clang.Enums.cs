@@ -119,6 +119,11 @@ namespace QuantumBinding.Clang
         ///</summary>
         CXCursor_ExceptionSpecificationKind_Unparsed = 8,
 
+        ///<summary>
+        /// The cursor has a __declspec(nothrow) exception specification.
+        ///</summary>
+        CXCursor_ExceptionSpecificationKind_NoThrow = 9,
+
     }
 
     public enum CXGlobalOptFlags : uint
@@ -322,6 +327,16 @@ namespace QuantumBinding.Clang
         /// Used to indicate that implicit attributes should be visited.
         ///</summary>
         CXTranslationUnit_VisitImplicitAttributes = 8192,
+
+        ///<summary>
+        /// Used to indicate that non-errors from included files should be ignored.
+        ///</summary>
+        CXTranslationUnit_IgnoreNonErrorsFromIncludedFiles = 16384,
+
+        ///<summary>
+        /// Tells the preprocessor not to skip excluded conditional blocks.
+        ///</summary>
+        CXTranslationUnit_RetainExcludedConditionalBlocks = 32768,
 
     }
 
@@ -868,114 +883,129 @@ namespace QuantumBinding.Clang
         CXCursor_CXXFunctionalCastExpr = 128,
 
         ///<summary>
+        /// OpenCL's addrspace_cast<> expression.
+        ///</summary>
+        CXCursor_CXXAddrspaceCastExpr = 129,
+
+        ///<summary>
         /// A C++ typeid expression (C++ [expr.typeid]).
         ///</summary>
-        CXCursor_CXXTypeidExpr = 129,
+        CXCursor_CXXTypeidExpr = 130,
 
         ///<summary>
         /// [C++ 2.13.5] C++ Boolean Literal.
         ///</summary>
-        CXCursor_CXXBoolLiteralExpr = 130,
+        CXCursor_CXXBoolLiteralExpr = 131,
 
         ///<summary>
         /// [C++0x 2.14.7] C++ Pointer Literal.
         ///</summary>
-        CXCursor_CXXNullPtrLiteralExpr = 131,
+        CXCursor_CXXNullPtrLiteralExpr = 132,
 
         ///<summary>
         /// Represents the "this" expression in C++
         ///</summary>
-        CXCursor_CXXThisExpr = 132,
+        CXCursor_CXXThisExpr = 133,
 
         ///<summary>
         /// [C++ 15] C++ Throw Expression.
         ///</summary>
-        CXCursor_CXXThrowExpr = 133,
+        CXCursor_CXXThrowExpr = 134,
 
         ///<summary>
         /// A new expression for memory allocation and constructor calls, e.g: "new CXXNewExpr(foo)".
         ///</summary>
-        CXCursor_CXXNewExpr = 134,
+        CXCursor_CXXNewExpr = 135,
 
         ///<summary>
         /// A delete expression for memory deallocation and destructor calls, e.g. "delete[] pArray".
         ///</summary>
-        CXCursor_CXXDeleteExpr = 135,
+        CXCursor_CXXDeleteExpr = 136,
 
         ///<summary>
         /// A unary expression. (noexcept, sizeof, or other traits)
         ///</summary>
-        CXCursor_UnaryExpr = 136,
+        CXCursor_UnaryExpr = 137,
 
         ///<summary>
         /// An Objective-C string literal i.e. "foo".
         ///</summary>
-        CXCursor_ObjCStringLiteral = 137,
+        CXCursor_ObjCStringLiteral = 138,
 
         ///<summary>
         /// An Objective-C @encode expression.
         ///</summary>
-        CXCursor_ObjCEncodeExpr = 138,
+        CXCursor_ObjCEncodeExpr = 139,
 
         ///<summary>
         /// An Objective-C @selector expression.
         ///</summary>
-        CXCursor_ObjCSelectorExpr = 139,
+        CXCursor_ObjCSelectorExpr = 140,
 
         ///<summary>
         /// An Objective-C @protocol expression.
         ///</summary>
-        CXCursor_ObjCProtocolExpr = 140,
+        CXCursor_ObjCProtocolExpr = 141,
 
         ///<summary>
         /// An Objective-C "bridged" cast expression, which casts between Objective-C pointers and C pointers, transferring ownership in the process.
         ///</summary>
-        CXCursor_ObjCBridgedCastExpr = 141,
+        CXCursor_ObjCBridgedCastExpr = 142,
 
         ///<summary>
         /// Represents a C++0x pack expansion that produces a sequence of expressions.
         ///</summary>
-        CXCursor_PackExpansionExpr = 142,
+        CXCursor_PackExpansionExpr = 143,
 
         ///<summary>
         /// Represents an expression that computes the length of a parameter pack.
         ///</summary>
-        CXCursor_SizeOfPackExpr = 143,
+        CXCursor_SizeOfPackExpr = 144,
 
         ///<summary>
         /// Represents a C++ lambda expression that produces a local function object.
         ///</summary>
-        CXCursor_LambdaExpr = 144,
+        CXCursor_LambdaExpr = 145,
 
         ///<summary>
         /// Objective-c Boolean Literal.
         ///</summary>
-        CXCursor_ObjCBoolLiteralExpr = 145,
+        CXCursor_ObjCBoolLiteralExpr = 146,
 
         ///<summary>
         /// Represents the "self" expression in an Objective-C method.
         ///</summary>
-        CXCursor_ObjCSelfExpr = 146,
+        CXCursor_ObjCSelfExpr = 147,
 
         ///<summary>
-        /// OpenMP 4.0 [2.4, Array Section].
+        /// OpenMP 5.0 [2.1.5, Array Section].
         ///</summary>
-        CXCursor_OMPArraySectionExpr = 147,
+        CXCursor_OMPArraySectionExpr = 148,
 
         ///<summary>
         /// Represents an (...) check.
         ///</summary>
-        CXCursor_ObjCAvailabilityCheckExpr = 148,
+        CXCursor_ObjCAvailabilityCheckExpr = 149,
 
         ///<summary>
         /// Fixed point literal
         ///</summary>
-        CXCursor_FixedPointLiteral = 149,
+        CXCursor_FixedPointLiteral = 150,
 
         ///<summary>
-        /// Fixed point literal
+        /// OpenMP 5.0 [2.1.4, Array Shaping].
         ///</summary>
-        CXCursor_LastExpr = 149,
+        CXCursor_OMPArrayShapingExpr = 151,
+
+        ///<summary>
+        /// OpenMP 5.0 [2.1.6 Iterators]
+        ///</summary>
+        CXCursor_OMPIteratorExpr = 152,
+
+        ///<summary>
+        /// OpenMP 5.0 [2.1.6 Iterators]
+        ///</summary>
+        CXCursor_LastExpr = 152,
 
         ///<summary>
         /// Statements
@@ -1388,9 +1418,49 @@ namespace QuantumBinding.Clang
         CXCursor_OMPTargetTeamsDistributeSimdDirective = 279,
 
         ///<summary>
-        /// OpenMP target teams distribute simd directive.
+        /// C++2a std::bit_cast expression.
         ///</summary>
-        CXCursor_LastStmt = 279,
+        CXCursor_BuiltinBitCastExpr = 280,
+
+        ///<summary>
+        /// OpenMP master taskloop directive.
+        ///</summary>
+        CXCursor_OMPMasterTaskLoopDirective = 281,
+
+        ///<summary>
+        /// OpenMP parallel master taskloop directive.
+        ///</summary>
+        CXCursor_OMPParallelMasterTaskLoopDirective = 282,
+
+        ///<summary>
+        /// OpenMP master taskloop simd directive.
+        ///</summary>
+        CXCursor_OMPMasterTaskLoopSimdDirective = 283,
+
+        ///<summary>
+        /// OpenMP parallel master taskloop simd directive.
+        ///</summary>
+        CXCursor_OMPParallelMasterTaskLoopSimdDirective = 284,
+
+        ///<summary>
+        /// OpenMP parallel master directive.
+        ///</summary>
+        CXCursor_OMPParallelMasterDirective = 285,
+
+        ///<summary>
+        /// OpenMP depobj directive.
+        ///</summary>
+        CXCursor_OMPDepobjDirective = 286,
+
+        ///<summary>
+        /// OpenMP scan directive.
+        ///</summary>
+        CXCursor_OMPScanDirective = 287,
+
+        ///<summary>
+        /// OpenMP scan directive.
+        ///</summary>
+        CXCursor_LastStmt = 287,
 
         ///<summary>
         /// Cursor that represents the translation unit itself.
@@ -1977,12 +2047,17 @@ namespace QuantumBinding.Clang
         ///<summary>
         /// Builtin types
         ///</summary>
+        CXType_BFloat16 = 39,
+
+        ///<summary>
+        /// Builtin types
+        ///</summary>
         CXType_FirstBuiltin = 2,
 
         ///<summary>
         /// Builtin types
         ///</summary>
-        CXType_LastBuiltin = 38,
+        CXType_LastBuiltin = 39,
 
         ///<summary>
         /// Builtin types
@@ -2363,6 +2438,16 @@ namespace QuantumBinding.Clang
         /// OpenCL builtin types.
         ///</summary>
         CXType_OCLIntelSubgroupAVCImeDualRefStreamin = 175,
+
+        ///<summary>
+        /// OpenCL builtin types.
+        ///</summary>
+        CXType_ExtVector = 176,
+
+        ///<summary>
+        /// OpenCL builtin types.
+        ///</summary>
+        CXType_Atomic = 177,
 
     }
 
@@ -3404,6 +3489,11 @@ namespace QuantumBinding.Clang
         /// Command argument should be rendered emphasized (typically italic font).
         ///</summary>
         CXCommentInlineCommandRenderKind_Emphasized = 3,
+
+        ///<summary>
+        /// Command argument should not be rendered (since it only defines an anchor).
+        ///</summary>
+        CXCommentInlineCommandRenderKind_Anchor = 4,
 
     }
 

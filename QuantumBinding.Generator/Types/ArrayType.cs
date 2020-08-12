@@ -7,6 +7,8 @@ namespace QuantumBinding.Generator.Types
     {
         public ArrayType()
         {
+            Sizes = new List<long>();
+            DimensionsCount = 1;
         }
 
         public ArrayType(ArrayType type) : base(type)
@@ -16,9 +18,15 @@ namespace QuantumBinding.Generator.Types
             SizeType = type.SizeType;
             Size = type.Size;
             ArraySizeSource = type.ArraySizeSource;
+            DimensionsCount = type.DimensionsCount;
+            Sizes = type.Sizes;
         }
 
         public BindingType ElementType { get; set; }
+
+        public uint DimensionsCount { get; set; }
+
+        public bool IsMultiDimensional => DimensionsCount > 1;
 
         public ArraySizeType SizeType { get; set; }
 
@@ -30,16 +38,14 @@ namespace QuantumBinding.Generator.Types
 
         public string ArraySizeSource { get; set; }
 
+        public List<long> Sizes { get; private set; }
+
         public override bool Equals(object obj)
         {
             var type = obj as ArrayType;
             if (type == null) return false;
 
-            return ElementType.Equals(type) && 
-                   SizeType == type.SizeType && 
-                   Qualifiers.Equals(type.Qualifiers) &&
-                   ArraySizeSource == type.ArraySizeSource &&
-                   Size == type.Size;
+            return Equals(type);
         }
 
         public override T Visit<T>(ITypeVisitor<T> typeVisitor)
@@ -60,7 +66,8 @@ namespace QuantumBinding.Generator.Types
                    Size == other.Size &&
                    ElementSize == other.ElementSize &&
                    ArraySizeSource == other.ArraySizeSource &&
-                   IsConstArray == other.IsConstArray;
+                   IsConstArray == other.IsConstArray &&
+                   DimensionsCount == other.DimensionsCount;
         }
 
         public override int GetHashCode()

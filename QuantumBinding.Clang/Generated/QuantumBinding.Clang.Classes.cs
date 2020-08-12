@@ -105,7 +105,7 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
-        /// Sets the umbrealla header name that the module.map describes.
+        /// Sets the umbrella header name that the module.map describes.
         ///</summary>
         public CXErrorCode ModuleMapDescriptor_setUmbrellaHeader(string name)
         {

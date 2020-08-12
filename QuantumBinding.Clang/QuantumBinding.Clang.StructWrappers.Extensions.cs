@@ -9,7 +9,7 @@ namespace QuantumBinding.Clang
         public override string ToString()
         {
             string retval = getCString();
-            disposeString();
+            //disposeString();
             return retval;
         }
     }

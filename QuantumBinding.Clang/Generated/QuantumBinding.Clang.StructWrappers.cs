@@ -621,7 +621,7 @@ namespace QuantumBinding.Clang
         public int Xdata { get; set; }
         public System.IntPtr[] Data { get; set; }
         ///<summary>
-        /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type.
+        /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type. If it's an expression, tries to evaluate the expression.
         ///</summary>
         public QBEvalResult Cursor_Evaluate()
         {
@@ -837,11 +837,19 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
-        /// Determine whether the given cursor represents an anonymous record declaration.
+        /// Determine whether the given cursor represents an anonymous tag or namespace
         ///</summary>
         public uint Cursor_isAnonymous()
         {
             return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isAnonymous(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether the given cursor represents an anonymous record declaration.
+        ///</summary>
+        public uint Cursor_isAnonymousRecordDecl()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isAnonymousRecordDecl(ToInternal());
         }
 
         ///<summary>
@@ -881,6 +889,14 @@ namespace QuantumBinding.Clang
         public uint Cursor_isFunctionInlined()
         {
             return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isFunctionInlined(ToInternal());
+        }
+
+        ///<summary>
+        /// Determine whether the given cursor represents an inline namespace declaration.
+        ///</summary>
+        public uint Cursor_isInlineNamespace()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isInlineNamespace(ToInternal());
         }
 
         ///<summary>
@@ -1765,7 +1781,7 @@ namespace QuantumBinding.Clang
         }
 
         ///<summary>
-        /// Retreive the number of type arguments associated with an ObjC object.
+        /// Retrieve the number of type arguments associated with an ObjC object.
         ///</summary>
         public uint Type_getNumObjCTypeArgs()
         {
@@ -1834,6 +1850,14 @@ namespace QuantumBinding.Clang
         public QBType Type_getTemplateArgumentAsType(uint i)
         {
             return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getTemplateArgumentAsType(ToInternal(), i);
+        }
+
+        ///<summary>
+        /// Gets the type contained by this atomic type.
+        ///</summary>
+        public QBType Type_getValueType()
+        {
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getValueType(ToInternal());
         }
 
         ///<summary>

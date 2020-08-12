@@ -179,7 +179,7 @@ namespace QuantumBinding.Clang.Interop
         internal static extern CXTranslationUnitImpl clang_createTranslationUnitFromSourceFile([In] QuantumBinding.Clang.Interop.CXIndexImpl CIdx, [In] [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))] string source_filename, [In] int num_clang_command_line_args, string[] clang_command_line_args, [In] uint num_unsaved_files, [In] System.IntPtr unsaved_files);
 
         ///<summary>
-        /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type.
+        /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type. If it's an expression, tries to evaluate the expression.
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_Cursor_Evaluate", CallingConvention = CallingConvention.Cdecl)]
         internal static extern CXEvalResultImpl clang_Cursor_Evaluate([In] CXCursor C);
@@ -341,10 +341,16 @@ namespace QuantumBinding.Clang.Interop
         internal static extern uint clang_Cursor_hasAttrs([In] CXCursor C);
 
         ///<summary>
-        /// Determine whether the given cursor represents an anonymous record declaration.
+        /// Determine whether the given cursor represents an anonymous tag or namespace
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_Cursor_isAnonymous", CallingConvention = CallingConvention.Cdecl)]
         internal static extern uint clang_Cursor_isAnonymous([In] CXCursor C);
+
+        ///<summary>
+        /// Determine whether the given cursor represents an anonymous record declaration.
+        ///</summary>
+        [DllImport(LibraryPath, EntryPoint = "clang_Cursor_isAnonymousRecordDecl", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint clang_Cursor_isAnonymousRecordDecl([In] CXCursor C);
 
         ///<summary>
         /// Returns non-zero if the cursor specifies a Record member that is a bitfield.
@@ -369,6 +375,12 @@ namespace QuantumBinding.Clang.Interop
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_Cursor_isFunctionInlined", CallingConvention = CallingConvention.Cdecl)]
         internal static extern uint clang_Cursor_isFunctionInlined([In] CXCursor C);
+
+        ///<summary>
+        /// Determine whether the given cursor represents an inline namespace declaration.
+        ///</summary>
+        [DllImport(LibraryPath, EntryPoint = "clang_Cursor_isInlineNamespace", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern uint clang_Cursor_isInlineNamespace([In] CXCursor C);
 
         ///<summary>
         /// Determine whether a CXCursor that is a macro, is a builtin one.
@@ -1821,7 +1833,7 @@ namespace QuantumBinding.Clang.Interop
         internal static extern CXErrorCode clang_ModuleMapDescriptor_setFrameworkModuleName([In] QuantumBinding.Clang.Interop.CXModuleMapDescriptorImpl param0, [In] [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))] string name);
 
         ///<summary>
-        /// Sets the umbrealla header name that the module.map describes.
+        /// Sets the umbrella header name that the module.map describes.
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_ModuleMapDescriptor_setUmbrellaHeader", CallingConvention = CallingConvention.Cdecl)]
         internal static extern CXErrorCode clang_ModuleMapDescriptor_setUmbrellaHeader([In] QuantumBinding.Clang.Interop.CXModuleMapDescriptorImpl param0, [In] [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))] string name);
@@ -2049,7 +2061,7 @@ namespace QuantumBinding.Clang.Interop
         internal static extern uint clang_Type_getNumObjCProtocolRefs([In] CXType T);
 
         ///<summary>
-        /// Retreive the number of type arguments associated with an ObjC object.
+        /// Retrieve the number of type arguments associated with an ObjC object.
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_Type_getNumObjCTypeArgs", CallingConvention = CallingConvention.Cdecl)]
         internal static extern uint clang_Type_getNumObjCTypeArgs([In] CXType T);
@@ -2101,6 +2113,12 @@ namespace QuantumBinding.Clang.Interop
         ///</summary>
         [DllImport(LibraryPath, EntryPoint = "clang_Type_getTemplateArgumentAsType", CallingConvention = CallingConvention.Cdecl)]
         internal static extern CXType clang_Type_getTemplateArgumentAsType([In] CXType T, [In] uint i);
+
+        ///<summary>
+        /// Gets the type contained by this atomic type.
+        ///</summary>
+        [DllImport(LibraryPath, EntryPoint = "clang_Type_getValueType", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern CXType clang_Type_getValueType([In] CXType CT);
 
         ///<summary>
         /// Determine if a typedef is 'transparent' tag.

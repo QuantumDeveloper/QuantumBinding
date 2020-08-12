@@ -23,9 +23,9 @@ namespace QuantumBinding.ClangGenerator
             var clangModule = options.AddModule(library);
             clangModule.Defines.Add("_MSC_VER");
             clangModule.Defines.Add("_CINDEX_LIB_");
-            clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include");
-            clangModule.IncludeDirs.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c");
-            clangModule.Files.Add(@"M:\GitHUB\LLVM\llvm-project\clang\include\clang-c\Documentation.h");
+            //clangModule.IncludeDirs.Add(@"C:\Source\llvm-project-master\clang\include");
+            clangModule.IncludeDirs.Add(@"C:\Source\llvm-project-master\clang\include\clang-c");
+            clangModule.Files.Add(@"C:\Source\llvm-project-master\clang\include\clang-c\Documentation.h");
             clangModule.ForceCallingConvention = true;
             clangModule.AllowConvertStructToClass = true;
             clangModule.CallingConvention = CallingConvention.Cdecl;

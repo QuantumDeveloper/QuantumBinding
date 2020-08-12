@@ -137,12 +137,32 @@ namespace QuantumBinding.Generator.Utils
                     case CXTypeKind.CXType_VariableArray:
                     case CXTypeKind.CXType_DependentSizedArray:
                     case CXTypeKind.CXType_IncompleteArray:
-                        var elementType = cursorType.getArrayElementType().getCanonicalType();
-                        var arraySizeType = GetArraySizeType(cursorType.Kind);
                         var arrayType = new ArrayType();
-                        arrayType.SizeType = arraySizeType;
+
+                        var elementType = cursorType.getArrayElementType().getCanonicalType();
+                        arrayType.SizeType = GetArraySizeType(cursorType.Kind);
                         arrayType.Size = cursorType.getArraySize();
+                        arrayType.Sizes.Add(cursorType.getArraySize());
                         arrayType.ElementSize = elementType.Type_getSizeOf();
+
+                        while (elementType.IsArrayType())
+                        {
+                            arrayType.DimensionsCount++;
+                            arrayType.Sizes.Add(elementType.getArraySize());
+                            elementType = elementType.getArrayElementType().getCanonicalType();
+                        }
+
+                        if (arrayType.IsMultiDimensional)
+                        {
+                            // Reset size to 1 for proper calculation of array size if we have multidimensional array
+                            arrayType.Size = 1;
+
+                            foreach (var size in arrayType.Sizes)
+                            {
+                                arrayType.Size *= size;
+                            }
+                        }
+
                         if (elementType.IsPrimitiveType())
                         {
                             var paramType = elementType.GetPrimitiveType();
@@ -206,6 +226,20 @@ namespace QuantumBinding.Generator.Utils
                 case CXTypeKind.CXType_LongLong:
                 case CXTypeKind.CXType_ULongLong:
                 case CXTypeKind.CXType_Void:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool IsArrayType(this QBType type)
+        {
+            switch (type.Kind)
+            {
+                case CXTypeKind.CXType_ConstantArray:
+                case CXTypeKind.CXType_VariableArray:
+                case CXTypeKind.CXType_DependentSizedArray:
+                case CXTypeKind.CXType_IncompleteArray:
                     return true;
                 default:
                     return false;
