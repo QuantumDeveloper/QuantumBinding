@@ -702,7 +702,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             var arrayType = property.Type as ArrayType;
             var size = arrayType.Size;
-            //var size = $"{ parentClass.WrappedStructFieldName }.{ property.Field.Name}.Length";
+            
             if (arrayType.ElementType.CanConvertToFixedArray())
             {
                 var tempField = $"tmpArr{index}";
@@ -720,18 +720,39 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine($"var {tempField} = new {nativeArrayElementType}[{size}];");
                 WriteLine("unsafe");
                 WriteOpenBraceAndIndent();
-                WriteLine($"for (int i = 0; i < {size}; ++i)");
-                WriteOpenBraceAndIndent();
-                if (castToByte)
+
+                if (propertyTypeName.Type == "string")
                 {
-                    WriteLine($"{tempField}[i] = (byte){arrayName}[i];");
+                    // int index = 0;
+                    // byte* ptr = (byte*) _internal.extensionName;
+                    // for (byte* counter = ptr; *counter != 0; counter++)
+                    // {
+                    //     tmpArr0[index++] = *counter;
+                    // }
+                    var indexVar = "index";
+                    var counterVar = "counter";
+                    WriteLine($"int {indexVar} = 0;");
+                    WriteLine($"byte* ptr = (byte*){parentClass.WrappedStructFieldName}.{property.Field.Name};");
+                    WriteLine($"for (byte* {counterVar} = ptr; *{counterVar} != 0; {counterVar}++)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"{tempField}[{indexVar}++] = *{counterVar};");
+                    UnindentAndWriteCloseBrace();
                 }
                 else
                 {
-                    WriteLine($"{tempField}[i] = {arrayName}[i];");
+                    WriteLine($"for (int i = 0; i < {size}; ++i)");
+                    WriteOpenBraceAndIndent();
+                    if (castToByte)
+                    {
+                        WriteLine($"{tempField}[i] = (byte){arrayName}[i];");
+                    }
+                    else
+                    {
+                        WriteLine($"{tempField}[i] = {arrayName}[i];");
+                    }
+                    UnindentAndWriteCloseBrace();
                 }
-
-                UnindentAndWriteCloseBrace();
+                
                 UnindentAndWriteCloseBrace();
 
                 if (property.Type.IsAnsiString()
