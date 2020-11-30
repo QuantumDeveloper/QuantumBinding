@@ -723,12 +723,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 if (propertyTypeName.Type == "string")
                 {
-                    // int index = 0;
-                    // byte* ptr = (byte*) _internal.extensionName;
-                    // for (byte* counter = ptr; *counter != 0; counter++)
-                    // {
-                    //     tmpArr0[index++] = *counter;
-                    // }
                     var indexVar = "index";
                     var counterVar = "counter";
                     WriteLine($"int {indexVar} = 0;");
