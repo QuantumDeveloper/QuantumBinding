@@ -246,7 +246,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return false;
         }
 
-        ISetField ISetField.TreatAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
+        ISetField ISetField.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
         {
             var pointer = new PointerType();
             pointer.IsNullable = isNullable;
@@ -260,7 +260,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        ISetField ISetField.TreatAsArray(BindingType elementType, ArraySizeType sizeType, int size)
+        ISetField ISetField.InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size)
         {
             var arrayType = new ArrayType();
             arrayType.ElementType = elementType;
@@ -271,13 +271,13 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        ISetField ISetField.TreatAsPointerType(BindingType pointeeType)
+        ISetField ISetField.InterpretAsPointerType(BindingType pointeeType)
         {
             _currentField.Type = new PointerType() { Pointee = pointeeType };
             return this;
         }
 
-        ISetField ISetField.TreatAsIs()
+        ISetField ISetField.InterpretAsIs()
         {
             return this;
         }
