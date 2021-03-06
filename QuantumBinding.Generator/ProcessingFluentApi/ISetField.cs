@@ -8,9 +8,9 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField SetType(BindingType type);
         ISetField AddAttribute(string attribute);
         ISetField RemoveExistingAttributes();
-        ISetField TreatAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "");
-        ISetField TreatAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
-        ISetField TreatAsPointerType(BindingType pointeeType);
-        ISetField TreatAsIs();
+        ISetField InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "");
+        ISetField InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
+        ISetField InterpretAsPointerType(BindingType pointeeType);
+        ISetField InterpretAsIs();
     }
 }

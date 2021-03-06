@@ -5,7 +5,7 @@ using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.ProcessingFluentApi
 {
-    public partial class PostProcessingApi : IFunctionParameter, IFunctionParameterName, ITreatFunctionParameterByName, ICommonFunctionParameter, IFunctionParameterType, ITreatFunctionParameter
+    public partial class PostProcessingApi : IFunctionParameter, IFunctionParameterName, IInterpretFunctionParameterByName, ICommonFunctionParameter, IFunctionParameterType, IInterpretFunctionParameter
     {
         public PostProcessingApi()
         {
@@ -75,13 +75,13 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        ITreatFunctionParameterByName IFunctionParameter.WithParameterName(string paramName)
+        IInterpretFunctionParameterByName IFunctionParameter.WithParameterName(string paramName)
         {
             CreateParameter(paramName);
             return this;
         }
         
-        public ITreatFunctionParameterByName RenameTo(string newName)
+        public IInterpretFunctionParameterByName RenameTo(string newName)
         {
             _currentFunction.DecoratedName = newName;
             return this;
@@ -140,7 +140,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterName ITreatFunctionParameterByName.TreatAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
         {
             var pointer = new PointerType();
             pointer.IsNullable = isNullable;
@@ -154,7 +154,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterName ITreatFunctionParameterByName.TreatAsArray(BindingType elementType, ArraySizeType sizeType, int size)
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size)
         {
             var arrayType = new ArrayType();
             arrayType.ElementType = elementType;
@@ -165,19 +165,19 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        ITreatFunctionParameterByName IFunctionParameterName.WithParameterName(string paramName)
+        IInterpretFunctionParameterByName IFunctionParameterName.WithParameterName(string paramName)
         {
             CreateParameter(paramName);
             return this;
         }
 
-        IFunctionParameterName ITreatFunctionParameterByName.TreatAsPointerType(BindingType pointeeType)
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerType(BindingType pointeeType)
         {
             _currentParameter.Type = new PointerType(){Pointee = pointeeType};
             return this;
         }
 
-        IFunctionParameterName ITreatFunctionParameterByName.TreatAsIs()
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsIs()
         {
             return this;
         }
@@ -267,7 +267,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return parameter != null;
         }
 
-        ITreatFunctionParameter ICommonFunctionParameter.WithParameterType(string typeName)
+        IInterpretFunctionParameter ICommonFunctionParameter.WithParameterType(string typeName)
         {
             CreateCommonParameter(typeName);
             return this;
@@ -298,7 +298,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterType ITreatFunctionParameter.TreatAsPointerType()
+        IFunctionParameterType IInterpretFunctionParameter.InterpretAsPointerType()
         {
             var type = new PointerType();
             var primitiveType = TypeUtil.GetPrimitiveTypeFromString(_currentCommonParameterTypeName);
@@ -314,7 +314,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterType ITreatFunctionParameter.TreatAsPointerToArray(ArraySizeType sizeType, long size)
+        IFunctionParameterType IInterpretFunctionParameter.InterpretAsPointerToArray(ArraySizeType sizeType, long size)
         {
             var type = new PointerType();
             var arrayType = new ArrayType();
@@ -333,7 +333,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterType ITreatFunctionParameter.TreatAsArray(ArraySizeType sizeType, long size)
+        IFunctionParameterType IInterpretFunctionParameter.InterpretAsArray(ArraySizeType sizeType, long size)
         {
             var arrayType = new ArrayType();
             arrayType.SizeType = sizeType;
@@ -352,13 +352,13 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterType ITreatFunctionParameter.TreatAsCustomType()
+        IFunctionParameterType IInterpretFunctionParameter.InterpretAsCustomType()
         {
             _currentCommonParameter.Type = new CustomType(_currentCommonParameterTypeName);
             return this;
         }
 
-        IFunctionParameterType ITreatFunctionParameter.TreatAsBuiltinType()
+        IFunctionParameterType IInterpretFunctionParameter.InterpretAsBuiltinType()
         {
             var primitive = TypeUtil.GetPrimitiveTypeFromString(_currentCommonParameterTypeName);
             if (primitive == PrimitiveType.Unknown)
@@ -397,7 +397,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterType ITreatFunctionParameter.TreatAsIs()
+        IFunctionParameterType IInterpretFunctionParameter.InterpretAsIs()
         {
             return this;
         }

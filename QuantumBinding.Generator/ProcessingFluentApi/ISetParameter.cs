@@ -1,6 +1,6 @@
 ﻿namespace QuantumBinding.Generator.ProcessingFluentApi
 {
-    public interface ISetParameter : ITreatFunctionParameterByName
+    public interface ISetParameter : IInterpretFunctionParameterByName
     {
         ISetParameter SetParameterKind(ParameterKind parameterKind);
     }

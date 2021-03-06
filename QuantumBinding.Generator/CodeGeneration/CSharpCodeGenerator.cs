@@ -139,7 +139,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     }
                     break;
                 case ClassType.Class:
-                    var classes = CurrentTranslationUnit.Classes.Where(x => !x.IsIgnored);
+                    var classes = CurrentTranslationUnit.Classes.Where(x => !x.IsIgnored).ToArray();
 
                     foreach (var @class in classes)
                     {
@@ -148,13 +148,13 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                     GenerateCommonMethods();
 
-                    var classExtensions = CurrentTranslationUnit.ExtensionClasses.Where(x => !x.IsIgnored);
+                    var classExtensions = CurrentTranslationUnit.ExtensionClasses.Where(x => !x.IsIgnored).ToArray();
                     foreach (var ext in classExtensions)
                     {
                         GenerateClassExtension(ext);
                     }
 
-                    if (classes.Count() == 0 && CurrentTranslationUnit.Methods.Count == 0 && classExtensions.Count() == 0 && Specializations == GeneratorSpecializations.Classes)
+                    if (classes.Length == 0 && CurrentTranslationUnit.Methods.Count == 0 && classExtensions.Length == 0 && Specializations == GeneratorSpecializations.Classes)
                     {
                         IsGeneratorEmpty = true;
                     }
@@ -355,6 +355,11 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var property in @class.Properties)
             {
+                if (property.Name.Contains("pGeometries"))
+                {
+                    
+                }
+                
                 PushBlock(CodeBlockKind.Property);
                 GenerateCommentIfNotEmpty(property.Comment);
                 TypePrinter.PushMarshalType(MarshalTypes.NativeField);

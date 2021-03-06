@@ -4,16 +4,16 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 {
     public interface IFunctionParameter
     {
-        ITreatFunctionParameterByName WithParameterName(string paramName);
+        IInterpretFunctionParameterByName WithParameterName(string paramName);
 
-        ITreatFunctionParameterByName RenameTo(string newName);
+        IInterpretFunctionParameterByName RenameTo(string newName);
 
         void WithReturnType(BindingType returnType);
     }
 
     public interface ICommonFunctionParameter
     {
-        ITreatFunctionParameter WithParameterType(string typeName);
+        IInterpretFunctionParameter WithParameterType(string typeName);
     }
 
     public interface IFunctionParameterType
@@ -31,19 +31,19 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         IFunctionParameterType NextParameter(string paramType);
     }
 
-    public interface ITreatFunctionParameter
+    public interface IInterpretFunctionParameter
     {
-        IFunctionParameterType TreatAsIs();
+        IFunctionParameterType InterpretAsIs();
 
-        IFunctionParameterType TreatAsBuiltinType();
+        IFunctionParameterType InterpretAsBuiltinType();
 
-        IFunctionParameterType TreatAsPointerType();
+        IFunctionParameterType InterpretAsPointerType();
 
-        IFunctionParameterType TreatAsPointerToArray(ArraySizeType sizeType, long size = 0);
+        IFunctionParameterType InterpretAsPointerToArray(ArraySizeType sizeType, long size = 0);
 
-        IFunctionParameterType TreatAsArray(ArraySizeType sizeType, long size = 0);
+        IFunctionParameterType InterpretAsArray(ArraySizeType sizeType, long size = 0);
 
-        IFunctionParameterType TreatAsCustomType();
+        IFunctionParameterType InterpretAsCustomType();
     }
 
     public interface IFunctionParameterName
@@ -54,17 +54,17 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         //IFunctionParameterName SetNullable(bool value);
 
-        ITreatFunctionParameterByName WithParameterName(string paramName);
+        IInterpretFunctionParameterByName WithParameterName(string paramName);
     }
 
-    public interface ITreatFunctionParameterByName
+    public interface IInterpretFunctionParameterByName
     {
-        IFunctionParameterName TreatAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "");
+        IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "");
 
-        IFunctionParameterName TreatAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
+        IFunctionParameterName InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
 
-        IFunctionParameterName TreatAsPointerType(BindingType pointeeType);
+        IFunctionParameterName InterpretAsPointerType(BindingType pointeeType);
 
-        IFunctionParameterName TreatAsIs();
+        IFunctionParameterName InterpretAsIs();
     }
 }

@@ -23,7 +23,6 @@ namespace QuantumBinding.ClangGenerator
             var clangModule = options.AddModule(library);
             clangModule.Defines.Add("_MSC_VER");
             clangModule.Defines.Add("_CINDEX_LIB_");
-            //clangModule.IncludeDirs.Add(@"C:\Source\llvm-project-master\clang\include");
             clangModule.IncludeDirs.Add(@"C:\Source\llvm-project-master\clang\include\clang-c");
             clangModule.Files.Add(@"C:\Source\llvm-project-master\clang\include\clang-c\Documentation.h");
             clangModule.ForceCallingConvention = true;
@@ -63,147 +62,147 @@ namespace QuantumBinding.ClangGenerator
 
             api.Functions("parseTranslationUnit", "clang_parseTranslationUnit2").
                 WithParameterName("unsaved_files").
-                TreatAsPointerToArray(new CustomType("CXUnsavedFile")).
+                InterpretAsPointerToArray(new CustomType("CXUnsavedFile")).
                 SetParameterKind(ParameterKind.In);
 
             api.Function("clang_getFileContents").
                 WithParameterName("size").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_getExpansionLocation").
                 WithParameterName("file").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("line").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("column").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("offset").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_getPresumedLocation").
                 WithParameterName("filename").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("line").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("column").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_getInstantiationLocation").
                 WithParameterName("file").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("line").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("column").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("offset").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_getSpellingLocation").
                 WithParameterName("file").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("line").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("column").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("offset").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_getFileLocation").
                 WithParameterName("file").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("line").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("column").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("offset").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_loadDiagnostics").
                 WithParameterName("error").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("errorString").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_getDiagnosticOption").
                 WithParameterName("Disable").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.In);
 
             api.Function("clang_getCursorPlatformAvailability").
                 WithParameterName("always_deprecated").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.In).
                 WithParameterName("deprecated_message").
-                TreatAsIs().
+                InterpretAsIs().
                 WithParameterName("always_unavailable").
-                TreatAsIs().
+                InterpretAsIs().
                 WithParameterName("unavailable_message").
-                TreatAsIs().
+                InterpretAsIs().
                 WithParameterName("availability").
-                TreatAsPointerToArray(new CustomType("CXPlatformAvailability"));
+                InterpretAsPointerToArray(new CustomType("CXPlatformAvailability"));
 
             api.Function("clang_getOverriddenCursors").
                 WithParameterName("overridden").
-                TreatAsPointerToArray(new CustomType("CXCursor"), true, "num_overridden").
+                InterpretAsPointerToArray(new CustomType("CXCursor"), true, "num_overridden").
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("num_overridden").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_Cursor_isExternalSymbol").
                 WithParameterName("language").
-                TreatAsIs().
+                InterpretAsIs().
                 WithParameterName("definedIn").
-                TreatAsIs().
+                InterpretAsIs().
                 WithParameterName("isGenerated").
-                TreatAsIs();
+                InterpretAsIs();
 
             api.Function("clang_tokenize").
                 WithParameterName("Tokens").
-                TreatAsPointerToArray(new CustomType("CXToken"), true, "NumTokens").
+                InterpretAsPointerToArray(new CustomType("CXToken"), true, "NumTokens").
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("NumTokens").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_annotateTokens").
                 WithParameterName("Tokens").
-                TreatAsPointerToArray(new CustomType("CXToken")).
+                InterpretAsPointerToArray(new CustomType("CXToken")).
                 SetParameterKind(ParameterKind.In).
                 WithParameterName("Cursors").
-                TreatAsPointerToArray(new CustomType("CXCursor"), true, "NumTokens").
+                InterpretAsPointerToArray(new CustomType("CXCursor"), true, "NumTokens").
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_disposeTokens").
                 WithParameterName("Tokens").
-                TreatAsPointerType(new BuiltinType(PrimitiveType.IntPtr)).
+                InterpretAsPointerType(new BuiltinType(PrimitiveType.IntPtr)).
                 SetParameterKind(ParameterKind.In);
 
             api.Function("clang_executeOnThread").
                 WithParameterName("fn").
-                TreatAsPointerType(new BuiltinType(PrimitiveType.Void)).
+                InterpretAsPointerType(new BuiltinType(PrimitiveType.Void)).
                 SetParameterKind(ParameterKind.In);
 
             var funcList = new List<string>
@@ -219,86 +218,86 @@ namespace QuantumBinding.ClangGenerator
 
             api.Functions(funcList.ToArray()).
                 WithParameterName("Results").
-                TreatAsPointerToArray(new CustomType("CXCompletionResult")).
+                InterpretAsPointerToArray(new CustomType("CXCompletionResult")).
                 SetParameterKind(ParameterKind.In);
 
             api.Function("clang_disposeCodeCompleteResults").
                 WithParameterName("CXCompletionResult").
-                TreatAsPointerType(new BuiltinType(PrimitiveType.IntPtr)).
+                InterpretAsPointerType(new BuiltinType(PrimitiveType.IntPtr)).
                 SetParameterKind(ParameterKind.In);
 
             api.Function("clang_codeCompleteGetContainerKind").
                 WithParameterName("IsIncomplete").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_remap_getFilenames").
                 WithParameterName("original").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("transformed").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_indexLoc_getFileLocation").
                 WithParameterName("indexFile").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("file").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("line").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("column").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("offset").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Function("clang_CompilationDatabase_fromDirectory").
                 WithParameterName("ErrorCode").
-                TreatAsIs().
+                InterpretAsIs().
                 SetParameterKind(ParameterKind.Out);
 
             api.Class("CXCursorAndRangeVisitor")
                 .WithField("visit")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void));
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void));
 
             api.Class("IndexerCallbacks")
                 .WithField("abortQuery")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("diagnostic")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("enteredMainFile")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("ppIncludedFile")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("importedASTFile")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("startedTranslationUnit")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("indexDeclaration")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void))
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
                 .WithField("indexEntityReference")
-                .TreatAsPointerType(new BuiltinType(PrimitiveType.Void));
+                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void));
 
             api.Class("CXIdxEntityInfo")
                 .WithField("attributes")
-                .TreatAsPointerToArray(new CustomType("CXIdxAttrInfo"), true, "numAttributes");
+                .InterpretAsPointerToArray(new CustomType("CXIdxAttrInfo"), true, "numAttributes");
 
             api.Class("CXIdxDeclInfo")
                 .WithField("attributes")
-                .TreatAsPointerToArray(new CustomType("CXIdxAttrInfo"), true, "numAttributes");
+                .InterpretAsPointerToArray(new CustomType("CXIdxAttrInfo"), true, "numAttributes");
 
             api.Class("CXIdxObjCProtocolRefListInfo")
                 .WithField("protocols")
-                .TreatAsPointerToArray(new CustomType("CXIdxObjCProtocolRefInfo"), true, "numProtocols");
+                .InterpretAsPointerToArray(new CustomType("CXIdxObjCProtocolRefInfo"), true, "numProtocols");
 
             api.Class("CXIdxCXXClassDeclInfo")
                 .WithField("bases")
-                .TreatAsPointerToArray(new CustomType("CXIdxBaseClassInfo"), true, "numBases");
+                .InterpretAsPointerToArray(new CustomType("CXIdxBaseClassInfo"), true, "numBases");
 
             var fixingFunctionParameters = new PostProcessingApiPass(api);
             ctx.AddPreGeneratorPass(fixingFunctionParameters, ExecutionPassKind.PerTranslationUnit);
