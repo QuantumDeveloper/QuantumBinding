@@ -29,6 +29,7 @@ namespace QuantumBinding.Generator.Parser
 
         private QBTranslationUnit translationUnit;
         private CXCursorVisitor visitor;
+        private CXCursorVisitor functionPtr;
 
         public ParseResult Parse(QBIndex index, string filePath, List<string> arguments)
         {
@@ -37,7 +38,7 @@ namespace QuantumBinding.Generator.Parser
                         CXTranslationUnit_Flags.CXTranslationUnit_IncludeBriefCommentsInCodeCompletion;
             try
             {
-                QBUnsavedFile[] unsavedFile = new QBUnsavedFile[0];
+                QBUnsavedFile[] unsavedFile = Array.Empty<QBUnsavedFile>();
                 var translationUnitResult = index.parseTranslationUnit2(
                     filePath,
                     arguments.ToArray(),
@@ -148,7 +149,7 @@ namespace QuantumBinding.Generator.Parser
 
             printedEnums.Add(enumName);
 
-            CXCursorVisitor functionPtr = VisitEnumItemsDelegate;
+            functionPtr = VisitEnumItemsDelegate;
 
             // visit all the enum values
             cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
@@ -223,7 +224,7 @@ namespace QuantumBinding.Generator.Parser
 
         private CXChildVisitResult VisitStruct(QBCursor cursor, QBCursor parent, QBClientData data)
         {
-            this.fieldPosition = 0;
+            fieldPosition = 0;
             var structName = cursor.getCursorSpelling().ToString();
 
             // struct names can be empty, and so we visit its sibling to find the name
@@ -265,7 +266,7 @@ namespace QuantumBinding.Generator.Parser
                 @class.ClassType = ClassType.Union;
             }
 
-            CXCursorVisitor functionPtr = VisitStructFieldsNative;
+            functionPtr = VisitStructFieldsNative;
 
             cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
 
@@ -466,7 +467,7 @@ namespace QuantumBinding.Generator.Parser
 
                     uint argumentCounter = 0;
 
-                    CXCursorVisitor functionPtr = VisitFunctionProtoNative;
+                    functionPtr = VisitFunctionProtoNative;
 
                     cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
 
