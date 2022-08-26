@@ -111,6 +111,12 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             PushBlock(CodeBlockKind.Usings);
             WriteLine("using System.Runtime.InteropServices;");
+            // TODO: fix this place not to hardcode utils
+            if (!string.IsNullOrEmpty(Module.UtilsNamespace))
+            {
+                WriteLine($"using {Module.UtilsNamespace};");
+            }
+
             UsingsBlock = PopBlock();
         }
 
@@ -483,7 +489,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 if (typeResult.Type == @class.Name)
                 {
                     var splittedStr = fieldStr.Type.Split(' ');
-                    splittedStr[1] = $"{field.Type.Declaration.Owner.FullNamespace}.{interopNamespace}.{splittedStr[1]}";
+                    splittedStr[1] =
+                        $"{field.Type.Declaration.Owner.FullNamespace}.{interopNamespace}.{splittedStr[1]}";
                     fieldStr.Type = string.Join(' ', splittedStr);
                 }
 
@@ -498,6 +505,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 PopBlock();
             }
+
             TypePrinter.PopMarshalType();
         }
 
@@ -659,8 +667,8 @@ namespace QuantumBinding.Generator.CodeGeneration
             var nativeArrayElementType = arrayType.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             WriteLine($"{property.Name} = new {arrayElementType}[{arraySizeFieldName}];");
-            var classDecl = pointerType.Declaration as Class;
-            if (classDecl != null && !classDecl.IsSimpleType)
+
+            if (pointerType.Declaration is Class classDecl && !classDecl.IsSimpleType)
             {
                 var arrayName = $"nativeTmpArray{index}";
                 string nativeElementType = classDecl.Name;
@@ -678,6 +686,17 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine($"for (int i = 0; i < {arrayName}.Length; ++i)");
                 WriteOpenBraceAndIndent();
                 WriteLine($"{property.Name}[i] = new {classDecl.Name}({arrayName}[i]);");
+                UnindentAndWriteCloseBrace();
+            }
+            else if (arrayType.ElementType.IsPrimitiveType(out var primitive) && 
+                     (primitive == PrimitiveType.Bool32 || primitive == PrimitiveType.Bool))
+            {
+                var arrayName = $"nativeTmpArray{index}";
+                WriteLine($"var {arrayName} = new {nativeArrayElementType}[{arraySizeFieldName}];");
+                WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeArrayElementType}>({arrayPtr}, {arrayName});");
+                WriteLine($"for (int i = 0; i < {arrayName}.Length; ++i)");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{property.Name}[i] = System.Convert.ToBoolean({arrayName}[i]);");
                 UnindentAndWriteCloseBrace();
             }
             else
@@ -823,7 +842,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 WriteLine($"{property.Name} = {structFieldPath};");
             }
-            else if (property.Type.IsPointerToBuiltInType(out var primitive) || (decl != null && decl.IsSimpleType))
+            else if ((property.Type.IsPointerToBuiltInType(out var primitive) || decl is { IsSimpleType: true }) && Options.PodTypesAsSimpleTypes)
             {
                 WriteLine($"if({structFieldPath} != System.IntPtr.Zero)");
                 WriteOpenBraceAndIndent();
@@ -880,7 +899,33 @@ namespace QuantumBinding.Generator.CodeGeneration
             else if (decl != null && (decl.ClassType == ClassType.Class || decl.IsSimpleType)
                 || property.Type.IsPointerToArrayOfPrimitiveTypes())
             {
-                WriteLine($"{tmpArrayName}[i] = {property.Name}[i];");
+                if (property.Type.IsPointerToArrayOfPrimitiveTypes(out var primitive) && primitive.Type == PrimitiveType.Bool32)
+                {
+                    string conversionName = string.Empty;
+                    if (array.ElementType is BuiltinType builtinType)
+                    {
+                        switch (builtinType.Type)
+                        {
+                            case PrimitiveType.Bool32:
+                            case PrimitiveType.UInt32:
+                                conversionName = "System.Convert.ToUInt32";
+                                break;
+                            case PrimitiveType.Int32:
+                                conversionName = "System.Convert.ToInt32";
+                                break;
+                            case PrimitiveType.Float:
+                                conversionName = "System.Convert.ToSingle";
+                                break;
+                        }
+                    }
+                    
+                    WriteLine($"{tmpArrayName}[i] = {conversionName}({property.Name}[i]);");
+                }
+                else
+                {
+                    WriteLine($"{tmpArrayName}[i] = {property.Name}[i];");
+                }
+                
             }
             else
             {

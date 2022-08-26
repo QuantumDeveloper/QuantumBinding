@@ -213,6 +213,24 @@ namespace QuantumBinding.Generator.Types
 
             return false;
         }
+        
+        public static bool IsPointerToArrayOfPrimitiveTypes(this BindingType type, out BuiltinType primitiveType)
+        {
+            primitiveType = null;
+            if (IsPointerToArray(type))
+            {
+                var ptr = (PointerType) type;
+                var t = (ArrayType)ptr.Pointee;
+                var isPrimitive = t.ElementType.IsPrimitiveType;
+                if (isPrimitive)
+                {
+                    primitiveType = t.ElementType as BuiltinType;
+                }
+                return isPrimitive;
+            }
+
+            return false;
+        }
 
         public static bool IsPointerToStruct(this BindingType type)
         {

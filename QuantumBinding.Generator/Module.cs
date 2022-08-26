@@ -80,9 +80,9 @@ namespace QuantumBinding.Generator
 
         public ReadOnlyCollection<TranslationUnit> Units => TranslationUnits.AsReadOnly();
 
-        public void AddNamespaceMapping(string fileName, string subNamespace, string outputFilePath, bool repcaseBaseNamespace = false)
+        public void AddNamespaceMapping(string fileName, string subNamespace, string outputFilePath, bool replaceBaseNamespace = false)
         {
-            var @namespace = new NamespaceMapping() { FileName = fileName, NamespaceExtension = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = repcaseBaseNamespace};
+            var @namespace = new NamespaceMapping() { FileName = fileName, NamespaceExtension = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = replaceBaseNamespace};
             namespaceMapping.Add(@namespace);
         }
     }

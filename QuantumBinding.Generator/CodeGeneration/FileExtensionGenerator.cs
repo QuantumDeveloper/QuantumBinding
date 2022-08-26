@@ -59,6 +59,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteOpenBraceAndIndent();
 
                 GenerateUsings();
+                // TODO: find a better way to add using for utils
+                UsingsBlock.WriteLine($"using {Module.UtilsNamespace};");
 
                 NewLine();
 
@@ -78,8 +80,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         private void GenerateUtilsClass()
         {
             PushBlock(CodeBlockKind.Namespace);
-            CurrentNamespace = AstContext.Module.OutputNamespace;
-            WriteLine($"namespace {AstContext.Module.OutputNamespace}");
+            CurrentNamespace = Module.UtilsNamespace;
+            WriteLine($"namespace {CurrentNamespace}");
             WriteOpenBraceAndIndent();
 
             GenerateUsings();

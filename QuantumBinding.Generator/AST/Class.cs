@@ -11,17 +11,18 @@ namespace QuantumBinding.Generator.AST
         public Class()
         {
             AccessSpecifier = AccessSpecifier.Public;
-            Fields = new List<Field>();
+            fields = new List<Field>();
             methods = new List<Method>();
             properties = new List<Property>();
             Constructors = new List<Constructor>();
             Operators = new List<Operator>();
         }
 
-        private List<Method> methods { get; }
 
-        private List<Property> properties { get; }
-
+        private List<Field> fields;
+        private List<Method> methods;
+        private List<Property> properties;
+        
         public ClassType ClassType { get; set; }
 
         public BindingType UnderlyingNativeType { get; set; }
@@ -51,9 +52,9 @@ namespace QuantumBinding.Generator.AST
 
         public string DisposeBody { get; set; }
 
-        public List<Field> Fields { get; }
+        public IReadOnlyList<Field> Fields => fields.AsReadOnly();
 
-        public IReadOnlyCollection<Property> Properties => properties.AsReadOnly();
+        public IReadOnlyList<Property> Properties => properties.AsReadOnly();
 
         public List<Constructor> Constructors { get; }
 
@@ -84,7 +85,7 @@ namespace QuantumBinding.Generator.AST
             if (f == null)
             {
                 field.Class = this;
-                Fields.Add(field);
+                fields.Add(field);
             }
 
             return f == null;
@@ -93,7 +94,7 @@ namespace QuantumBinding.Generator.AST
         public void RemoveField(Field field)
         {
             field.Class = null;
-            Fields.Remove(field);
+            fields.Remove(field);
         }
 
         public bool AddProperty(Property prop)

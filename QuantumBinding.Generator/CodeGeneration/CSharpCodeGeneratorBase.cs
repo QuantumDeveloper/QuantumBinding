@@ -59,6 +59,19 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLine("using System;");
             WriteLine("using System.Runtime.InteropServices;");
 
+            if (Specializations.HasFlag(GeneratorSpecializations.Classes) ||
+                Specializations.HasFlag(GeneratorSpecializations.Functions) ||
+                Specializations.HasFlag(GeneratorSpecializations.Delegates) ||
+                Specializations.HasFlag(GeneratorSpecializations.StructWrappers) ||
+                Specializations.HasFlag(GeneratorSpecializations.UnionWrappers))
+            {
+                // TODO: find better way to add utils namespace here
+                if (!string.IsNullOrEmpty(Module.UtilsNamespace))
+                {
+                    WriteLine($"using {Module.UtilsNamespace};");
+                }
+            }
+
             UsingsBlock = PopBlock();
         }
 
@@ -66,8 +79,10 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             var classes = unit.AllClasses.Where(
                     x => 
-                        x.ClassType == ClassType.Struct || x.ClassType == ClassType.Union ||
-                        x.ClassType == ClassType.StructWrapper || x.ClassType == ClassType.UnionWrapper).
+                        x.ClassType == ClassType.Struct || 
+                        x.ClassType == ClassType.Union ||
+                        x.ClassType == ClassType.StructWrapper || 
+                        x.ClassType == ClassType.UnionWrapper).
                 ToList();
             foreach (var @class in classes)
             {

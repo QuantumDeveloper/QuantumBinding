@@ -40,7 +40,7 @@ namespace QuantumBinding.Generator.Processors
 
                 if (!string.IsNullOrEmpty(OutputFileName))
                 {
-                    name += $".{ OutputFileName}";
+                    name += $".{OutputFileName}";
                 }
 
                 var unit = new TranslationUnit(OutputFileName, AstContext.Module) { Name = name, OutputPath = OutputPath };

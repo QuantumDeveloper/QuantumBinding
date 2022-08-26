@@ -124,7 +124,7 @@ namespace QuantumBinding.Generator.Processors
                 if (field.IsPointer)
                 {
                     pointersCount++;
-                    property.PairedField = new Field($"ref{name}") { ShouldDispose = true };
+                    property.PairedField = new Field($"{name}") { ShouldDispose = true };
                     if (field.Type.IsAnsiString() || field.Type.IsUnicodeString())
                     {
                         property.PairedField.Type = new CustomType("StringReference");
@@ -143,11 +143,15 @@ namespace QuantumBinding.Generator.Processors
                     {
                         property.PairedField.Type = new CustomType("StructReference");
                     }
+                    else
+                    {
+                        property.PairedField.Type = new CustomType("UnknownReference");
+                    }
 
                     property.PairedField.AccessSpecifier = AccessSpecifier.Private;
                     if (!property.Type.IsPointerToIntPtr() && !field.Type.IsPointerToVoid())
                     {
-                        wrapper.Fields.Add(property.PairedField);
+                        wrapper.AddField(property.PairedField);
                     }
 
                     if ((property.Type.IsPointerToPrimitiveType(out var primitiveType) || property.Type.IsPointerToStruct() && !property.Type.IsPointerToArray()) || 
