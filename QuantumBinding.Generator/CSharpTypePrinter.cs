@@ -538,9 +538,8 @@ namespace QuantumBinding.Generator
             else
             {
                 result = parameter.Type.Visit(this);
-                var decl = parameter.Type.Declaration as Class;
 
-                if (decl != null)
+                if (parameter.Type.Declaration is Class decl)
                 {
                     var originalNamespace = decl.Owner.FullNamespace;
                     if (!string.IsNullOrEmpty(originalNamespace))
@@ -566,7 +565,7 @@ namespace QuantumBinding.Generator
                                 result.Type = $"{alternativeNamespace}{result.Type}";
                             }
                         }
-                        else if (decl != null && decl.ClassType == ClassType.Class && result.Type != IntPtrType)
+                        else if (decl.ClassType == ClassType.Class && result.Type != IntPtrType)
                         {
                             if (MarshalType == MarshalTypes.MethodParameter)
                             {
@@ -626,7 +625,13 @@ namespace QuantumBinding.Generator
                     }
                     return $"{finalString} {result.Type}";
                 }
-                return $"{modifier} {result.MergeResult()}";
+
+                if (!string.IsNullOrEmpty(modifier))
+                {
+                    return $"{modifier} {result.MergeResult()}";
+                }
+
+                return $"{result.MergeResult()}";
             }
 
             return result;

@@ -78,7 +78,7 @@ namespace QuantumBinding.Generator.Utils
                             );
                         isInSystemHeader |= filename.ToString() == string.Empty;
 
-                        if (isInSystemHeader)
+                        if (isInSystemHeader || IsPrimitiveTypedef(cursor.ToString()))
                         {
                             // Cross-plat:
                             // Getting the actual type of a typedef is painful, since platforms don't even agree on the meaning of types;
@@ -352,6 +352,24 @@ namespace QuantumBinding.Generator.Utils
                     }
                 default:
                     return PrimitiveType.Unknown;
+            }
+        }
+
+        public static bool IsPrimitiveTypedef(string typeName)
+        {
+            switch (typeName)
+            {
+                case "int8_t":  
+                case "uint8_t": 
+                case "int16_t": 
+                case "uint16_t":
+                case "int32_t": 
+                case "uint32_t":
+                case "int64_t":
+                case "uint64_t":
+                    return true;
+                default:
+                    return false;
             }
         }
 

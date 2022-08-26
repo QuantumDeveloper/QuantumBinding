@@ -247,11 +247,6 @@ namespace QuantumBinding.Generator.Parser
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            if (structName == "VkExtensionProperties")
-            {
-
-            }
-
             var @class = new Class
             {
                 Name = structName,
