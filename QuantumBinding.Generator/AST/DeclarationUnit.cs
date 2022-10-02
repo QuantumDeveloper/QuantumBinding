@@ -160,6 +160,8 @@ namespace QuantumBinding.Generator.AST
 
         public void AddDeclaration(Declaration declaration)
         {
+            if (declaration == null) return;
+            
             Declaration decl = null;
             switch(declaration)
             {

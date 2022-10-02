@@ -23,7 +23,7 @@ namespace QuantumBinding.Generator
             GeneratorSpecializations = GeneratorSpecializations.All;
         }
 
-        private List<NamespaceMapping> namespaceMapping;
+        private readonly List<NamespaceMapping> namespaceMapping;
 
         internal List<TranslationUnit> TranslationUnits { get; }
 
@@ -32,6 +32,10 @@ namespace QuantumBinding.Generator
         public List<string> Files { get; set; }
 
         public List<string> IncludeDirs { get; set; }
+        
+        public GeneratorMode GeneratorMode { get; set; }
+        
+        public string FileHeader { get; set; }
 
         public string OutputPath { get; set; }
 
@@ -50,6 +54,8 @@ namespace QuantumBinding.Generator
         public bool SkipPodTypesGeneration { get; set; }
 
         public bool AllowConvertStructToClass { get; set; }
+        
+        public AccessSpecifier InteropClassAccessSpecifier { get; set; }
 
         public CallingConvention CallingConvention { get; set; }
 
@@ -66,13 +72,7 @@ namespace QuantumBinding.Generator
         /// </summary>
         public bool GenerateOverloadsForArrayParams { get; set; }
 
-        public static string UtilsOutputPath { get; set; }
-
-        public static string UtilsOutputName { get; set; }
-
-        public static string UtilsNamespace { get; set; }
-
-        public static Module GenerateUtilsForModule { get; set; }
+        public static string UtilsNamespace => "QuantumBinding.Utils";
 
         public List<string> Defines { get; set; }
 

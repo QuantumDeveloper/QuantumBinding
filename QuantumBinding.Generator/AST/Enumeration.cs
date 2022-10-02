@@ -37,6 +37,7 @@ namespace QuantumBinding.Generator.AST
                 AccessSpecifier = AccessSpecifier,
                 Items = new List<EnumerationItem>(Items),
                 Name = Name,
+                OriginalName = OriginalName,
                 Owner = Owner,
                 Location = Location,
                 Comment = (Comment)Comment.Clone()

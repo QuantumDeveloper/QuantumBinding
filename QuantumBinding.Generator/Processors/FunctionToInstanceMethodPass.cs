@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
 using QuantumBinding.Generator.Utils;
@@ -21,6 +23,7 @@ namespace QuantumBinding.Generator.Processors
 
             Class @class = null;
             // Create method in global scope
+            // Case if function has more than 0 parameters or zero parameters, but with return type != void
             if ((function.Parameters.Count > 0 && !GetFunctionParameter(function.Parameters[0], out @class)) ||
                 (function.Parameters.Count == 0 && !GetFunctionReturnType(function.ReturnType, out @class)))
             {
@@ -40,6 +43,10 @@ namespace QuantumBinding.Generator.Processors
                 }
 
                 CurrentNamespace.AddDeclaration(globalMethod);
+
+                var overload = GenerateMethodOverload(globalMethod);
+                
+                CurrentNamespace.AddDeclaration(overload);
 
                 return true;
             }
@@ -92,7 +99,10 @@ namespace QuantumBinding.Generator.Processors
             }
             else
             {
-                var parameters = function.Parameters.Count > 0 && function.Parameters[0].ParameterKind == ParameterKind.In ? function.Parameters.Skip(1) : function.Parameters;
+                var parameters =
+                    function.Parameters.Count > 0 && function.Parameters[0].ParameterKind == ParameterKind.In
+                        ? function.Parameters.Skip(1)
+                        : function.Parameters;
                 foreach (var parameter1 in parameters)
                 {
                     // Copy parameters with creating new instance and decrement parameter indices because we removed the first one
@@ -104,6 +114,9 @@ namespace QuantumBinding.Generator.Processors
 
             method.Class = @class;
             @class.AddMethod(method);
+
+            var overloadMethod = GenerateMethodOverload(method);
+            @class.AddMethod(overloadMethod);
 
             return true;
         }
@@ -143,6 +156,50 @@ namespace QuantumBinding.Generator.Processors
                     @class = extension;
                 }
             }
+        }
+
+        private Method GenerateMethodOverload(Method method)
+        {
+            if (method.Name.Contains("FreeCommandBuffers"))
+            {
+                int bug = 0;
+            }
+            
+            var parameters = new List<Parameter>();
+
+            foreach (var parameter in method.Parameters)
+            {
+                if (parameter.Type.IsPointerToArray() && parameter.ParameterKind != ParameterKind.Out)
+                {
+                    parameters.Add(parameter);
+                }
+            }
+
+            Method overloadedMethod = null;
+
+            if (parameters.Count > 0)
+            {
+                overloadedMethod = (Method)method.Clone();
+                for (var index = 0; index < method.Parameters.Count; index++)
+                {
+                    var parameter = method.Parameters[index];
+                    if (parameters.Contains(parameter))
+                    {
+                        var parameterClone = (Parameter)parameter.Clone();
+                        var typeClone = (PointerType)parameter.Type.Clone();
+                        var arrayType = typeClone.Pointee as ArrayType;
+                        typeClone.Pointee = arrayType.ElementType;
+                        typeClone.IsNullable = true;
+                        parameterClone.Type = typeClone;
+
+                        overloadedMethod.Parameters[index] = parameterClone;
+                    }
+                }
+
+                
+            }
+
+            return overloadedMethod;
         }
     }
 }

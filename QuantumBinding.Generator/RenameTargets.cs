@@ -5,6 +5,7 @@ namespace QuantumBinding.Generator
     [Flags]
     public enum RenameTargets
     {
+        None = 0,
         Enum = 1,
         EnumItem = 2,
         Struct = 4,

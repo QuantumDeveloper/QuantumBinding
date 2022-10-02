@@ -1,4 +1,6 @@
-﻿namespace QuantumBinding.Generator.AST
+﻿using QuantumBinding.Generator.Types;
+
+namespace QuantumBinding.Generator.AST
 {
     public class Method : Function
     {
@@ -41,7 +43,7 @@
 
         public override object Clone()
         {
-            return new Method()
+            var method = new Method()
             {
                 Function = (Function)Function.Clone(),
                 IsVirtual = IsVirtual,
@@ -54,11 +56,18 @@
                 Id = Id,
                 Owner = Owner,
                 Class = Class,
+                ReturnType = ReturnType,
                 Location = Location,
                 AlternativeNamespace = AlternativeNamespace,
                 IsIgnored = IsIgnored,
-                Comment = (Comment)Comment.Clone(),
             };
+            method.Parameters.AddRange(Parameters);
+            if (Comment != null)
+            {
+                method.Comment = (Comment) Comment.Clone();
+            }
+
+            return method;
         }
     }
 }

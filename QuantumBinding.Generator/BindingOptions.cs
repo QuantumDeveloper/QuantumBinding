@@ -11,7 +11,7 @@ namespace QuantumBinding.Generator
             Modules = new ReadOnlyCollection<Module>(modulesInternal);
             ParserArguments = new List<string>();
         }
-
+        
         public bool GenerateSequentialLayout { get; set; }
 
         public bool DebugMode { get; set; }
@@ -29,7 +29,7 @@ namespace QuantumBinding.Generator
             return module;
         }
 
-        private List<Module> modulesInternal;
+        private readonly List<Module> modulesInternal;
 
         public ReadOnlyCollection<Module> Modules { get; }
     }

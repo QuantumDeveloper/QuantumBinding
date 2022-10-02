@@ -10,6 +10,8 @@ namespace QuantumBinding.Generator.AST
         }
 
         public string Name { get; set; }
+        
+        public string OriginalName { get; set; }
 
         public FileLocation Location { get; set; }
 

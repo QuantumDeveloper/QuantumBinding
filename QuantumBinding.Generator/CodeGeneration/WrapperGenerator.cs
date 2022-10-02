@@ -111,12 +111,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             PushBlock(CodeBlockKind.Usings);
             WriteLine("using System.Runtime.InteropServices;");
-            // TODO: fix this place not to hardcode utils
-            if (!string.IsNullOrEmpty(Module.UtilsNamespace))
-            {
-                WriteLine($"using {Module.UtilsNamespace};");
-            }
-
+            WriteLine($"using {Module.UtilsNamespace};");
+            
             UsingsBlock = PopBlock();
         }
 
@@ -429,7 +425,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     }
                     else if (property.Type.Declaration is Enumeration @enum)
                     {
-                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = ({@enum.InheritanceType}){property.Name};");
+                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                     }
                     else
                     {

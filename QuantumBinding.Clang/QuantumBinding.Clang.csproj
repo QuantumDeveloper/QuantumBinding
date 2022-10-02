@@ -20,4 +20,8 @@
     <Compile Remove="QuantumBinding.Clang.Functions.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\QuantumBinding.Utils\QuantumBinding.Utils.csproj" />
+  </ItemGroup>
+
 </Project>

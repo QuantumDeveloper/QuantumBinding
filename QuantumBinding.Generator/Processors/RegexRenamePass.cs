@@ -1,6 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -133,11 +135,7 @@ namespace QuantumBinding.Generator.Processors
             if (IsVisited(@class))
                 return false;
 
-            if ((@class.ClassType == ClassType.Class  && renameTargets.HasFlag(RenameTargets.Class)) ||
-                (@class.ClassType == ClassType.StructWrapper && renameTargets.HasFlag(RenameTargets.StructWrapper)) ||
-                (@class.ClassType == ClassType.UnionWrapper && renameTargets.HasFlag(RenameTargets.UnionWrapper)) ||
-                (@class.ClassType == ClassType.Struct && renameTargets.HasFlag(RenameTargets.Struct)) ||
-                (@class.ClassType == ClassType.Union) && renameTargets.HasFlag(RenameTargets.Struct))
+            if (renameTargets.HasFlag(RenameTargetsUtils.ClassTypeToRenameTargets(@class.ClassType)))
             {
                 @class.Name = Replace(@class.Name);
             }
@@ -249,14 +247,8 @@ namespace QuantumBinding.Generator.Processors
                 }
                 return;
             }
-
-            if ((decl is Class @class && 
-                (@class.ClassType == ClassType.Class && renameTargets.HasFlag(RenameTargets.Class) || 
-                (@class.ClassType == ClassType.Struct && renameTargets.HasFlag(RenameTargets.Struct)) ||
-                (@class.ClassType == ClassType.Union && renameTargets.HasFlag(RenameTargets.Union)) ||
-                (@class.ClassType == ClassType.StructWrapper && renameTargets.HasFlag(RenameTargets.StructWrapper)) ||
-                (@class.ClassType == ClassType.UnionWrapper && renameTargets.HasFlag(RenameTargets.UnionWrapper))
-                )) ||
+            
+            if (decl is Class @class && renameTargets.HasFlag(RenameTargetsUtils.ClassTypeToRenameTargets(@class.ClassType)) ||
                 decl is Enumeration && renameTargets.HasFlag(RenameTargets.Enum) ||
                 decl is Delegate && renameTargets.HasFlag(RenameTargets.Delegate))
             {

@@ -12,6 +12,8 @@ namespace QuantumBinding.Generator.CodeGeneration
 {
     public class CSharpCodeGenerator: CSharpCodeGeneratorBase
     {
+        protected const string InvokatorName = "InvokeFunc";
+        
         public CSharpCodeGenerator(
             ProcessingContext context,
             IEnumerable<TranslationUnit> units,
@@ -113,7 +115,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             switch (classType)
             {
                 case ClassType.Struct:
-                    var structs = CurrentTranslationUnit.Structs.Where(x => !x.IsIgnored);
+                    var structs = CurrentTranslationUnit.Structs.Where(x => !x.IsIgnored).ToArray();
 
                     if (Options.PodTypesAsSimpleTypes && structs.Where(x=>!x.IsSimpleType).ToList().Count == 0 && Specializations == GeneratorSpecializations.Structs)
                     {
@@ -127,8 +129,8 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                     break;
                 case ClassType.Union:
-                    var unions = CurrentTranslationUnit.Unions.Where(x => !x.IsIgnored);
-                    if (unions.Count() == 0 && Specializations == GeneratorSpecializations.Unions)
+                    var unions = CurrentTranslationUnit.Unions.Where(x => !x.IsIgnored).ToArray();
+                    if (!unions.Any() && Specializations == GeneratorSpecializations.Unions)
                     {
                         IsGeneratorEmpty = true;
                     }
@@ -303,15 +305,31 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
 
             WriteLine(TypePrinter.VisitClass(@class).ToString());
+            
             WriteOpenBraceAndIndent();
 
+            if (@class.Name == "VkBaseInStructure")
+            {
+                int bug = 0;
+            }
+
             GenerateFields(@class);
+
+            foreach (var fixedStructInfo in FixedStructInfos)
+            {
+                NewLine();
+                GenerateConstArrayFixedWrapper(fixedStructInfo);
+            }
+            FixedStructInfos.Clear();
+            FixedTypesHash.Clear();
 
             GenerateConstructors(@class);
 
             GenerateProperties(@class);
 
             GenerateMethods(@class);
+            
+            GeneratePinnableReference(@class);
 
             GenerateOverloads(@class);
 
@@ -355,11 +373,6 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var property in @class.Properties)
             {
-                if (property.Name.Contains("pGeometries"))
-                {
-                    
-                }
-                
                 PushBlock(CodeBlockKind.Property);
                 GenerateCommentIfNotEmpty(property.Comment);
                 TypePrinter.PushMarshalType(MarshalTypes.NativeField);
@@ -369,54 +382,61 @@ namespace QuantumBinding.Generator.CodeGeneration
                 PushBlock(CodeBlockKind.AccessSpecifier);
                 Write($"{TypePrinter.GetAccessSpecifier(property.AccessSpecifier)}");
                 PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
-                WriteLine($"{propertyStr}");
-                WriteOpenBraceAndIndent();
-
-                var getterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Getter?.AccessSpecifier);
-                var setterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Setter?.AccessSpecifier);
-                if (property.IsAutoProperty)
+                if (property.HasSimpleGetterOnly)
                 {
-                    if (property.Getter.AccessSpecifier != AccessSpecifier.Public)
-                    {
-                        Write($"{getterAccessSpecifier} ");
-                    }
-
-                    Write("get;");
-
-                    if (property.Setter.AccessSpecifier != AccessSpecifier.Public)
-                    {
-                        Write($"{setterAccessSpecifier} ");
-                    }
-
-                    Write("set;");
+                    WriteLine($"{propertyStr} => {property.Field.Name};");
                 }
                 else
                 {
-                    if (property.Getter != null)
+                    WriteLine($"{propertyStr}");
+                    WriteOpenBraceAndIndent();
+
+                    var getterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Getter?.AccessSpecifier);
+                    var setterAccessSpecifier = TypePrinter.GetAccessSpecifier(property.Setter?.AccessSpecifier);
+                    if (property.IsAutoProperty)
                     {
                         if (property.Getter.AccessSpecifier != AccessSpecifier.Public)
                         {
                             Write($"{getterAccessSpecifier} ");
                         }
 
-                        Write($"get => {property.Field.Name};");
-                        NewLine();
-                    }
+                        Write("get;");
 
-                    if (property.Setter != null)
-                    {
                         if (property.Setter.AccessSpecifier != AccessSpecifier.Public)
                         {
                             Write($"{setterAccessSpecifier} ");
                         }
 
-                        Write($"set => {property.Field.Name} = value;");
-                        NewLine();
+                        Write("set;");
                     }
+                    else
+                    {
+                        if (property.Getter != null)
+                        {
+                            if (property.Getter.AccessSpecifier != AccessSpecifier.Public)
+                            {
+                                Write($"{getterAccessSpecifier} ");
+                            }
+
+                            Write($"get => {property.Field.Name};");
+                            NewLine();
+                        }
+
+                        if (property.Setter != null)
+                        {
+                            if (property.Setter.AccessSpecifier != AccessSpecifier.Public)
+                            {
+                                Write($"{setterAccessSpecifier} ");
+                            }
+
+                            Write($"set => {property.Field.Name} = value;");
+                            NewLine();
+                        }
+                    }
+
+                    UnindentAndWriteCloseBrace();
                 }
-
-                UnindentAndWriteCloseBrace();
-
+                
                 NewLine();
 
                 PopBlock();
@@ -431,6 +451,13 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
+        protected void GeneratePinnableReference(Class @class)
+        {
+            if (@class.ClassType != ClassType.Class) return;
+            
+            WriteLine($"public ref readonly {@class.Fields[0].Type} GetPinnableReference() => ref {@class.Fields[0].Name};");
+        }
+
         protected void GenerateExtensionMethods(Class @class)
         {
             foreach (var method in @class.ExtensionMethods)
@@ -441,18 +468,10 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
-        private void GenerateDelegates()
-        {
-            foreach (var @delegate in CurrentTranslationUnit.Delegates)
-            {
-                GenerateDelegate(@delegate);
-            }
-        }
-
         private void GenerateFunctions()
         {
             PushBlock(CodeBlockKind.Class);
-            WriteLine($"public static class {CurrentTranslationUnit.Module.InteropClassName}");
+            WriteLine($"{CurrentTranslationUnit.Module.InteropClassAccessSpecifier} static unsafe class {CurrentTranslationUnit.Module.InteropClassName}");
             WriteOpenBraceAndIndent();
             string libraryPath = "LibraryPath";
             WriteLine($"public const string {libraryPath} = \"{CurrentTranslationUnit.Module.LibraryName}\";");
@@ -472,54 +491,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             PopBlock();
             NewLine();
         }
-
-        protected override void GenerateDelegate(Delegate @delegate)
-        {
-            if (@delegate.IsIgnored)
-                return;
-
-            PushBlock(CodeBlockKind.Delegate, @delegate);
-
-            WriteLocation(@delegate);
-
-            GenerateCommentIfNotEmpty(@delegate.Comment);
-
-            if (@delegate.SuppressUnmanagedCodeSecurity)
-            {
-                PushBlock(CodeBlockKind.Attribute);
-                WriteLine("[SuppressUnmanagedCodeSecurity]");
-                PopBlock();
-            }
-
-            PushBlock(CodeBlockKind.Attribute);
-            WriteLine($"[UnmanagedFunctionPointer(CallingConvention.{@delegate.CallingConvention})]");
-            PopBlock();
-
-            if (@delegate.ReturnType.IsAnsiString())
-            {
-                PushBlock(CodeBlockKind.Attribute);
-                WriteLine($"[return: MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))]");
-                PopBlock();
-            }
-
-            PushBlock(CodeBlockKind.AccessSpecifier);
-            Write($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} delegate");
-            PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
-
-            TypePrinter.PushMarshalType(MarshalTypes.NativeReturnType);
-            var returnType = @delegate.ReturnType.Visit(TypePrinter);
-            Write($"{returnType} {@delegate.Name}(");
-            TypePrinter.PopMarshalType();
-            CheckParameters(@delegate.Parameters);
-
-            var @params = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
-            Write(@params.ToString());
-            Write(");");
-            NewLine();
-
-            PopBlock();
-        }
-
+        
         protected override void GenerateFunction(Function function)
         {
             if (function.IsIgnored)
@@ -542,13 +514,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLine($"[DllImport({function.DllName}, EntryPoint = \"{function.EntryPoint}\", CallingConvention = CallingConvention.{function.CallingConvention})]");
             PopBlock();
 
-            if (function.ReturnType.IsAnsiString())
-            {
-                PushBlock(CodeBlockKind.Attribute);
-                WriteLine($"[return: MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))]");
-                PopBlock();
-            }
-
             PushBlock(CodeBlockKind.AccessSpecifier);
             Write($"{TypePrinter.GetAccessSpecifier(function.AccessSpecifier)} static extern");
             PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
@@ -557,6 +522,11 @@ namespace QuantumBinding.Generator.CodeGeneration
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
 
+            if (function.Name == "vkCmdBuildAccelerationStructuresKHR")
+            {
+                int bug = 0;
+            }
+            
             var @params = TypePrinter.VisitParameters(function.Parameters, MarshalTypes.NativeParameter);
             Write(@params.ToString());
             Write(");");
@@ -564,6 +534,163 @@ namespace QuantumBinding.Generator.CodeGeneration
             NewLine();
 
             PopBlock();
+        }
+
+        
+        private void GenerateDelegates()
+        {
+            foreach (var @delegate in CurrentTranslationUnit.Delegates)
+            {
+                GenerateDelegate(@delegate);
+            }
+        }
+
+        protected override void GenerateDelegate(Delegate @delegate)
+        {
+            if (@delegate.IsIgnored)
+                return;
+
+            PushBlock(CodeBlockKind.Delegate, @delegate);
+
+            WriteLocation(@delegate);
+
+            GenerateCommentIfNotEmpty(@delegate.Comment);
+
+            if (@delegate.Name == "PFN_vkCreateInstance")
+            {
+                int bug = 0;
+            }
+
+            string pointerArg = "ptr";
+            TypePrinter.PushMarshalType(MarshalTypes.NativeReturnType);
+            var returnType = @delegate.ReturnType.Visit(TypePrinter);
+            TypePrinter.PopMarshalType();
+            CheckParameters(@delegate.Parameters);
+            var @params = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
+            var nativeParams = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.NativeParameter);
+            var paramsWithoutTypes = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.SkipParamTypesSkipModifiers);
+            
+            WriteLine($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} readonly unsafe struct {@delegate.Name}");
+            WriteOpenBraceAndIndent();
+            
+            string delegateParams = ValidateDelegateParameters(@params, returnType);
+
+            if (CurrentTranslationUnit.Module.GeneratorMode == GeneratorMode.Compatible)
+            {
+                WriteDelegateWrapperConstructorCompatible(@delegate, pointerArg, delegateParams);
+                NewLine();
+                WriteInvokeFieldDelegateCompatible(delegateParams, "Stdcall");
+                NewLine();
+                WriteInvokeFieldDelegateCompatible(delegateParams, "Cdecl");
+                NewLine();
+                WriteInvokeMethodDelegateCompatible(@delegate, @nativeParams, paramsWithoutTypes, returnType);
+            }
+            else
+            {
+                WriteDelegateWrapperConstructorPreview(@delegate, pointerArg, delegateParams);
+                NewLine();
+                WriteInvokeFieldDelegatePreview(delegateParams);
+                NewLine();
+                WriteInvokeMethodDelegatePreview(@delegate, @nativeParams, paramsWithoutTypes, returnType);
+            }
+
+            NewLine();
+            WriteImplicitDelegateConversion(@delegate, pointerArg);
+            UnindentAndWriteCloseBrace();
+            PopBlock();
+        }
+
+        private void WriteDelegateWrapperConstructorCompatible(Delegate @delegate, string pointerArg, string delegateParams)
+        {
+            WriteLine($"public {@delegate.Name}(void* {pointerArg})");
+            WriteOpenBraceAndIndent();
+            WriteCheckForWindowsRuntimeString();
+            WriteOpenBraceAndIndent();
+            WriteLine($"InvokeStdcall = (delegate* unmanaged[Stdcall]<{delegateParams}>){pointerArg};");
+            WriteLine($"InvokeCdecl = default;");
+            UnindentAndWriteCloseBrace();
+            WriteLine("else");
+            WriteOpenBraceAndIndent();
+            WriteLine($"InvokeCdecl = (delegate* unmanaged[Cdecl]<{delegateParams}>){pointerArg};");
+            WriteLine($"InvokeStdcall = default;");
+            UnindentAndWriteCloseBrace();
+            UnindentAndWriteCloseBrace();
+        }
+        
+        private void WriteDelegateWrapperConstructorPreview(Delegate @delegate, string pointerArg, string delegateParams)
+        {
+            WriteLine($"public {@delegate.Name}(void* {pointerArg})");
+            WriteOpenBraceAndIndent();
+            WriteLine($"{InvokatorName} = (delegate* unmanaged<{delegateParams}>){pointerArg};");
+            UnindentAndWriteCloseBrace();
+        }
+
+        private void WriteInvokeFieldDelegateCompatible(string delegateParams, string callConv)
+        {
+            WriteLine($"private readonly delegate* unmanaged[{callConv}]<{delegateParams}> Invoke{callConv};");
+        }
+        
+        private void WriteInvokeFieldDelegatePreview(string delegateParams)
+        {
+            WriteLine($"private readonly delegate* unmanaged<{delegateParams}> {InvokatorName};");
+        }
+
+        private void WriteInvokeMethodDelegateCompatible(Delegate @delegate, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
+        {
+            WriteLine($"public {returnType} Invoke({@params})");
+            WriteOpenBraceAndIndent();
+            WriteCheckForWindowsRuntimeString();
+            WriteOpenBraceAndIndent();
+            string returnKeyword = "return ";
+            if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
+            {
+                returnKeyword = string.Empty;
+            }
+            WriteLine($"{returnKeyword}InvokeStdcall({argumentsOnly});");
+            UnindentAndWriteCloseBrace();
+            WriteLine("else");
+            WriteOpenBraceAndIndent();
+            WriteLine($"{returnKeyword}InvokeCdecl({argumentsOnly});");
+            UnindentAndWriteCloseBrace();
+            UnindentAndWriteCloseBrace();
+        }
+        
+        private void WriteInvokeMethodDelegatePreview(Delegate @delegate, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
+        {
+            WriteLine($"public {returnType} Invoke({@params})");
+            WriteOpenBraceAndIndent();
+            string returnKeyword = "return ";
+            if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
+            {
+                returnKeyword = string.Empty;
+            }
+            WriteLine($"{returnKeyword}{InvokatorName}({argumentsOnly});");
+            UnindentAndWriteCloseBrace();
+        }
+
+        private void WriteImplicitDelegateConversion(Delegate @delegate, string pointerArg)
+        {
+            WriteLine($"public static explicit operator {@delegate.Name}(void* {pointerArg}) => new({pointerArg});");
+        }
+
+        private void WriteCheckForWindowsRuntimeString()
+        {
+            WriteLine("if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))");
+        }
+
+        private string ValidateDelegateParameters(TypePrinterResult @params, TypePrinterResult returnType)
+        {
+            string delegateParams;
+            if (string.IsNullOrEmpty(@params.ToString()))
+            {
+                delegateParams = returnType.ToString();
+            }
+            else
+            {
+                delegateParams = $"{@params},{returnType}";
+            }
+
+            return delegateParams;
         }
 
         private void GenerateMethod(Method method)
@@ -672,9 +799,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                                 WritePointerToSimpleType();
                             }
                         }
-                        else if (classDecl.ClassType == ClassType.StructWrapper || classDecl.ClassType == ClassType.UnionWrapper)
+                        else if (classDecl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
                         {
-                            if ((parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly) && 
+                            if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly && 
                                 paramIndex == 0 && 
                                 isInstanceMethod)
                             {
@@ -846,9 +973,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     var interopType = parameter.WrappedType.Visit(TypePrinter).Type;
                     TypePrinter.PopMarshalType();
 
-                    if (parameter.ParameterKind == ParameterKind.In ||
-                        parameter.ParameterKind == ParameterKind.Readonly ||
-                        parameter.ParameterKind == ParameterKind.InOut)
+                    if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.InOut)
                     {
                         textGenerator.WriteLine($"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {classDecl.AlternativeNamespace}.{interopType}() : {parameter.Name}.{ConversionMethodName};");
                         actions.Add(DisposeWrapper);
@@ -1126,8 +1251,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 void DisposeWrapper()
                 {
-                    if ((classDecl.ClassType == ClassType.StructWrapper ||
-                         classDecl.ClassType == ClassType.UnionWrapper) && classDecl.IsDisposable)
+                    if (classDecl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && classDecl.IsDisposable)
                     {
                         textGenerator.WriteLine($"{parameter.Name}?.Dispose();");
                     }
@@ -1135,10 +1259,9 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 void DisposeWrappedArray()
                 {
-                    if ((classDecl.ClassType == ClassType.StructWrapper ||
-                         classDecl.ClassType == ClassType.UnionWrapper) && classDecl.IsDisposable)
+                    if (classDecl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && classDecl.IsDisposable)
                     {
-                        if (parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly)
+                        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly)
                         {
                             textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
                             textGenerator.WriteOpenBraceAndIndent();

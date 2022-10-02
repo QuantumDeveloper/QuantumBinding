@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
@@ -12,6 +13,8 @@ namespace QuantumBinding.Generator
         public const string IntPtrType = "System.IntPtr";
         public const string ObjectType = "object";
         public const string NullableOperator = "?";
+        public const string PointerOperator = "*";
+        public const string DoublePointerOperator = "**";
 
         public CSharpTypePrinter(BindingOptions options): base(options)
         {
@@ -23,25 +26,25 @@ namespace QuantumBinding.Generator
             if (array.IsConstArray)
             {
                 string attribute = "";
-                if (MarshalType == MarshalTypes.NativeField)
-                {
-                    attribute = $"[MarshalAs(UnmanagedType.ByValArray, SizeConst = {array.Size})]";
-                }
-                else if (MarshalType == MarshalTypes.NativeParameter)
-                {
-                    attribute = $"[MarshalAs(UnmanagedType.LPArray, SizeConst = {array.Size})]";
-                }
-
-                if (array.CanConvertToString() && MarshalType != MarshalTypes.NativeField)
-                {
-                    return Result("string", "", $"[MarshalAs(UnmanagedType.ByValTStr, SizeConst = {array.Size})]");
-                }
+                // if (MarshalType == MarshalTypes.NativeField)
+                // {
+                //     attribute = $"[MarshalAs(UnmanagedType.ByValArray, SizeConst = {array.Size})]";
+                // }
+                // else if (MarshalType == MarshalTypes.NativeParameter)
+                // {
+                //     attribute = $"[MarshalAs(UnmanagedType.LPArray, SizeConst = {array.Size})]";
+                // }
+                //
+                // if (array.CanConvertToString() && MarshalType != MarshalTypes.NativeField)
+                // {
+                //     return Result("string", "", $"[MarshalAs(UnmanagedType.ByValTStr, SizeConst = {array.Size})]");
+                // }
 
                 if (array.ElementType.TryGetClass(out Class @class))
                 {
                     if (@class.IsSimpleType)
                     {
-                        return Result($"{@class.UnderlyingNativeType}[]", "", attribute);
+                        return Result($"{@class.UnderlyingNativeType}", "[]", attribute);
                     }
                 }
 
@@ -50,71 +53,172 @@ namespace QuantumBinding.Generator
                     var pointer = array.ElementType as PointerType;
                     if (pointer.TryGetClass(out Class ptr))
                     {
-                        return Result($"{ptr.Name}[]", "", attribute);
+                        return Result($"{ptr.Name}", "[]", attribute);
                     }
 
                     if (pointer.IsPointerToCustomType(out var custom))
                     {
                         var decl = array.Declaration as Class;
-                        if ((MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty) && decl?.ConnectedTo != null)
+                        if (MarshalType is MarshalTypes.Property or MarshalTypes.WrappedProperty && decl?.ConnectedTo != null)
                         {
-                            return Result($"{decl.ConnectedTo.Name}[]", "", attribute);
+                            return Result($"{decl.ConnectedTo.Name}", "[]", attribute);
                         }
 
-                        return Result($"{custom.Name}[]", "", attribute);
+                        return Result($"{custom.Name}", "[]", attribute);
                     }
                 }
 
                 array.ElementType.Declaration = array.Declaration;
                 var result = array.ElementType.Visit(this);
 
-                if (array.ElementType.CanConvertToFixedArray() && MarshalType == MarshalTypes.NativeField)
+                if ((array.ElementType.CanConvertToFixedArray() || array.ElementType.IsEnum()) && 
+                    MarshalType == MarshalTypes.NativeField)
                 {
-                    return Result($"unsafe fixed {result}", $"[{array.Size}]");
+                    return Result($"unsafe fixed {result}", parameterSuffix: $"[{array.Size}]");
                 }
 
-                return Result($"{result}[]", "", attribute);
+                return Result($"{result}", "[]", attribute);
             }
 
-            if (array.SizeType == ArraySizeType.Incomplete && 
-                array.IsConst &&
-                array.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar))
+            if (array.SizeType == ArraySizeType.Incomplete && array.IsConst)
             {
-                if (MarshalType == MarshalTypes.NativeParameter)
+                if (MarshalType is MarshalTypes.NativeParameter or MarshalTypes.NativeField)
                 {
-                    return Result("string", "", "[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))]");
+                    if (array.ElementType.IsAnsiString())
+                    {
+                        return Result("sbyte");
+                    }
+                    if (array.ElementType.IsUnicodeString())
+                    {
+                        return Result("char");
+                    }
                 }
-
-                return Result("string", "", "[MarshalAs(UnmanagedType.LPStr)]");
-            }
-
-            if (array.SizeType == ArraySizeType.Incomplete &&
-                array.IsConst &&
-                array.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
-            {
-                return Result("string", "", "[MarshalAs(UnmanagedType.LPWStr)]");
+                return Result("string", "", "");
             }
 
             array.ElementType.Declaration = array.Declaration;
             var visitResult = array.ElementType.Visit(this).ToString();
-            return Result($"{visitResult}[]");
+            return Result($"{visitResult}", "[]");
         }
 
         public override TypePrinterResult VisitPointerType(PointerType pointer)
         {
-            if ((pointer.IsAnsiString() || pointer.IsUnicodeString()) && (MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty))
+            if (MarshalType is 
+                MarshalTypes.NativeField or 
+                MarshalTypes.NativeParameter or 
+                MarshalTypes.NativeReturnType or 
+                MarshalTypes.DelegateParameter)
+            {
+                if (pointer.IsAnsiString())
+                {
+                    return Result("sbyte", PointerOperator);
+                }
+
+                if (pointer.IsUnicodeString())
+                {
+                    return Result("char", PointerOperator);
+                }
+
+                if (pointer.IsStringArray(out var isUnicode))
+                {
+                    if (isUnicode)
+                    {
+                        return Result("char", DoublePointerOperator);
+                    }
+
+                    return Result("byte", DoublePointerOperator);
+                }
+
+                if (pointer.IsPointerToVoid())
+                {
+                    return Result("void", PointerOperator);
+                }
+                
+                if (pointer.IsPointerToPointer())
+                {
+                    var pointee = pointer.Pointee as PointerType;
+                    pointee.Declaration = pointer.Declaration;
+                    return Result(pointee.Visit(this).Type, DoublePointerOperator);
+                }
+
+                if (pointer.IsPointerToArray())
+                {
+                    pointer.Pointee.Declaration = pointer.Declaration;
+                    var result = pointer.Pointee.Visit(this);
+                    return Result($"{result.Type}", PointerOperator);
+                }
+
+                if (pointer.IsPointerToStruct() || pointer.IsPointerToBuiltInType(out var primitive))
+                {
+                    pointer.Pointee.Declaration = pointer.Declaration; // To correctly visit pointee, we need to copy Declaration from pointer 
+                    var result = pointer.Pointee.Visit(this);
+                    return Result(result.ToString(), PointerOperator);
+                }
+
+                // Case when current object points to a Class declaration (ClassType == Class/Struct/Union/Wrapper)
+                if (pointer.TryGetClass(out var @class))
+                {
+                    pointer.Pointee.Declaration = pointer.Declaration;
+                    if (pointer.IsSimpleType())
+                    {
+                        if (Options.PodTypesAsSimpleTypes)
+                        {
+                            var result = @class.UnderlyingNativeType.Visit(this);
+                            return Result(result.Type, PointerOperator);
+                        }
+                    }
+
+                    if (@class.ClassType == ClassType.Class && 
+                        @class.InnerStruct != null)
+                    {
+                        return Result(@class.InnerStruct.Name, PointerOperator);
+                    }
+                    
+                }
+                // Case when current object points to the array of enums
+                else if (pointer.TryGetEnum(out var @enum))
+                {
+                    if (pointer.IsPointerToArray() && MarshalType == MarshalTypes.NativeParameter)
+                    {
+                        return Result($"{@enum.Name}", PointerOperator);
+                    }
+                }
+            }
+            else if (MarshalType is MarshalTypes.MethodParameter or MarshalTypes.Property or MarshalTypes.WrappedProperty)
+            {
+                if (pointer.IsAnsiString() || pointer.IsUnicodeString())
+                {
+                    return Result("string");
+                }
+
+                if (pointer.IsStringArray())
+                {
+                    return Result("string", "[]");
+                }
+                
+                if (pointer.IsPointerToVoid())
+                {
+                    return Result("void", PointerOperator);
+                }
+            }
+            
+            return pointer.Pointee.Visit(this);
+            
+            ///========== Should be refactored ===============/////
+            /*
+            if ((pointer.IsAnsiString() || pointer.IsUnicodeString()) && MarshalType is MarshalTypes.Property or MarshalTypes.WrappedProperty)
             {
                 return Result("string");
             }
 
             if (pointer.IsAnsiString())
             {
-                if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
+                if (MarshalType is MarshalTypes.NativeParameter or MarshalTypes.DelegateParameter)
                 {
-                    return Result("string", "", "[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConstCharPtrMarshaler))]");
+                    return Result("byte", "*");
                 }
 
-                if (MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.NativeReturnType)
+                if (MarshalType is MarshalTypes.MethodParameter or MarshalTypes.NativeReturnType)
                 {
                     return Result("string");
                 }
@@ -124,25 +228,29 @@ namespace QuantumBinding.Generator
 
             if (pointer.IsUnicodeString())
             {
-                if (MarshalType != MarshalTypes.NativeField)
+                if (MarshalType is MarshalTypes.NativeField or MarshalTypes.NativeParameter or MarshalTypes.DelegateParameter)
                 {
-                    return Result("string", "", "[MarshalAs(UnmanagedType.LPWStr)]");
+                    return Result("char", "*");
                 }
 
-                return Result(IntPtrType);
+                return Result("string");
             }
 
-            if (pointer.IsStringArray())
+            if (pointer.IsStringArray(out var isUnicode))
             {
-                if (MarshalType == MarshalTypes.NativeField)
+                if (MarshalType is MarshalTypes.NativeField or MarshalTypes.NativeParameter or MarshalTypes.DelegateParameter)
                 {
-                    return Result(IntPtrType);
+                    if (isUnicode)
+                    {
+                        return Result("char", "**");
+                    }
+                    return Result("byte", "**");
                 }
 
                 return Result("string[]");
             }
 
-            if (MarshalType == MarshalTypes.NativeField || MarshalType == MarshalTypes.NativeReturnType) // pointers for struct fields are ALWAYS translated as IntPtr;
+            if (MarshalType is MarshalTypes.NativeField or MarshalTypes.NativeReturnType) // pointers for struct fields are ALWAYS translated as IntPtr;
             {
                 return Result(IntPtrType);
             }
@@ -158,16 +266,23 @@ namespace QuantumBinding.Generator
                 {
                     case MarshalTypes.Property:
                     case MarshalTypes.WrappedProperty:
-                    case MarshalTypes.NativeField:
-                    case MarshalTypes.NativeParameter:
                     case MarshalTypes.MethodParameter:
                     case MarshalTypes.DelegateParameter:
                         return Result(IntPtrType);
+                    case MarshalTypes.NativeField:
+                    case MarshalTypes.NativeParameter:
+                        if (pointer.IsPointerToPointer())
+                        {
+                            var pointee = pointer.Pointee as PointerType;
+                            return Result(pointee.Pointee.Visit(this).Type, "**");
+                        }
+
+                        return Result("void", "*");
                 }
             }
 
             if (MarshalType == MarshalTypes.NativeParameter && 
-                (Parameter?.ParameterKind == ParameterKind.In || Parameter?.ParameterKind == ParameterKind.Readonly))
+                Parameter?.ParameterKind is ParameterKind.In or ParameterKind.Readonly)
             {
                 if (pointer.IsPointerToPrimitiveType(out var prim) && !pointer.IsPointerToArray())
                 {
@@ -206,7 +321,7 @@ namespace QuantumBinding.Generator
                         return Result(@class.WrappedStruct.Name, "[]");
                     }
 
-                    if (MarshalType == MarshalTypes.Property || MarshalType == MarshalTypes.WrappedProperty)
+                    if (MarshalType is MarshalTypes.Property or MarshalTypes.WrappedProperty)
                     {
                         pointer.Pointee.Declaration = pointer.Declaration;
                         return pointer.Pointee.Visit(this);
@@ -218,18 +333,8 @@ namespace QuantumBinding.Generator
                 if (pointer.IsPointerToStruct() && !pointer.IsSimpleType())
                 {
                     if (
-                        (
-                        @class.ClassType == ClassType.Struct ||
-                        @class.ClassType == ClassType.Union ||
-                        @class.ClassType == ClassType.StructWrapper ||
-                        @class.ClassType == ClassType.UnionWrapper
-                        ) &&
-                        (
-                        MarshalType == MarshalTypes.DelegateParameter ||
-                        MarshalType == MarshalTypes.MethodParameter ||
-                        MarshalType == MarshalTypes.Property ||
-                        MarshalType == MarshalTypes.WrappedProperty
-                        )
+                        @class.ClassType is ClassType.Struct or ClassType.Union or ClassType.StructWrapper or ClassType.UnionWrapper &&
+                        MarshalType is MarshalTypes.DelegateParameter or MarshalTypes.MethodParameter or MarshalTypes.Property or MarshalTypes.WrappedProperty
                         )
                     {
                         pointer.Pointee.Declaration = pointer.Declaration;
@@ -245,7 +350,7 @@ namespace QuantumBinding.Generator
                             }
                         }
 
-                        if (pointer.IsNullable && (@class.ClassType == ClassType.Struct || @class.ClassType == ClassType.Union))
+                        if (pointer.IsNullable && @class.ClassType is ClassType.Struct or ClassType.Union)
                         {
                             if (Parameter?.ParameterKind == ParameterKind.Out)
                             {
@@ -280,7 +385,7 @@ namespace QuantumBinding.Generator
                         return pointer.Pointee.Visit(this);
                     }
 
-                    if (pointer.IsNullable && (MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.WrappedProperty || MarshalType == MarshalTypes.Property))
+                    if (pointer.IsNullable && MarshalType is MarshalTypes.MethodParameter or MarshalTypes.WrappedProperty or MarshalTypes.Property)
                     {
                         if (Options.PodTypesAsSimpleTypes)
                         {
@@ -324,8 +429,8 @@ namespace QuantumBinding.Generator
                     }
                 }
 
-                if ((@class.ClassType == ClassType.Struct || @class.ClassType == ClassType.Union) 
-                    && (MarshalType == MarshalTypes.NativeField || MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.WrappedProperty))
+                if (@class.ClassType is ClassType.Struct or ClassType.Union 
+                    && MarshalType is MarshalTypes.NativeField or MarshalTypes.NativeParameter or MarshalTypes.WrappedProperty)
                 {
                     return @class.Name;
                 }
@@ -348,12 +453,10 @@ namespace QuantumBinding.Generator
                 }
             }
 
-            if (pointer.Declaration == null && pointer.Pointee is CustomType custom && custom.IsInSystemHeader && !custom.IsPrimitiveType)
+            if (pointer.Declaration == null && pointer.Pointee is CustomType { IsInSystemHeader: true, IsPrimitiveType: false })
             {
                 return Result(ObjectType);
-            }
-
-            return pointer.Pointee.Visit(this);
+            }*/
         }
 
         public override TypePrinterResult VisitBuiltinType(BuiltinType builtin)
@@ -375,7 +478,7 @@ namespace QuantumBinding.Generator
                 case PrimitiveType.Char:
                 case PrimitiveType.UChar:
                     if (Module.CharAsBoolForMethods && 
-                        (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter))
+                        MarshalType is MarshalTypes.NativeParameter or MarshalTypes.MethodParameter or MarshalTypes.DelegateParameter)
                     {
                         return "bool";
                     }
@@ -384,7 +487,7 @@ namespace QuantumBinding.Generator
                     return "byte";
                 case PrimitiveType.SChar:
                     if (Module.CharAsBoolForMethods &&
-                        (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter))
+                        MarshalType is MarshalTypes.NativeParameter or MarshalTypes.MethodParameter or MarshalTypes.DelegateParameter)
                     {
                         return "bool";
                     }
@@ -425,44 +528,34 @@ namespace QuantumBinding.Generator
         {
             if (customType.TryGetClass(out Class @class))
             {
-                if (@class.ClassType == ClassType.Class && (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.NativeField || MarshalType == MarshalTypes.DelegateParameter))
-                {
-                    if (@class.InnerStruct != null)
-                    {
-                        return @class.InnerStruct.Name;
-                    }
-                }
-
-                if ((@class.ClassType == ClassType.StructWrapper || @class.ClassType == ClassType.UnionWrapper) &&
-                    (MarshalType == MarshalTypes.WrappedProperty || MarshalType == MarshalTypes.MethodParameter))
-                {
-                    return @class.Name;
-                }
-
-                if ((@class.ClassType == ClassType.Struct && !@class.IsSimpleType) &&
-                    MarshalType == MarshalTypes.WrappedProperty)
-                {
-                    return @class.Name;
-                }
-
                 if (@class.IsSimpleType && Options.PodTypesAsSimpleTypes)
                 {
                     return @class.UnderlyingNativeType.Visit(this);
                 }
-
-                if (@class.ClassType == ClassType.Class && 
-                    (
-                    MarshalType == MarshalTypes.MethodParameter || 
-                    MarshalType == MarshalTypes.WrappedProperty || 
-                    MarshalType == MarshalTypes.Property))
+                
+                if (MarshalType is MarshalTypes.NativeField or
+                        MarshalTypes.NativeParameter or
+                        MarshalTypes.DelegateParameter or
+                        MarshalTypes.NativeReturnType)
                 {
-                    return @class.Name;
+                    if (@class.ClassType is ClassType.Struct or ClassType.Union)
+                    {
+                        return Result(@class.Name);
+                    }
+
+                    if (@class.InnerStruct != null)
+                    {
+                        return Result(@class.InnerStruct.Name);
+                    }
                 }
+                
+                return Result(@class.Name);
+
             }
 
             if (customType.TryGetDelegate(out Delegate @delegate))
             {
-                return Result(IntPtrType); // we must return delegates to C++ as IntPtr because in other way we will corrupt memory
+                return Result("void", PointerOperator); // we must return delegates to C++ as IntPtr because in other way we will corrupt memory
             }
 
             if (customType.TryGetEnum(out Enumeration @enum))
@@ -474,17 +567,12 @@ namespace QuantumBinding.Generator
                 return @enum.Name;
             }
 
-            if (customType.IsInSystemHeader && MarshalType == MarshalTypes.Property)
+            return customType.IsInSystemHeader switch
             {
-                return Result("object");
-            }
-
-            if (customType.IsInSystemHeader && MarshalType == MarshalTypes.NativeField)
-            {
-                return Result(IntPtrType);
-            }
-
-            return customType.Name;
+                true when MarshalType == MarshalTypes.Property => Result("object"),
+                true when MarshalType == MarshalTypes.NativeField => Result("void"),
+                _ => customType.Name
+            };
         }
 
         public override TypePrinterResult VisitDependentNameType(DependentNameType dependentNameType)
@@ -506,21 +594,14 @@ namespace QuantumBinding.Generator
             foreach (var parameter in @params)
             {
                 PushParameter(parameter);
-                try
+                var result = parameter.Visit(this);
+
+                if (parameter.Index == 0 && isExtensionMethod)
                 {
-                    var result = parameter.Visit(this);
-
-                    if (parameter.Index == 0 && isExtensionMethod)
-                    {
-                        result = $"this {result}";
-                    }
-
-                    paramsList.Add(result.ToString());
+                    result = $"this {result}";
                 }
-                catch (Exception e)
-                {
 
-                }
+                paramsList.Add(result.ToString());
                 PopParameter();
             }
 
@@ -529,9 +610,9 @@ namespace QuantumBinding.Generator
 
         public override TypePrinterResult VisitParameter(Parameter parameter)
         {
-            var hasModifier = ContainsModifiers(parameter, out string attribute, out string modifier);
+            var hasModifier = ContainsModifiers(parameter, out var attribute, out var modifier);
             TypePrinterResult result;
-            if (MarshalType == MarshalTypes.SkipParamTypes)
+            if (MarshalType is MarshalTypes.SkipParamTypes or MarshalTypes.SkipParamTypesSkipModifiers)
             {
                 result = parameter.Name;
             }
@@ -555,12 +636,12 @@ namespace QuantumBinding.Generator
                     if (Module.WrapInteropObjects)
                     {
                         if (!decl.IsSimpleType &&
-                            (decl.ClassType == ClassType.Struct || decl.ClassType == ClassType.Union) &&
+                            decl.ClassType is ClassType.Struct or ClassType.Union &&
                             parameter.Type.IsPointerToStruct() &&
                             result.Type != IntPtrType)
                         {
                             if ((MarshalType == MarshalTypes.NativeParameter && !((PointerType)parameter.Type).IsNullable) 
-                                || MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter)
+                                || MarshalType is MarshalTypes.MethodParameter or MarshalTypes.DelegateParameter)
                             {
                                 result.Type = $"{alternativeNamespace}{result.Type}";
                             }
@@ -571,7 +652,7 @@ namespace QuantumBinding.Generator
                             {
                                 result.Type = $"{originalNamespace}{result.Type}";
                             }
-                            else if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
+                            else if (MarshalType is MarshalTypes.NativeParameter or MarshalTypes.DelegateParameter)
                             {
                                 if (!string.IsNullOrEmpty(decl.InnerStruct.AlternativeNamespace))
                                 {
@@ -593,8 +674,13 @@ namespace QuantumBinding.Generator
                     }
                 }
 
-                result.Type += $"{result.Suffix} {parameter.Name}";
-                result.Suffix = string.Empty;
+                if (MarshalType is MarshalTypes.DelegateParameter)
+                {
+                    return result;
+                }
+
+                result.Type += $"{result.TypeSuffix} {parameter.Name}";
+                result.TypeSuffix = string.Empty;
             }
 
             if (parameter.HasDefaultValue && MarshalType == MarshalTypes.MethodParameter)
@@ -602,7 +688,7 @@ namespace QuantumBinding.Generator
                 result.Type += $" = {parameter.DefaultValue}";
             }
 
-            if ((MarshalType == MarshalTypes.MethodParameter || MarshalType == MarshalTypes.DelegateParameter) && 
+            if (MarshalType is MarshalTypes.MethodParameter && 
                 parameter.ParameterKind == ParameterKind.InOut &&
                 (parameter.Type.IsPointerToArray() || parameter.Type.IsArray())) // Do not write "ref" keyword for methods if parameter type is Array
             {
@@ -651,18 +737,9 @@ namespace QuantumBinding.Generator
         {
             StringBuilder builder = new StringBuilder();
 
-            builder.Append($"{GetAccessSpecifier(@class.AccessSpecifier)} ");
+            builder.Append($"{GetAccessSpecifier(@class.AccessSpecifier)} unsafe ");
             builder.Append("partial ");
-
-            if (@class.ClassType == ClassType.Union || @class.ClassType == ClassType.Struct)
-            {
-                builder.Append("struct ");
-            }
-            else
-            {
-                builder.Append("class ");
-            }
-
+            builder.Append(@class.ClassType is ClassType.Union or ClassType.Struct ? "struct " : "class ");
             builder.Append($"{@class.Name}");
 
             return builder.ToString();
@@ -695,11 +772,11 @@ namespace QuantumBinding.Generator
                 builder.Append($"{GetAccessSpecifier(field.AccessSpecifier)} ");
             }
 
-            builder.Append($"{fieldResult.Type} ");
+            builder.Append($"{fieldResult} ");
             builder.Append($"{field.Name}");
-            if (!string.IsNullOrEmpty(fieldResult.Suffix))
+            if (!string.IsNullOrEmpty(fieldResult.ParameterSuffix))
             {
-                builder.Append(fieldResult.Suffix);
+                builder.Append(fieldResult.ParameterSuffix);
             }
 
             return Result(builder.ToString(), "", fieldResult.Attribute);
@@ -743,20 +820,17 @@ namespace QuantumBinding.Generator
 
         public string GetAccessSpecifier(AccessSpecifier? accessSpecifier)
         {
-            if (accessSpecifier == null)
-            {
-                return AccessSpecifier.Public.ToString().ToLower();
-            }
-
-            return accessSpecifier.ToString().ToLower();
+            return accessSpecifier == null ? AccessSpecifier.Public.ToString().ToLower() : accessSpecifier.Value.ToString().ToLower();
         }
 
         private bool ContainsModifiers(Parameter param, out string attribute, out string modifier)
         {
             modifier = string.Empty;
             attribute = string.Empty;
+            if (MarshalType == MarshalTypes.SkipParamTypesSkipModifiers) return false;
+            
             if (param.ParameterKind == ParameterKind.Readonly &&
-                (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.SkipParamTypes))
+                MarshalType is MarshalTypes.NativeParameter or MarshalTypes.SkipParamTypes)
             {
                 return false;
             }
@@ -804,50 +878,17 @@ namespace QuantumBinding.Generator
                         break;
                 }
             }
-            else if (MarshalType == MarshalTypes.NativeParameter || MarshalType == MarshalTypes.DelegateParameter)
-            {
-                switch (param.ParameterKind)
-                {
-                    case ParameterKind.In:
-                        attribute = "[In]";
-                        break;
-                    case ParameterKind.InOut:
-                        if (param.Type.IsArray() || 
-                            param.Type.IsPointerToArray() ||
-                            param.Type.IsPurePointer())
-                        {
-                            attribute = "[In, Out]";
-                        }
-                        else
-                        {
-                            modifier = "ref";
-                        }
-                        break;
-                    case ParameterKind.Out:
-                        if (param.Type.IsPointerToArray())
-                        {
-                            attribute = "[In, Out]";
-                            modifier = "ref";
-                        }
-                        else
-                        {
-                            attribute = "[Out]";
-                            modifier = "out";
-                        }
-                        break;
-                }
-            }
-
             return true;
         }
 
-        private TypePrinterResult Result(string type, string suffix = "", string attribute = "")
+        private TypePrinterResult Result(string type, string typeSuffix = "", string attribute = "", string parameterSuffix = "")
         {
             return new TypePrinterResult()
             {
                 Attribute = attribute,
                 Type = type,
-                Suffix = suffix
+                TypeSuffix = typeSuffix,
+                ParameterSuffix = parameterSuffix
             };
         }
     }

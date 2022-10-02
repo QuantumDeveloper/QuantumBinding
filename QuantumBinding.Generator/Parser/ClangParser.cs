@@ -143,6 +143,7 @@ namespace QuantumBinding.Generator.Parser
             {
                 Location = ClangUtils.GetCurrentCursorLocation(cursor),
                 Name = enumName,
+                OriginalName = enumName,
                 InheritanceType = inheritedEnumType,
                 Comment = GetComment(cursor)
             };
@@ -250,6 +251,7 @@ namespace QuantumBinding.Generator.Parser
             var @class = new Class
             {
                 Name = structName,
+                OriginalName = structName,
                 ClassType = ClassType.Struct,
                 Location = ClangUtils.GetCurrentCursorLocation(cursor),
                 Comment = GetComment(cursor)
@@ -356,6 +358,7 @@ namespace QuantumBinding.Generator.Parser
                     {
                         Location = ClangUtils.GetCurrentCursorLocation(cursor),
                         Name = spelling,
+                        OriginalName = spelling,
                         IsTypedef = true,
                         IsPointer = true,
                         ClassType = classType,
@@ -500,6 +503,7 @@ namespace QuantumBinding.Generator.Parser
                     ClassType = ClassType.Struct,
                     Location = ClangUtils.GetCurrentCursorLocation(cursor),
                     Name = spelling,
+                    OriginalName = spelling,
                     IsTypedef = true,
                     IsSimpleType = true,
                     Comment = GetComment(cursor)

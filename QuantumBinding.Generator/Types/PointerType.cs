@@ -14,7 +14,7 @@ namespace QuantumBinding.Generator.Types
             Declaration = type.Declaration;
             Pointee = type.Pointee;
             IsNullable = type.IsNullable;
-            Pointee = Pointee.Clone() as BindingType;
+            //Pointee = Pointee.Clone() as BindingType;
         }
 
         public BindingType Pointee { get; set; }

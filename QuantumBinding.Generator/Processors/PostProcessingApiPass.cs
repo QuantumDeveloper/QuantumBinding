@@ -147,7 +147,7 @@ namespace QuantumBinding.Generator.Processors
 
             if (@class.Name == "VkDeviceCreateInfo")
             {
-
+                int bug = 0;
             }
 
             if (!fixApi.TryGetClass(@class.Name, false, out ClassExtension classFix))

@@ -90,7 +90,7 @@ namespace QuantumBinding.Generator.Processors
 
             if (field.Class.Name == "spvc_msl_sampler_ycbcr_conversion" && field.Name == "swizzle")
             {
-
+                int bug = 0;
             }
 
             if (field.Type.IsCustomType(out CustomType customType))

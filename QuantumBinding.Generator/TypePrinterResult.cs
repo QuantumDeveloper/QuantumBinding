@@ -4,7 +4,9 @@
     {
         public string Type { get; set; }
 
-        public string Suffix { get; set; }
+        public string TypeSuffix { get; set; }
+        
+        public string ParameterSuffix { get; set; }
 
         public string Attribute { get; set; }
 
@@ -23,14 +25,14 @@
 
             result += Type;
 
-            if (!string.IsNullOrEmpty(Suffix))
+            if (!string.IsNullOrEmpty(TypeSuffix))
             {
-                result += $"{Suffix}";
+                result += $"{TypeSuffix}";
             }
 
             return result;
         }
 
-        public override string ToString() => Type;
+        public override string ToString() => $"{Type}{TypeSuffix}";
     }
 }

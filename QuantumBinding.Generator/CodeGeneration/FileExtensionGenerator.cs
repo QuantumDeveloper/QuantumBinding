@@ -59,7 +59,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteOpenBraceAndIndent();
 
                 GenerateUsings();
-                // TODO: find a better way to add using for utils
+
                 UsingsBlock.WriteLine($"using {Module.UtilsNamespace};");
 
                 NewLine();

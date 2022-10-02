@@ -10,6 +10,7 @@ namespace QuantumBinding.Generator
 {
     public abstract class QuantumBindingGenerator
     {
+        private CodeGeneration.Generator generator;
         public void Run()
         {
             var options = new BindingOptions();
@@ -28,6 +29,8 @@ namespace QuantumBinding.Generator
             OnSetupComplete(processingCtx);
             RunInternal(processingCtx);
         }
+
+        public string GeneratorName => "QuantumBindingGenerator";
 
         private void RunInternal(ProcessingContext processingCtx)
         {
@@ -174,19 +177,11 @@ namespace QuantumBinding.Generator
 
         private void BeforeSetupPassesInternal(ProcessingContext processingCtx)
         {
-            foreach (var module in processingCtx.Options.Modules)
-            {
-                if (module.GenerateOverloadsForArrayParams)
-                {
-                    processingCtx.AddPreGeneratorPass(new GenerateFunctionOverloadsPass(), ExecutionPassKind.PerTranslationUnit, module);
-                }
-            }
+
         }
 
         private void AfterSetupPassesInternal(ProcessingContext processingCtx)
         {
-            var utils = new UtilsExtensionPass() { OutputPath = Module.UtilsOutputPath, OutputFileName = Module.UtilsOutputName, Namespace = Module.UtilsNamespace };
-            processingCtx.AddCodeGenerationPass(utils, ExecutionPassKind.Once, Module.GenerateUtilsForModule);
             var specs = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
             foreach (var module in processingCtx.Options.Modules)
             {
@@ -247,8 +242,6 @@ namespace QuantumBinding.Generator
                 }
             }
         }
-
-        private CodeGeneration.Generator generator;
 
         private string GetFileName(TranslationUnit unit, CodeGenerator codeGenerator)
         {

@@ -9,6 +9,7 @@
         NativeReturnType,
         DelegateParameter,
         SkipParamTypes,
+        SkipParamTypesSkipModifiers,
         Property,
         WrappedProperty
     }

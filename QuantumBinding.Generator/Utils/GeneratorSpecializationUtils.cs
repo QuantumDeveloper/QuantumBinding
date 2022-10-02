@@ -1,8 +1,8 @@
 ﻿using QuantumBinding.Generator.CodeGeneration;
 
-namespace QuantumBinding.Generator
+namespace QuantumBinding.Generator.Utils
 {
-    public static class GeneratorSpecializationUtil
+    public static class GeneratorSpecializationUtils
     {
         public static GeneratorSpecializations All()
         {

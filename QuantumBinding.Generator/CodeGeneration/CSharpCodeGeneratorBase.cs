@@ -31,8 +31,10 @@ namespace QuantumBinding.Generator.CodeGeneration
         protected string CurrentNamespace { get; set; }
         protected string InteropNamespace => $"{CurrentTranslationUnit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.NamespaceExtension}";
         protected string InteropNamespaceExtension => TranslationUnit.InteropNamespaceExtension.NamespaceExtension;
-        protected string ConversionMethodName => "ToInternal()";
+        protected string ConversionMethodName => "ToNative()";
 
+        protected readonly Queue<FixedStructInfo> FixedStructInfos = new Queue<FixedStructInfo>();
+        protected readonly HashSet<string> FixedTypesHash = new HashSet<string>();
 
         protected virtual void WriteCurrentNamespace(Namespace @namespace)
         {
@@ -57,6 +59,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine("using System.Security;");
             }
             WriteLine("using System;");
+            WriteLine("using System.Runtime.CompilerServices;");
             WriteLine("using System.Runtime.InteropServices;");
 
             if (Specializations.HasFlag(GeneratorSpecializations.Classes) ||
@@ -65,11 +68,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 Specializations.HasFlag(GeneratorSpecializations.StructWrappers) ||
                 Specializations.HasFlag(GeneratorSpecializations.UnionWrappers))
             {
-                // TODO: find better way to add utils namespace here
-                if (!string.IsNullOrEmpty(Module.UtilsNamespace))
-                {
-                    WriteLine($"using {Module.UtilsNamespace};");
-                }
+                WriteLine($"using {Module.UtilsNamespace};");
             }
 
             UsingsBlock = PopBlock();
@@ -166,6 +165,10 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateFields(Class @class)
         {
+            if (@class.Name == "VkQueueFamilyGlobalPriorityPropertiesKHR")
+            {
+                int bug = 0;
+            }
             TypePrinter.PushMarshalType(MarshalTypes.NativeField);
             foreach (var field in @class.Fields)
             {
@@ -191,14 +194,66 @@ namespace QuantumBinding.Generator.CodeGeneration
                 AddUsingIfNeeded(field.Type);
 
                 PushBlock(CodeBlockKind.FieldDefinition, field);
-                WriteLine($"{fieldStr.Type};");
+                if (field.Type.IsConstArrayOfCustomTypes(out var size))
+                {
+                    // To workaround limitation of current .Net (version 6/7) regarding marshaling of const arrays
+                    // we need to create struct wrapper which will contain {size} fields and place it instead this field
+                    // to correctly pass struct by raw pointer.
+                    var fieldType = field.Type.Visit(TypePrinter);
+                    var fieldName = $"{fieldType.Type}__FixedBuffer";
+                    WriteLine($"public {fieldName} {field.Name};");
+                    if (!FixedTypesHash.Contains(fieldName))
+                    {
+                        FixedTypesHash.Add(fieldName);
+                        FixedStructInfos.Enqueue(new FixedStructInfo(fieldName, @class, field, size));
+                    }
+                }
+                else
+                {
+                    WriteLine($"{fieldStr.Type};");
+                }
+                
                 PopBlock();
-
-                NewLine();
 
                 PopBlock();
             }
             TypePrinter.PopMarshalType();
+        }
+
+        protected void GenerateConstArrayFixedWrapper(FixedStructInfo fixedStructInfo)
+        {
+            TypePrinter.PushMarshalType(MarshalTypes.NativeField);
+            var fieldType = fixedStructInfo.Field.Type.Visit(TypePrinter);
+            TypePrinter.PopMarshalType();
+            WriteLine($"public partial struct {fixedStructInfo.Name}");
+            WriteOpenBraceAndIndent();
+            
+            for (int i = 0; i < fixedStructInfo.Size; i++)
+            {
+                WriteLine($"public {fieldType.Type} item{i};");
+            }
+            
+            NewLine();
+            // ====== Get only version of implementing Fixed buffers
+            
+            /*
+            WriteLine($"public ref {fieldType.Type} this[int index]");
+            WriteOpenBraceAndIndent();
+            WriteLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            WriteLine($"get => MemoryMarshal.CreateSpan(ref item{0}, {fixedStructInfo.Size})[index];");
+            UnindentAndWriteCloseBrace();
+            NewLine();
+            WriteLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            WriteLine($"public Span<{fieldType.Type}> AsSpan() => MemoryMarshal.CreateSpan(ref item{0}, {fixedStructInfo.Size});");
+            */
+            
+            WriteLine($"public {fieldType.Type} this[int index]");
+            WriteOpenBraceAndIndent();
+            WriteLine($"get => Unsafe.Add(ref item0, index);");
+            WriteLine($"set => Unsafe.Add(ref item0, index) = value;");
+            UnindentAndWriteCloseBrace();
+            
+            UnindentAndWriteCloseBrace();
         }
 
         protected virtual void GenerateConstructors(Class @class)

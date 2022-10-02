@@ -119,6 +119,7 @@ namespace QuantumBinding.Generator.AST
 
         public void AddMethod(Method method)
         {
+            if (method == null) return;
             methods.Add(method);
         }
 
@@ -142,6 +143,7 @@ namespace QuantumBinding.Generator.AST
                 AccessSpecifier = AccessSpecifier,
                 ClassType = ClassType,
                 Name = Name,
+                OriginalName = OriginalName,
                 IsPointer = IsPointer,
                 InnerStruct = InnerStruct,
                 IsTypedef = IsTypedef,

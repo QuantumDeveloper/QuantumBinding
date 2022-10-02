@@ -54,6 +54,7 @@ namespace QuantumBinding.Generator.AST
                 IsPtrToConstChar = IsPtrToConstChar,
                 Class = Class,
                 Name = Name,
+                OriginalName = OriginalName,
                 Location = Location,
                 Owner = Owner,
                 AlternativeNamespace = AlternativeNamespace,

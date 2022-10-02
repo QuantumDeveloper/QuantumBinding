@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.ClangGenerator
 {
@@ -30,16 +31,12 @@ namespace QuantumBinding.ClangGenerator
             clangModule.CallingConvention = CallingConvention.Cdecl;
             clangModule.MethodClassName = "clang";
             clangModule.InteropClassName = "ClangInterop";
-            clangModule.GeneratorSpecializations = GeneratorSpecializationUtil.AllExcept(GeneratorSpecializations.Constants); 
+            clangModule.GeneratorSpecializations = GeneratorSpecializationUtils.AllExcept(GeneratorSpecializations.Constants); 
             clangModule.OutputPath = outputPath;
             clangModule.OutputFileName = "QuantumBinding.Clang";
             clangModule.OutputNamespace = "QuantumBinding.Clang";
             clangModule.SuppressUnmanagedCodeSecurity = false;
             clangModule.WrapInteropObjects = true;
-
-            Module.GenerateUtilsForModule = clangModule;
-            Module.UtilsOutputName = "Utils";
-            Module.UtilsNamespace = clangModule.OutputNamespace;
         }
         public override void OnSetupPostProcessing(ProcessingContext context)
         {
