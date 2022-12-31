@@ -28,6 +28,19 @@ namespace QuantumBinding.Generator.Types
             return typeVisitor.VisitPointerType(this);
         }
 
+        public uint GetDepth()
+        {
+            uint depth = 1;
+            var pointee = Pointee;
+            while (pointee is PointerType pointer)
+            {
+                pointee = pointer.Pointee;
+                depth++;
+            }
+
+            return depth;
+        }
+
         public override object Clone()
         {
             return new PointerType(this);

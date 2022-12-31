@@ -66,5 +66,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         IFunctionParameterName InterpretAsPointerType(BindingType pointeeType);
 
         IFunctionParameterName InterpretAsIs();
+        
+        IFunctionParameterName InterpretAsBuiltinType(PrimitiveType type);
     }
 }

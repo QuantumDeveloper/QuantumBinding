@@ -1,4 +1,5 @@
-﻿using QuantumBinding.Generator.AST;
+﻿using System;
+using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
 using System.Linq;
@@ -83,14 +84,27 @@ namespace QuantumBinding.Generator.Processors
             op.OperatorKind = OperatorKind.Implicit;
             wrapper.Operators.Add(op);
 
+            if (@class.Name == "VkInstanceCreateInfo")
+            {
+                int bug = 0;
+            }
+
             int pointersCount = 0;
             foreach (var field in @class.Fields)
             {
                 var property = new Property();
                 var name = field.Name.Replace("@", "");
-                property.Name = name[0].ToString().ToUpper() + name.Substring(1);
+                if (name.ToLower().StartsWith("pp"))
+                {
+                    property.Name = name[1].ToString().ToUpper() + name.Substring(2);
+                }
+                else
+                {
+                    property.Name = name[0].ToString().ToUpper() + name.Substring(1);
+                }
+                
                 property.Type = (BindingType)field.Type.Clone();
-
+                
                 if (field.Type.Declaration is Class declaration && (!declaration.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes))
                 {
                     if ((declaration.ClassType == ClassType.Struct && declaration.ConnectedTo == null) || declaration.ClassType == ClassType.Union)
@@ -124,50 +138,87 @@ namespace QuantumBinding.Generator.Processors
                 if (field.IsPointer)
                 {
                     pointersCount++;
+                    var pointerType = (PointerType)field.Type;
                     property.PairedField = new Field($"{name}") { ShouldDispose = true };
                     if (field.Type.IsAnsiString() || field.Type.IsUnicodeString())
                     {
-                        property.PairedField.Type = new CustomType("StringReference");
+                        property.PairedField.Type = new CustomType("MarshaledString");
                     }
                     else if (field.Type.IsStringArray())
                     {
-                        property.PairedField.Type = new CustomType("StringArrayReference");
+                        property.PairedField.Type = new CustomType("MarshaledStringArray");
                     }
-                    else if (field.Type.IsPointerToArray() || field.Type.IsPointerToEnum())
+                    else if (field.Type.IsPointerToArray() || field.Type.IsPointerToArrayOfEnums())
                     {
-                        property.PairedField.Type = new CustomType("GCHandleReference");
+                        try
+                        {
+                            var typePrinter = new CSharpTypePrinter(ProcessingContext.Options);
+                            typePrinter.PushModule(CurrentNamespace.Module);
+                            typePrinter.PushMarshalType(MarshalTypes.NativeField);
+                            var underlyingType = pointerType.Visit(typePrinter).Type;
+                            typePrinter.PopMarshalType();
+                            property.PairedField.Type = new CustomType($"NativeStructArray<{underlyingType}>");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
                     }
-                    else if (field.Type.IsPointerToStruct() || 
-                        field.Type.IsPointerToCustomType(out var custom) ||
-                        field.Type.IsPointerToPrimitiveType(out var primitive))
+                    else if (!field.Type.IsPointerToVoid() && 
+                             !field.Type.IsPointerToSystemType(out var customType) &&
+                            (field.Type.IsPointerToStructOrUnion() || 
+                            field.Type.IsPointerToCustomType(out var custom)||
+                            field.Type.IsPointerToPrimitiveType(out var primitive)))
                     {
-                        property.PairedField.Type = new CustomType("StructReference");
+                        try
+                        {
+                            var typePrinter = new CSharpTypePrinter(ProcessingContext.Options);
+                            typePrinter.PushModule(CurrentNamespace.Module);
+                            typePrinter.PushMarshalType(MarshalTypes.NativeField);
+                            var underlyingType = pointerType.Visit(typePrinter).Type;
+                            typePrinter.PopMarshalType();
+                            property.PairedField.Type = new CustomType($"NativeStruct<{underlyingType}>");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
                     }
                     else
                     {
-                        property.PairedField.Type = new CustomType("UnknownReference");
+                        if (!field.Type.IsPointerToSystemType(out var customT))
+                        {
+                            property.PairedField.Type = new CustomType("UnknownReference");
+                        }
                     }
 
                     property.PairedField.AccessSpecifier = AccessSpecifier.Private;
-                    if (!property.Type.IsPointerToIntPtr() && !field.Type.IsPointerToVoid())
+                    if (!property.Type.IsPointerToIntPtr() && 
+                        !field.Type.IsPointerToVoid() &&
+                        !field.Type.IsPointerToSystemType(out var type))
                     {
                         wrapper.AddField(property.PairedField);
                     }
 
-                    if ((property.Type.IsPointerToPrimitiveType(out var primitiveType) || property.Type.IsPointerToStruct() && !property.Type.IsPointerToArray()) || 
+                    if ((property.Type.IsPointerToPrimitiveType(out var primitiveType) || property.Type.IsPointerToStructOrUnion() && !property.Type.IsPointerToArray()) || 
                         (decl?.IsSimpleType == true))
                     {
-                        var pointerType = property.Type as PointerType;
                         if (pointerType != null && !property.Type.IsArray())
                             pointerType.IsNullable = true;
                     }
                 }
-                else if ((field.Type.IsArray() && !field.Type.IsSimpleType() && !field.Type.IsEnum() && !field.Type.IsDelegate()) ||
-                    (field.Type.IsCustomType(out var custom) && !custom.IsSimpleType() && !custom.IsEnum() && !custom.IsDelegate()))
+                else if ((field.Type.IsArray() && !field.Type.IsSimpleType() && !field.Type.IsEnum() &&
+                          !field.Type.IsDelegate()) ||
+                         (field.Type.IsCustomType(out var custom) && !custom.IsSimpleType() && !custom.IsEnum() &&
+                          !custom.IsDelegate()))
                 {
-                    property.PairedField = new Field(field.Name[0].ToString().ToLower() + field.Name.Substring(1));
-                    property.PairedField.Type = field.Type;
-                    property.PairedField.AccessSpecifier = AccessSpecifier.Private;
+                    property.PairedField = new Field(field.Name[0].ToString().ToLower() + field.Name.Substring(1))
+                    {
+                        Type = field.Type,
+                        AccessSpecifier = AccessSpecifier.Private
+                    };
                 }
 
                 if (field.CanGenerateGetter)
@@ -193,7 +244,7 @@ namespace QuantumBinding.Generator.Processors
             {
                 if (field.ShouldDispose)
                 {
-                    disposeBody.AppendLine($"{field.Name}?.Dispose();");
+                    disposeBody.AppendLine($"{field.Name}.Dispose();");
                 }
             }
             wrapper.DisposeBody = disposeBody.ToString();

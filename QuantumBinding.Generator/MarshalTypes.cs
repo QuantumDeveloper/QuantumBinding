@@ -7,10 +7,12 @@
         MethodParameter,
         NativeParameter,
         NativeReturnType,
+        DelegateType,
         DelegateParameter,
         SkipParamTypes,
-        SkipParamTypesSkipModifiers,
+        SkipParamTypesAndModifiers,
         Property,
-        WrappedProperty
+        WrappedProperty,
+        NativeFunctionCall
     }
 }

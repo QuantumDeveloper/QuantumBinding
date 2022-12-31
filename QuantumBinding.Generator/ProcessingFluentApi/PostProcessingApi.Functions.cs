@@ -182,6 +182,12 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
+        public IFunctionParameterName InterpretAsBuiltinType(PrimitiveType type)
+        {
+            _currentParameter.Type = new BuiltinType(PrimitiveType.IntPtr);
+            return this;
+        }
+
         void IFunctionParameter.WithReturnType(BindingType returnType)
         {
             if (returnType == null)

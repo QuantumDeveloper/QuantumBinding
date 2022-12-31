@@ -22,6 +22,8 @@ namespace QuantumBinding.Generator.AST
         private List<Field> fields;
         private List<Method> methods;
         private List<Property> properties;
+
+        public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && WrappedStruct != null;
         
         public ClassType ClassType { get; set; }
 
@@ -155,7 +157,6 @@ namespace QuantumBinding.Generator.AST
                 WrappedStruct = WrappedStruct,
                 WrappedStructFieldName = WrappedStructFieldName,
                 ExtendedFrom = ExtendedFrom,
-                AlternativeNamespace = AlternativeNamespace,
             };
         }
 

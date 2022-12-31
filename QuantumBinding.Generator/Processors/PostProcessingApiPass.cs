@@ -145,14 +145,14 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (@class.Name == "VkDeviceCreateInfo")
-            {
-                int bug = 0;
-            }
-
             if (!fixApi.TryGetClass(@class.Name, false, out ClassExtension classFix))
             {
                 return false;
+            }
+            
+            if (@class.Name == "VkInstance")
+            {
+                int bug = 0;
             }
 
             if (classFix.IsDisposable)
@@ -163,7 +163,7 @@ namespace QuantumBinding.Generator.Processors
 
             if (classFix.ClassType != ClassType.Unknown)
             {
-                classFix.ClassType = classFix.ClassType;
+                @class.ClassType = classFix.ClassType;
             }
 
             if (classFix.UnderlyingNativeType != null)

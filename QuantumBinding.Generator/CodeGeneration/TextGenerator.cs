@@ -7,6 +7,18 @@ namespace QuantumBinding.Generator.CodeGeneration
 {
     public class TextGenerator: ITextGenerator
     {
+        public const string NullPointer = "null";
+        public const string NativeUtilsStructOrEnumToPointer = "NativeUtils.StructOrEnumToPointer";
+        public const string NativeUtilsArrayToPointer = "NativeUtils.ManagedArrayToPointer";
+        public const string NativeUtilsPointerToArray = "NativeUtils.PointerToManagedArray";
+        public const string NativeUtilsGetPointerToArray = "NativeUtils.GetPointerToManagedArray";
+        public const string NativeUtilsWritePointerToManagedArray = "NativeUtils.WritePointerToManagedArray";
+        public const string NativeUtilsPointerToString = "NativeUtils.PointerToString";
+        public const string NativeUtilsGetPointerToStringArray = "NativeUtils.GetPointerToStringArray";
+        public const string NativeUtilsStringToFixedArray = "NativeUtils.StringToFixedArray";
+        public const string NativeUtilsPrimitiveToFixedArray = "NativeUtils.PrimitiveToFixedArray";
+        public const string NativeUtilsPointerToStringArray = "NativeUtils.PointerToStringArray";
+        
         public TextGenerator()
         {
             indentationStack = new Stack<uint>();
@@ -139,6 +151,17 @@ namespace QuantumBinding.Generator.CodeGeneration
         public static implicit operator string(TextGenerator text)
         {
             return text.ToString();
+        }
+
+        public static string GetPointerString(uint pointerDepth)
+        {
+            var pointers = string.Empty;
+            for (int i = 0; i < pointerDepth; i++)
+            {
+                pointers += "*";
+            }
+
+            return pointers;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace QuantumBinding.Generator.Parser
 {
     public class ClangParser : ICXCursorVisitor
     {
-        private readonly ISet<string> printedEnums = new HashSet<string>();
+        private readonly ISet<string> visitedEnums = new HashSet<string>();
         private readonly ISet<string> visitedStructs = new HashSet<string>();
         private readonly ISet<string> visitedTypeDefs = new HashSet<string>();
         private readonly HashSet<string> visitedFunctions = new HashSet<string>();
@@ -132,7 +132,7 @@ namespace QuantumBinding.Generator.Parser
             }
 
             // if we've printed these previously, skip them
-            if (printedEnums.Contains(enumName))
+            if (visitedEnums.Contains(enumName))
             {
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
@@ -148,7 +148,7 @@ namespace QuantumBinding.Generator.Parser
                 Comment = GetComment(cursor)
             };
 
-            printedEnums.Add(enumName);
+            visitedEnums.Add(enumName);
 
             functionPtr = VisitEnumItemsDelegate;
 
@@ -227,6 +227,11 @@ namespace QuantumBinding.Generator.Parser
         {
             fieldPosition = 0;
             var structName = cursor.getCursorSpelling().ToString();
+
+            if (structName == "VkInstanceCreateInfo")
+            {
+                int bug = 0;
+            }
 
             // struct names can be empty, and so we visit its sibling to find the name
             if (string.IsNullOrEmpty(structName))
@@ -315,8 +320,13 @@ namespace QuantumBinding.Generator.Parser
 
             var type = cursor.getTypedefDeclUnderlyingType().getCanonicalType();
 
+            if (spelling == "VkInstanceCreateFlags")
+            {
+                int bug = 0;
+            }
+
             // we handle enums and records in struct and enum visitors with forward declarations also
-            if (type.Kind == CXTypeKind.CXType_Record || type.Kind == CXTypeKind.CXType_Enum)
+            if (type.Kind is CXTypeKind.CXType_Record or CXTypeKind.CXType_Enum)
             {
                 var @class = unit.AllClasses.FirstOrDefault(x => x.Name == type.ToString());
                 if (@class != null && @class.Name != spelling)
@@ -344,7 +354,7 @@ namespace QuantumBinding.Generator.Parser
             if (type.Kind == CXTypeKind.CXType_Pointer)
             {
                 var pointee = type.getPointeeType();
-                if (pointee.Kind == CXTypeKind.CXType_Record || pointee.Kind == CXTypeKind.CXType_Void)
+                if (pointee.Kind is CXTypeKind.CXType_Record or CXTypeKind.CXType_Void)
                 {
                     var convertToClass = unit.Module.AllowConvertStructToClass;
                     var classType = convertToClass ? ClassType.Class : ClassType.Struct;
@@ -374,7 +384,7 @@ namespace QuantumBinding.Generator.Parser
                         var field1 = new Field();
                         field1.AccessSpecifier = AccessSpecifier.Public;
                         field1.Name = "pointer";
-                        field1.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                        field1.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                         @struct.AddField(field1);
                         AddDeclaration(@struct);
                         @class.InnerStruct = @struct;
@@ -388,6 +398,11 @@ namespace QuantumBinding.Generator.Parser
                     var dependentType = new DependentNameType(@class.Name, pointeeName);
                     dependentType.Declaration = @class;
                     @class.UnderlyingNativeType = dependentType;
+                    
+                    if (@class.Name.Contains("VkFramebuffer"))
+                    {
+                        int bug = 0;
+                    }
 
                     var field = new Field();
                     if (classType == ClassType.Class)
@@ -401,7 +416,7 @@ namespace QuantumBinding.Generator.Parser
                     {
                         field.AccessSpecifier = AccessSpecifier.Public;
                         field.Name = "pointer";
-                        field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                        field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                     }
 
                     @class.AddField(field);
@@ -437,7 +452,7 @@ namespace QuantumBinding.Generator.Parser
                             var innerField = new Field();
                             innerField.AccessSpecifier = AccessSpecifier.Public;
                             innerField.Name = "pointer";
-                            innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                            innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                             Constructor ctr2 = new Constructor() { Class = @class.InnerStruct };
                             ctr2.InputParameters.Add(innerField);
                             @class.InnerStruct.AddConstructor(ctr2);

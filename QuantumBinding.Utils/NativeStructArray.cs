@@ -1,29 +1,36 @@
-using System;
-using System.Runtime.InteropServices;
-
 namespace QuantumBinding.Utils;
 
 // https://stackoverflow.com/questions/42754123/conditional-per-targetframework-in-msbuild-15/42754213#42754213
-#if NET6_0_OR_GREATER
-public unsafe struct NativeStructArray<T> : IDisposable where T : unmanaged
+public unsafe struct NativeStructArray<T> where T : unmanaged
 {
-    public T* ptr;
+    public readonly T* Handle;
+    private bool isDisposed;
 
     public NativeStructArray(T[] arr)
     {
-        var size = (nuint)arr.Length * (nuint)sizeof(T);
-        ptr = (T*)NativeMemory.Alloc((nuint)arr.Length, (nuint)sizeof(T));
-        fixed (T* t = arr)
+        if (arr == null)
         {
-            ptr = t;
-            Buffer.MemoryCopy(t, ptr, (int)size, (int)size);
+            Handle = null;
         }
+        else
+        {
+            var size = (nuint)arr.Length * (nuint)sizeof(T);
+            Handle = NativeUtils.GetPointerToManagedArray<T>(arr.Length);
+            fixed (T* t = arr)
+            {
+                System.Buffer.MemoryCopy(t, Handle, (int)size, (int)size);
+            }
+        }
+
+        isDisposed = false;
     }
-    
+
     public void Dispose()
     {
-        NativeMemory.Free(ptr);
+        if (!isDisposed)
+        {
+            NativeUtils.Free(Handle);
+            isDisposed = true;
+        }
     }
 }
-
-#endif

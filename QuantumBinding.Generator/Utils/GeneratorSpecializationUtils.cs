@@ -1,4 +1,5 @@
-﻿using QuantumBinding.Generator.CodeGeneration;
+﻿using System.Collections.Generic;
+using QuantumBinding.Generator.CodeGeneration;
 
 namespace QuantumBinding.Generator.Utils
 {
@@ -18,6 +19,19 @@ namespace QuantumBinding.Generator.Utils
         public static GeneratorSpecializations AllExcept(GeneratorSpecializations except)
         {
             return GeneratorSpecializations.All & ~except;
+        }
+
+        public static List<GeneratorCategory> GetCategories(this GeneratorSpecializations specs)
+        {
+            var specsList = specs.GetFlags();
+            var categories = new List<GeneratorCategory>();
+
+            foreach (var spec in specsList)
+            {
+                categories.Add((GeneratorCategory)spec);
+            }
+
+            return categories;
         }
     }
 }

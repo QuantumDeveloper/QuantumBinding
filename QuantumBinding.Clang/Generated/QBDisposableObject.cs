@@ -1,8 +1,8 @@
 using System;
 
-namespace QuantumBinding.Utils;
+namespace QuantumBinding.Clang;
 
-public class QBDisposableObject : IDisposable
+public class QBDisposableObject: IDisposable
 {
     public bool IsDisposed { get; private set; }
 
@@ -23,13 +23,9 @@ public class QBDisposableObject : IDisposable
         IsDisposed = true;
     }
 
-    protected virtual void ManagedDisposeOverride()
-    {
-    }
+    protected virtual void ManagedDisposeOverride() { }
 
-    protected virtual void UnmanagedDisposeOverride()
-    {
-    }
+    protected virtual void UnmanagedDisposeOverride() { }
 
     ~QBDisposableObject()
     {

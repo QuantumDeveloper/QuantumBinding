@@ -100,7 +100,7 @@ namespace QuantumBinding.Generator
                 {
                     pass.Key.ProcessingContext = this;
                     var outputs = pass.Key.Generate();
-                    AstContext.CodeGeneratorPathOutputs.AddRange(outputs);
+                    AstContext.GeneratorOutputs.AddRange(outputs);
                 }
             }
 

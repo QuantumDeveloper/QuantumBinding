@@ -138,7 +138,9 @@ namespace QuantumBinding.Generator
 
         public abstract TypePrinterResult VisitMethod(Method method);
         
-        public abstract TypePrinterResult VisitParameters(IEnumerable<Parameter> @params, MarshalTypes marshalType,
+        public abstract TypePrinterResult VisitParameters(
+            IEnumerable<Parameter> @params,
+            MarshalTypes marshalType,
             bool isExtensionMethod = false);
 
         public virtual TypePrinterResult VisitMacro(Macro macros) => string.Empty;

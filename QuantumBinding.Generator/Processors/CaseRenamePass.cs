@@ -229,7 +229,7 @@ namespace QuantumBinding.Generator.Processors
 
             for (int i = 0; i < splittted.Length; i++)
             {
-                string part = (string)splittted[i];
+                string part = splittted[i];
                 if (i == 0)
                 {
                     if (casePattern == CasePattern.CamelCase)

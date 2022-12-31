@@ -74,7 +74,7 @@ namespace QuantumBinding.Generator.Processors
                 var field = new Field("pointer");
                 field.AccessSpecifier = AccessSpecifier.Public;
                 field.Name = "pointer";
-                field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                 @class.InnerStruct.AddField(field);
             }
 
@@ -165,7 +165,7 @@ namespace QuantumBinding.Generator.Processors
                 case PointerType pointer when !pointer.CanConvertToString() && pointer.Pointee.IsPrimitiveType || classDecl?.IsSimpleType == true || decl is Enumeration:
                     parameter.ParameterKind = ParameterKind.InOut;
                     break;
-                case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStruct():
+                case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStructOrUnion():
                     {
                         parameter.ParameterKind = ParameterKind.Out;
                         break;

@@ -25,24 +25,29 @@ namespace QuantumBinding.Generator.CodeGeneration
             "void", "partial", "yield", "where"
         };
 
-        protected CodeGenerator(ProcessingContext context, TranslationUnit unit, GeneratorSpecializations specializations) : 
-            this(context, new List<TranslationUnit>() { unit }, specializations)
+        protected CodeGenerator(ProcessingContext context, TranslationUnit unit, GeneratorCategory category) : 
+            this(context, new List<TranslationUnit>() { unit }, category)
         {
         }
 
-        protected CodeGenerator(ProcessingContext context, IEnumerable<TranslationUnit> units, GeneratorSpecializations specializations)
+        protected CodeGenerator(ProcessingContext context, IEnumerable<TranslationUnit> units, GeneratorCategory category)
         {
+            Name = string.Empty;
             Context = context;
             TranslationUnits = units.ToList();
-            Specializations = specializations;
+            Category = category;
         }
 
-        public bool IsGeneratorEmpty { get; protected set; }
+        public bool IsEmpty { get; protected set; }
 
-        public GeneratorSpecializations Specializations { get; }
+        public GeneratorCategory Category { get; }
 
         public string GeneratorName => "QuantumBindingGenerator";
 
+        public abstract string GetFileName(TranslationUnit unit);
+        
+        public abstract string FolderName { get; }
+        
         public ProcessingContext Context { get; }
 
         public BindingOptions Options => Context.Options;
@@ -50,24 +55,19 @@ namespace QuantumBinding.Generator.CodeGeneration
         public ASTContext AstContext => Context.AstContext;
 
         public List<TranslationUnit> TranslationUnits { get; }
+        
+        public string Name { get; set; }
 
-        public virtual bool IsInteropGenerator
-        {
-            get 
-            {
-                if (Specializations.HasFlag(GeneratorSpecializations.Structs) ||
-                    Specializations.HasFlag(GeneratorSpecializations.Unions) ||
-                    Specializations.HasFlag(GeneratorSpecializations.Functions) ||
-                    Specializations.HasFlag(GeneratorSpecializations.Delegates))
-                {
-                    return true;
-                }
-
-                return false;
-            }
-        }
+        public virtual bool IsInteropGenerator =>
+            Category is
+                GeneratorCategory.Structs or
+                GeneratorCategory.Unions or 
+                GeneratorCategory.Functions or 
+                GeneratorCategory.Delegates;
 
         public abstract void Run();
+
+        public abstract void Run(Declaration declaration);
 
         protected void GenerateFileHeader()
         {
@@ -119,7 +119,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var multilineComment = GetMultilineCommentStart(commentKind);
             foreach (var line in comment)
             {
-                WriteLine($"{multilineComment} {line}");
+                WriteLine($"{multilineComment} {line.Trim()}");
             }
 
             var commentEnd = GetCommentLineEnd(commentKind);
@@ -168,7 +168,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateMacro(Macro macro) {}
 
-        protected virtual void GenerateEnumItems(Enumeration @enum) {}
+        protected virtual void GenerateEnum(Enumeration @enum) {}
 
         protected virtual void GenerateClass(Class @class) {}
 

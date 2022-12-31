@@ -21,6 +21,7 @@ namespace QuantumBinding.Generator
             namespaceMapping = new List<NamespaceMapping>();
             TranslationUnits = new List<TranslationUnit>();
             GeneratorSpecializations = GeneratorSpecializations.All;
+            CleanPreviousGeneration = true;
         }
 
         private readonly List<NamespaceMapping> namespaceMapping;
@@ -35,6 +36,10 @@ namespace QuantumBinding.Generator
         
         public GeneratorMode GeneratorMode { get; set; }
         
+        public bool EachTypeInSeparateFile { get; set; }
+        
+        public bool CleanPreviousGeneration { get; set; }
+        
         public string FileHeader { get; set; }
 
         public string OutputPath { get; set; }
@@ -42,6 +47,8 @@ namespace QuantumBinding.Generator
         public string OutputFileName { get; set; }
 
         public string OutputNamespace { get; set; }
+        
+        public string InteropSubNamespace { get; set; } 
 
         public string LibraryName { get; set; }
 
@@ -51,7 +58,7 @@ namespace QuantumBinding.Generator
 
         public bool ForceCallingConvention { get; set; }
 
-        public bool SkipPodTypesGeneration { get; set; }
+        public bool SkipTypedefsGeneration { get; set; }
 
         public bool AllowConvertStructToClass { get; set; }
         
@@ -82,7 +89,7 @@ namespace QuantumBinding.Generator
 
         public void AddNamespaceMapping(string fileName, string subNamespace, string outputFilePath, bool replaceBaseNamespace = false)
         {
-            var @namespace = new NamespaceMapping() { FileName = fileName, NamespaceExtension = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = replaceBaseNamespace};
+            var @namespace = new NamespaceMapping() { FileName = fileName, SubNamespace = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = replaceBaseNamespace};
             namespaceMapping.Add(@namespace);
         }
     }

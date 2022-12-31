@@ -12,7 +12,7 @@ namespace QuantumBinding.Generator
         }
 
         public TranslationUnit TranslationUnit { get; internal set; }
-
+        
         public List<CodeGenerator> Outputs { get; internal set; }
     }
 }

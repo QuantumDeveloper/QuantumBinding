@@ -1,6 +1,4 @@
-﻿using QuantumBinding.Generator.Types;
-
-namespace QuantumBinding.Generator.AST
+﻿namespace QuantumBinding.Generator.AST
 {
     public class Method : Function
     {
@@ -22,6 +20,10 @@ namespace QuantumBinding.Generator.AST
         public bool IsSealed { get; set; }
 
         public bool ConvertToProperty { get; set; }
+        
+        public bool IsOverload { get; set; }
+
+        public bool IsInstanceMethod => Class != null;
 
         public static bool ContainsOutParameters(Method method)
         {
@@ -58,8 +60,8 @@ namespace QuantumBinding.Generator.AST
                 Class = Class,
                 ReturnType = ReturnType,
                 Location = Location,
-                AlternativeNamespace = AlternativeNamespace,
                 IsIgnored = IsIgnored,
+                IsOverload = IsOverload
             };
             method.Parameters.AddRange(Parameters);
             if (Comment != null)

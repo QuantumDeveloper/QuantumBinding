@@ -57,8 +57,6 @@ namespace QuantumBinding.Generator.AST
                 OriginalName = OriginalName,
                 Location = Location,
                 Owner = Owner,
-                AlternativeNamespace = AlternativeNamespace,
-
                 IsIgnored = IsIgnored,
                 Id = Id
             };

@@ -1,45 +1,40 @@
-#if NET6_0_OR_GREATER
 using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Utils;
 
 public unsafe struct MarshaledString
 {
-    private readonly bool isInitialized;
-    private readonly void* pointer;
+    private bool isDisposed;
     private readonly bool isUnicode;
-    private GCHandle handle;
+
+    public readonly void* Handle;
 
     public MarshaledString(string str, bool isUnicode)
     {
         this.isUnicode = isUnicode;
 
-        str += '\0';
-        handle = GCHandle.Alloc(str, GCHandleType.Pinned);
-        pointer = (void*)handle.AddrOfPinnedObject();
+        Handle = NativeUtils.PointerToString(str, this.isUnicode);
         
-        isInitialized = true;
+        isDisposed = false;
     }
 
     public bool IsUnicode => isUnicode;
 
-    public void* Pointer => pointer;
-    
     public string GetString()
     {
-        return isUnicode ? new string((char*)pointer) : new string((sbyte*)pointer);
+        return isUnicode ? new string((char*)Handle) : new string((sbyte*)Handle);
     }
 
     public void Dispose()
     {
-        if (isInitialized)
+        if (!isDisposed && Handle != null)
         {
-            handle.Free();
+            NativeUtils.Free(Handle);
+            isDisposed = true;
         }
     }
     
-    public static implicit operator sbyte*(in MarshaledString value) => (sbyte*)value.pointer;
+    public static implicit operator sbyte*(in MarshaledString value) => (sbyte*)value.Handle;
     
-    public static implicit operator char*(in MarshaledString value) => (char*)value.pointer;
+    public static implicit operator char*(in MarshaledString value) => (char*)value.Handle;
 }
-#endif

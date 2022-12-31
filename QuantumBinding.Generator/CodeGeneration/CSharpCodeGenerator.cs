@@ -1,47 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
-using QuantumBinding.Generator.Utils;
 using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.CodeGeneration
 {
     public class CSharpCodeGenerator: CSharpCodeGeneratorBase
     {
-        protected const string InvokatorName = "InvokeFunc";
+        protected const string DelegateInvokeFuncName = "InvokeFunc";
+        protected const string DelegateNativePointerName = "NativePointer";
         
         public CSharpCodeGenerator(
             ProcessingContext context,
             IEnumerable<TranslationUnit> units,
-            GeneratorSpecializations specializations)
-            : base(context, units, specializations)
+            GeneratorCategory category)
+            : base(context, units, category)
         {
             TypePrinter = new CSharpTypePrinter(context.Options);
+            IsEmpty = false; 
         }
 
         public CSharpCodeGenerator(
             ProcessingContext context,
             TranslationUnit unit,
-            GeneratorSpecializations specializations)
-            : this(context, new List<TranslationUnit>() {unit}, specializations)
+            GeneratorCategory category)
+            : this(context, new List<TranslationUnit>() {unit}, category)
         {
 
         }
 
+        public override string FolderName => Category.ToString();
+
         public override void Run()
         {
+            if (Category == GeneratorCategory.Undefined) return;
+            
             PushBlock(CodeBlockKind.Root);
+            Name = Category.ToString();
             GenerateFileHeader();
             foreach (var unit in TranslationUnits)
             {
                 TypePrinter.PushModule(unit.Module);
-                SetAlternativeNamespace(unit);
                 GenerateTranslationUnit(unit);
             }
+            PopBlock();
+        }
+
+        public override void Run(Declaration declaration)
+        {
+            if (declaration == null || Category == GeneratorCategory.Undefined)
+            {
+                return;
+            }
+
+            Name = declaration.Name;
+            
+            PushBlock(CodeBlockKind.Root);
+            GenerateFileHeader();
+            var translationUnit = TranslationUnits.First();
+            TypePrinter.PushModule(translationUnit.Module);
+            GenerateTranslationUnitForDeclaration(translationUnit, declaration);
             PopBlock();
         }
 
@@ -51,54 +71,117 @@ namespace QuantumBinding.Generator.CodeGeneration
             GenerateNamespace(unit);
         }
 
+        protected virtual void GenerateTranslationUnitForDeclaration(TranslationUnit unit, Declaration declaration)
+        {
+            CurrentTranslationUnit = unit;
+            GenerateNamespace(unit, declaration);
+        }
+        
+        protected virtual void GenerateNamespace(Namespace @namespace, Declaration declaration)
+        {
+            try
+            {
+                PushBlock(CodeBlockKind.Namespace);
+                GenerateUsings();
+                
+                NewLine();
+                
+                WriteCurrentNamespace(@namespace);
+
+                NewLine();
+                
+                GenerateDeclaration(declaration);
+                NewLine();
+            
+                PopBlock(NewLineStrategy.NewLineBeforeNextBlock);
+
+                IsEmpty = false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        protected virtual bool IsDeclarationEqualsSpec(Declaration decl, GeneratorSpecializations spec)
+        {
+            switch (spec)
+            {
+                case GeneratorSpecializations.Classes when decl is Class @class && @class.ClassType == ClassType.Class:
+                case GeneratorSpecializations.Structs when decl is Class @struct && @struct.ClassType == ClassType.Struct:
+                case GeneratorSpecializations.Unions when decl is Class union && union.ClassType == ClassType.Union:
+                case GeneratorSpecializations.Macros when decl is Macro:
+                case GeneratorSpecializations.Enums when decl is Enumeration:
+                case GeneratorSpecializations.Delegates when decl is Delegate:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        protected virtual void GenerateDeclaration(Declaration declaration)
+        {
+            switch (declaration)
+            {
+                case Enumeration @enum:
+                    GenerateEnum(@enum);
+                    break;
+                case Class { ClassType: not (ClassType.StructWrapper and ClassType.UnionWrapper) } @class:
+                    if (Category == GeneratorCategory.ExtensionMethods)
+                    {
+                        GenerateClassExtension(@class);
+                    }
+                    else
+                    {
+                        GenerateClass(@class);
+                    }
+                    break;
+                case Delegate @delegate:
+                    GenerateDelegate(@delegate);
+                    break;
+                case Function function:
+                    GenerateFunction(function);
+                    break;
+            }
+        }
+
         protected virtual void GenerateNamespace(Namespace @namespace)
         {
-            var dict = new Dictionary<GeneratorSpecializations, Action>
+            var dict = new Dictionary<GeneratorCategory, Action>
             {
-                { GeneratorSpecializations.Constants, GenerateMacros },
-                { GeneratorSpecializations.Enums, GenerateEnums },
-                { GeneratorSpecializations.Structs, () => GenerateClasses(ClassType.Struct) },
-                { GeneratorSpecializations.Unions, () => GenerateClasses(ClassType.Union) },
-                { GeneratorSpecializations.Classes, () => GenerateClasses(ClassType.Class) },
-                { GeneratorSpecializations.Delegates, GenerateDelegates },
-                { GeneratorSpecializations.Functions, GenerateFunctions }
+                { GeneratorCategory.Macros, GenerateMacros },
+                { GeneratorCategory.Enums, GenerateEnums },
+                { GeneratorCategory.Structs, () => GenerateClasses(ClassType.Struct) },
+                { GeneratorCategory.Unions, () => GenerateClasses(ClassType.Union) },
+                { GeneratorCategory.Classes, () => GenerateClasses(ClassType.Class) },
+                { GeneratorCategory.Delegates, GenerateDelegates },
+                { GeneratorCategory.Functions, GenerateFunctions },
+                { GeneratorCategory.StaticMethods, GenerateCommonMethods }
             };
-
-            var parts = Specializations.GetFlags();
-            PushBlock(CodeBlockKind.Namespace);
-            WriteCurrentNamespace(@namespace);
-            WriteOpenBraceAndIndent();
-
+            
             GenerateUsings();
-
+            
             NewLine();
 
-            if (Specializations == GeneratorSpecializations.None)
+            if (Category == GeneratorCategory.Functions)
             {
-                foreach (var action in dict)
-                {
-                    action.Value.Invoke();
-                    NewLine();
-                }
+                int bug = 0;
             }
-            else
-            {
-                foreach (var part in parts)
-                {
-                    if (part == GeneratorSpecializations.All || !dict.ContainsKey(part))
-                        continue;
 
-                    dict[part].Invoke();
-                    NewLine();
-                }
-            }
+            PushBlock(CodeBlockKind.Namespace);
+            WriteCurrentNamespace(@namespace);
+
+            NewLine();
+            
+            dict[Category].Invoke();
+            NewLine();
 
             foreach (var childNamespace in @namespace.Namespaces)
             {
                 GenerateNamespace(childNamespace);
             }
-
-            UnindentAndWriteCloseBrace();
+            
             PopBlock(NewLineStrategy.NewLineBeforeNextBlock);
         }
 
@@ -106,7 +189,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var @enum in CurrentTranslationUnit.Enums)
             {
-                GenerateEnumItems(@enum);
+                GenerateEnum(@enum);
             }
         }
 
@@ -117,9 +200,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                 case ClassType.Struct:
                     var structs = CurrentTranslationUnit.Structs.Where(x => !x.IsIgnored).ToArray();
 
-                    if (Options.PodTypesAsSimpleTypes && structs.Where(x=>!x.IsSimpleType).ToList().Count == 0 && Specializations == GeneratorSpecializations.Structs)
+                    if (Options.PodTypesAsSimpleTypes && structs.Where(x=>!x.IsSimpleType).ToList().Count == 0 && Category == GeneratorCategory.Structs)
                     {
-                        IsGeneratorEmpty = true;
+                        IsEmpty = true;
                     }
 
                     foreach (var @struct in structs)
@@ -130,9 +213,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                     break;
                 case ClassType.Union:
                     var unions = CurrentTranslationUnit.Unions.Where(x => !x.IsIgnored).ToArray();
-                    if (!unions.Any() && Specializations == GeneratorSpecializations.Unions)
+                    if (!unions.Any() && Category == GeneratorCategory.Unions)
                     {
-                        IsGeneratorEmpty = true;
+                        IsEmpty = true;
                     }
 
                     foreach (var union in unions)
@@ -148,17 +231,15 @@ namespace QuantumBinding.Generator.CodeGeneration
                         GenerateClass(@class);
                     }
 
-                    GenerateCommonMethods();
-
                     var classExtensions = CurrentTranslationUnit.ExtensionClasses.Where(x => !x.IsIgnored).ToArray();
                     foreach (var ext in classExtensions)
                     {
                         GenerateClassExtension(ext);
                     }
 
-                    if (classes.Length == 0 && CurrentTranslationUnit.Methods.Count == 0 && classExtensions.Length == 0 && Specializations == GeneratorSpecializations.Classes)
+                    if (classes.Length == 0 && CurrentTranslationUnit.Methods.Count == 0 && classExtensions.Length == 0 && Category == GeneratorCategory.Classes)
                     {
-                        IsGeneratorEmpty = true;
+                        IsEmpty = true;
                     }
 
                     break;
@@ -168,9 +249,9 @@ namespace QuantumBinding.Generator.CodeGeneration
         private void GenerateMacros()
         {
             var macros = CurrentTranslationUnit.Macros.Where(x => !x.IsIgnored).ToList();
-            if (macros.Count == 0 && Specializations == GeneratorSpecializations.Constants)
+            if (macros.Count == 0 && Category == GeneratorCategory.Macros)
             {
-                IsGeneratorEmpty = true;
+                IsEmpty = true;
             }
 
             PushBlock(CodeBlockKind.Class);
@@ -212,7 +293,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             PopBlock();
         }
 
-        protected override void GenerateEnumItems(Enumeration @enum)
+        protected override void GenerateEnum(Enumeration @enum)
         {
             if (@enum.IsIgnored)
                 return;
@@ -246,13 +327,14 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateCommonMethods()
         {
-            if (CurrentTranslationUnit.Methods.Count == 0)
+            if (CurrentTranslationUnit.Module.EachTypeInSeparateFile && CurrentTranslationUnit.Methods.Count == 0)
             {
+                IsEmpty = true;
                 return;
             }
-
+            
             PushBlock(CodeBlockKind.Class);
-            WriteLine($"public static class {CurrentTranslationUnit.Module.MethodClassName}");
+            WriteLine($"public unsafe static class {CurrentTranslationUnit.Module.MethodClassName}");
             WriteOpenBraceAndIndent();
 
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
@@ -269,11 +351,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected override void GenerateClass(Class @class)
         {
-            if (@class.IsSimpleType && CurrentTranslationUnit.Module.SkipPodTypesGeneration)
-            {
-                return;
-            }
-
             switch (@class.ClassType)
             {
                 case ClassType.Class:
@@ -307,11 +384,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLine(TypePrinter.VisitClass(@class).ToString());
             
             WriteOpenBraceAndIndent();
-
-            if (@class.Name == "VkBaseInStructure")
-            {
-                int bug = 0;
-            }
 
             GenerateFields(@class);
 
@@ -357,7 +429,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             WriteLocation(extension);
 
-            WriteLine($"{TypePrinter.GetAccessSpecifier(extension.AccessSpecifier)} static partial class {extension.Name}Extension");
+            WriteLine($"{TypePrinter.GetAccessSpecifier(extension.AccessSpecifier)} static unsafe partial class {extension.Name}Extension");
             WriteOpenBraceAndIndent();
 
             GenerateExtensionMethods(extension);
@@ -468,18 +540,31 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
+        private string GetAccessSpecifierString(AccessSpecifier accessSpecifier)
+        {
+            return accessSpecifier.ToString().ToLower();
+        }
+
         private void GenerateFunctions()
         {
             PushBlock(CodeBlockKind.Class);
-            WriteLine($"{CurrentTranslationUnit.Module.InteropClassAccessSpecifier} static unsafe class {CurrentTranslationUnit.Module.InteropClassName}");
+            WriteLine($"{GetAccessSpecifierString(CurrentTranslationUnit.Module.InteropClassAccessSpecifier)} static unsafe partial class {CurrentTranslationUnit.Module.InteropClassName}");
             WriteOpenBraceAndIndent();
             string libraryPath = "LibraryPath";
+            
+            TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+            var functions = CurrentTranslationUnit.Functions.OrderBy(x => x.Name).ToArray();
+
+            if (CurrentTranslationUnit.Module.EachTypeInSeparateFile && functions.Length == 0)
+            {
+                IsEmpty = true;
+                return;
+            }
+            
             WriteLine($"public const string {libraryPath} = \"{CurrentTranslationUnit.Module.LibraryName}\";");
             NewLine();
 
-            TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
-
-            foreach (var function in CurrentTranslationUnit.Functions.OrderBy(x=>x.Name))
+            foreach (var function in functions)
             {
                 function.DllName = libraryPath;
                 GenerateFunction(function);
@@ -511,7 +596,15 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
 
             PushBlock(CodeBlockKind.Attribute);
-            WriteLine($"[DllImport({function.DllName}, EntryPoint = \"{function.EntryPoint}\", CallingConvention = CallingConvention.{function.CallingConvention})]");
+            var dllImportString =
+                $"[DllImport({function.DllName}, EntryPoint = \"{function.EntryPoint}\", ExactSpelling = true";
+            if (CurrentTranslationUnit.Module.ForceCallingConvention)
+            {
+                dllImportString = $"{dllImportString}, CallingConvention = CallingConvention.{function.CallingConvention}";
+            }
+            dllImportString = $"{dllImportString})]";
+            
+            WriteLine(dllImportString);
             PopBlock();
 
             PushBlock(CodeBlockKind.AccessSpecifier);
@@ -522,7 +615,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
 
-            if (function.Name == "vkCmdBuildAccelerationStructuresKHR")
+            if (function.Name == "vkCmdBuildAccelerationStructuresIndirectKHR")
             {
                 int bug = 0;
             }
@@ -556,7 +649,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             GenerateCommentIfNotEmpty(@delegate.Comment);
 
-            if (@delegate.Name == "PFN_vkCreateInstance")
+            if (@delegate.Name == "PFN_vkGetDeviceAccelerationStructureCompatibilityKHR")
             {
                 int bug = 0;
             }
@@ -566,14 +659,14 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = @delegate.ReturnType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             CheckParameters(@delegate.Parameters);
-            var @params = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
-            var nativeParams = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.NativeParameter);
-            var paramsWithoutTypes = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.SkipParamTypesSkipModifiers);
+            var types = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateType);
+            var nativeParams = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
+            var paramsWithoutTypes = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.SkipParamTypes);
             
             WriteLine($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} readonly unsafe struct {@delegate.Name}");
             WriteOpenBraceAndIndent();
             
-            string delegateParams = ValidateDelegateParameters(@params, returnType);
+            string delegateParams = ValidateDelegateParameters(types, returnType);
 
             if (CurrentTranslationUnit.Module.GeneratorMode == GeneratorMode.Compatible)
             {
@@ -583,6 +676,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
                 WriteInvokeFieldDelegateCompatible(delegateParams, "Cdecl");
                 NewLine();
+                WriteNativePointerProperty();
+                NewLine();
                 WriteInvokeMethodDelegateCompatible(@delegate, @nativeParams, paramsWithoutTypes, returnType);
             }
             else
@@ -590,6 +685,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteDelegateWrapperConstructorPreview(@delegate, pointerArg, delegateParams);
                 NewLine();
                 WriteInvokeFieldDelegatePreview(delegateParams);
+                NewLine();
+                WriteNativePointerProperty();
                 NewLine();
                 WriteInvokeMethodDelegatePreview(@delegate, @nativeParams, paramsWithoutTypes, returnType);
             }
@@ -604,6 +701,9 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             WriteLine($"public {@delegate.Name}(void* {pointerArg})");
             WriteOpenBraceAndIndent();
+            
+            WriteLine($"{DelegateNativePointerName} = {pointerArg};");
+            
             WriteCheckForWindowsRuntimeString();
             WriteOpenBraceAndIndent();
             WriteLine($"InvokeStdcall = (delegate* unmanaged[Stdcall]<{delegateParams}>){pointerArg};");
@@ -621,7 +721,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             WriteLine($"public {@delegate.Name}(void* {pointerArg})");
             WriteOpenBraceAndIndent();
-            WriteLine($"{InvokatorName} = (delegate* unmanaged<{delegateParams}>){pointerArg};");
+            WriteLine($"{DelegateNativePointerName} = {pointerArg};");
+            WriteLine($"{DelegateInvokeFuncName} = (delegate* unmanaged<{delegateParams}>){pointerArg};");
             UnindentAndWriteCloseBrace();
         }
 
@@ -632,7 +733,12 @@ namespace QuantumBinding.Generator.CodeGeneration
         
         private void WriteInvokeFieldDelegatePreview(string delegateParams)
         {
-            WriteLine($"private readonly delegate* unmanaged<{delegateParams}> {InvokatorName};");
+            WriteLine($"private readonly delegate* unmanaged<{delegateParams}> {DelegateInvokeFuncName};");
+        }
+
+        private void WriteNativePointerProperty()
+        {
+            WriteLine($"public void* {DelegateNativePointerName} {{ get; }}");
         }
 
         private void WriteInvokeMethodDelegateCompatible(Delegate @delegate, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
@@ -664,7 +770,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 returnKeyword = string.Empty;
             }
-            WriteLine($"{returnKeyword}{InvokatorName}({argumentsOnly});");
+            WriteLine($"{returnKeyword}{DelegateInvokeFuncName}({argumentsOnly});");
             UnindentAndWriteCloseBrace();
         }
 
@@ -678,16 +784,16 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLine("if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))");
         }
 
-        private string ValidateDelegateParameters(TypePrinterResult @params, TypePrinterResult returnType)
+        private string ValidateDelegateParameters(TypePrinterResult types, TypePrinterResult returnType)
         {
             string delegateParams;
-            if (string.IsNullOrEmpty(@params.ToString()))
+            if (string.IsNullOrEmpty(types.ToString()))
             {
                 delegateParams = returnType.ToString();
             }
             else
             {
-                delegateParams = $"{@params},{returnType}";
+                delegateParams = $"{types}, {returnType}";
             }
 
             return delegateParams;
@@ -697,10 +803,16 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             if (method.IsIgnored)
                 return;
+            
+            if (method.Name == "SetSampleMaskEXT")
+            {
+                int bug = 0;
+            }
 
             PushBlock(CodeBlockKind.Method, method);
             GenerateCommentIfNotEmpty(method.Function.Comment);
             CheckParameters(method.Parameters);
+            AddUsingIfNeeded(method.ReturnType);
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
             var methodResult = TypePrinter.VisitMethod(method);
             TypePrinter.PopMarshalType();
@@ -719,768 +831,8 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         public TypePrinterResult VisitNativeFunctionCall(Method method)
         {
-            TextGenerator textGenerator = new TextGenerator();
-            List<Parameter> nativeParams = new List<Parameter>();
-            List<Action> actions = new List<Action>();
-
-            bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
-            int index = 0;
-            var wrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
-            var isInstanceMethod = method.Class != null;
-
-            for (var paramIndex = 0; paramIndex < method.Function.Parameters.Count; paramIndex++)
-            {
-                var parameter = method.Function.Parameters[paramIndex];
-                var classDecl = parameter.Type.Declaration as Class;
-                if (wrapInteropObjects)
-                {
-                    if (classDecl != null && (classDecl.ClassType == ClassType.Struct || classDecl.ClassType == ClassType.Union))
-                    {
-                        if (paramIndex == 0 && isInstanceMethod)
-                        {
-                            classDecl = method.Class;
-                        }
-                        else
-                        {
-                            parameter = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
-                            classDecl = parameter.Type.Declaration as Class;
-                        }
-                    }
-                }
-
-                if (parameter.Type.IsPointerToPrimitiveType(out var primType))
-                {
-                    classDecl = null;
-                }
-
-                ArrayType currentArray = null;
-                string arrayLength = string.Empty;
-                if (classDecl == null)
-                {
-                    if (parameter.Type.IsConstArray(out int arraySize))
-                    {
-                        textGenerator.WriteLine(
-                            $"if ({parameter.Name} == null || {parameter.Name}.Length != {arraySize})");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        textGenerator.WriteLine(
-                            $"throw new ArgumentOutOfRangeException(\"{parameter.Name}\", \"The dimensions of the provided array don't match the required size. Size should be = {arraySize}\");");
-                        textGenerator.UnindentAndWriteCloseBrace();
-                    }
-
-                    if (parameter.Type.Declaration == null || !parameter.Type.IsPointer() || parameter.Type.IsPointerToPrimitiveType(out var prim))
-                    {
-                        nativeParams.Add(parameter);
-                        continue;
-                    }
-                }
-
-                var argumentName = $"arg{index++}";
-                if (classDecl != null)
-                {
-                    if (classDecl.ClassType == ClassType.Class && !parameter.Type.IsPointerToArray())
-                    {
-                        WriteClass();
-                    }
-                    else //arrays of structs, structs, unions, PODs (plain old data => primitive types)
-                    {
-                        var type = parameter.Type;
-                        if (type.IsPointer())
-                        {
-                            if (type.IsPointerToArray())
-                            {
-                                WritePointerToArray();
-                            }
-                            else if (!classDecl.IsSimpleType)
-                            {
-                                WritePointerToStruct();
-                            }
-                            else //Pointer to simple type like int, long, float, etc.
-                            {
-                                WritePointerToSimpleType();
-                            }
-                        }
-                        else if (classDecl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
-                        {
-                            if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly && 
-                                paramIndex == 0 && 
-                                isInstanceMethod)
-                            {
-                                argumentName = $"{ConversionMethodName}";
-                            }
-                            else
-                            {
-                                WriteWrappedStruct();
-                            }
-                        }
-                        else // structs without pointers, simple types
-                        {
-                            if (parameter.ParameterKind == ParameterKind.Out &&
-                                CurrentTranslationUnit.Module.WrapInteropObjects && !classDecl.IsSimpleType)
-                            {
-                                TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-                                var t = parameter.Type.Visit(TypePrinter);
-                                TypePrinter.PopMarshalType();
-                                textGenerator.WriteLine(
-                                    $"{parameter.Type.Declaration.AlternativeNamespace}.{t} {argumentName};");
-
-                                actions.Add(ConvertOutStructToClass);
-                            }
-                            else
-                            {
-                                argumentName = parameter.Name;
-                            }
-                        }
-                    }
-
-                    nativeParams.Add(new Parameter() { Name = argumentName, ParameterKind = parameter.ParameterKind, Type = parameter.Type });
-                }
-                else if (parameter.Type.Declaration is Enumeration enumeration)
-                {
-                    if (parameter.Type.IsPointer() && !parameter.Type.IsPointerToArray())
-                    {
-                        if (parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly)
-                        {
-                            textGenerator.WriteLine($"var {argumentName} = new GCHandleReference(({enumeration.InheritanceType}){parameter.Name});");
-                            nativeParams.Add(new Parameter() { Name = $"{argumentName}.Handle", ParameterKind = parameter.ParameterKind, Type = parameter.Type });
-                            actions.Add(FreeReference);
-                        }
-                        else if (parameter.ParameterKind == ParameterKind.InOut)
-                        {
-                            textGenerator.WriteLine($"var {argumentName} = ({enumeration.InheritanceType}){parameter.Name};");
-                            nativeParams.Add(new Parameter() { Name = $"{argumentName}", ParameterKind = parameter.ParameterKind, Type = parameter.Type });
-                            actions.Add(ConvertRefResultBackToEnum);
-                        }
-                        else // ParameterKind == ParameterKind.Out
-                        {
-                            nativeParams.Add(parameter);
-                        }
-                    }
-                    else if (parameter.Type.IsPointerToArray())
-                    {
-                        var pointer = parameter.Type as PointerType;
-                        currentArray = pointer.Pointee as ArrayType;
-                        arrayLength = currentArray.ArraySizeSource;
-                        if (string.IsNullOrEmpty(arrayLength))
-                        {
-                            arrayLength = $"{parameter.Name}.Length";
-                        }
-
-                        textGenerator.WriteLine($"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {enumeration.InheritanceType}[{parameter.Name}.Length];");
-                        textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        textGenerator.WriteLine($"for (var i = 0; i < {arrayLength}; ++i)");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        textGenerator.WriteLine($"{argumentName}[i] = ({enumeration.InheritanceType}){parameter.Name}[i];");
-                        textGenerator.UnindentAndWriteCloseBrace();
-                        textGenerator.UnindentAndWriteCloseBrace();
-
-                        nativeParams.Add(new Parameter() { Name = $"{argumentName}", ParameterKind = parameter.ParameterKind, Type = parameter.Type });
-                    }
-                }
-
-                void WriteClass()
-                {
-                    if (parameter.ParameterKind != ParameterKind.Out && !parameter.Type.IsPointerToArray())
-                    {
-                        if (classDecl == method.Class && parameter.Index == 0)
-                        {
-                            if (method.IsStatic)
-                            {
-                                textGenerator.WriteLine($"var {argumentName} = {parameter.Name};");
-                            }
-                            else
-                            {
-                                argumentName = "this"; // pass this as first parameter tp avoid additional copying of memory
-                            }
-                        }
-                        else
-                        {
-                            if (!parameter.Type.IsPointer())
-                            {
-                                TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
-                                textGenerator.WriteLine(
-                                    $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {parameter.Type.Visit(TypePrinter)}() : ({classDecl.InnerStruct.Name}){parameter.Name};");
-                                TypePrinter.PopMarshalType();
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine(
-                                    $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr(({classDecl.InnerStruct.Name}){parameter.Name});");
-                                if (parameter.ParameterKind == ParameterKind.InOut)
-                                {
-                                    actions.Add(ConvertPointerToClassOrStruct);
-                                }
-                                actions.Add(FrePtr);
-                            }
-                        }
-                    }
-                    else if (parameter.Type.IsPointerToArray())
-                    {
-                        var pointer = parameter.Type as PointerType;
-                        currentArray = pointer.Pointee as ArrayType;
-                        arrayLength = currentArray.ArraySizeSource;
-                        if (string.IsNullOrEmpty(arrayLength))
-                        {
-                            arrayLength = $"{parameter.Name}.Length";
-                        }
-
-                        if (parameter.ParameterKind != ParameterKind.Out)
-                        {
-                            textGenerator.WriteLine(
-                                $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[{arrayLength}];");
-
-                            if (parameter.ParameterKind == ParameterKind.InOut)
-                            {
-                                actions.Add(ImplicitTwoWayArrayTypeConversion);
-                            }
-                            else if (parameter.ParameterKind == ParameterKind.In)
-                            {
-                                ImplicitTwoWayArrayTypeConversion();
-                            }
-                        }
-                        else if (parameter.ParameterKind == ParameterKind.Out)
-                        {
-                            if (!string.IsNullOrEmpty(currentArray.ArraySizeSource)
-                                && CurrentTranslationUnit.Module.WrapInteropObjects)
-                            {
-                                textGenerator.WriteLine($"IntPtr {argumentName} = IntPtr.Zero;");
-                                actions.Add(ConvertPtrToWrappedStructArray);
-                            }
-                            else if (!string.IsNullOrEmpty(currentArray.ArraySizeSource)
-                                     && !CurrentTranslationUnit.Module.WrapInteropObjects)
-                            {
-                                textGenerator.WriteLine(
-                                    $"var {argumentName} = new {classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[{arrayLength}];");
-                                actions.Add(ImplicitTwoWayArrayTypeConversion);
-                            }
-                            else
-                            {
-                                argumentName = parameter.Name;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        textGenerator.WriteLine($"{classDecl.InnerStruct.Name} {argumentName};");
-                        actions.Add(ConvertOutStructToClass);
-                    }
-                }
-
-                void WriteWrappedStruct()
-                {
-                    var type = parameter.Type;
-                    TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-                    var interopType = parameter.WrappedType.Visit(TypePrinter).Type;
-                    TypePrinter.PopMarshalType();
-
-                    if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.InOut)
-                    {
-                        textGenerator.WriteLine($"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {classDecl.AlternativeNamespace}.{interopType}() : {parameter.Name}.{ConversionMethodName};");
-                        actions.Add(DisposeWrapper);
-                    }
-                    else if (parameter.ParameterKind == ParameterKind.Out)
-                    {
-                        if (wrapInteropObjects)
-                        {
-                            textGenerator.WriteLine($"{parameter.WrappedType.Declaration.Name} {argumentName};");
-                            actions.Add(ConvertOutStructToClass);
-                        }
-                        else
-                        {
-                            argumentName = parameter.Name;
-                        }
-                    }
-                }
-
-                void WritePointerToStruct()
-                {
-                    var pointer = (PointerType)parameter.Type;
- 
-                    TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-                    var interopType = parameter.Type.Visit(TypePrinter).Type;
-                    string wrappedType = string.Empty;
-                    if (wrapInteropObjects && parameter.WrappedType != null)
-                    {
-                        wrappedType = parameter.WrappedType.Visit(TypePrinter).Type;
-                        if (interopType == wrappedType)
-                        {
-                            interopType = $"{classDecl.Owner.FullNamespace}.{interopType}";
-                            wrappedType = $"{classDecl.AlternativeNamespace}.{interopType}";
-                        }
-                    }
-                    TypePrinter.PopMarshalType();
-
-                    if (parameter.ParameterKind == ParameterKind.In || 
-                        parameter.ParameterKind == ParameterKind.Readonly || 
-                        parameter.ParameterKind == ParameterKind.InOut)
-                    {
-                        // Input parameter is IntPtr, so we need to just pass it as is without any conversion
-                        if (parameter.Type.IsPointerToIntPtr() || parameter.Type.IsPurePointer())
-                        {
-                            argumentName = parameter.Name;
-                        }
-                        else
-                        {
-                            switch (classDecl.ClassType)
-                            {
-                                case ClassType.Struct:
-                                case ClassType.Union:
-                                    if (pointer.IsNullable)
-                                    {
-                                        textGenerator.WriteLine(
-                                            $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name}.Value);");
-                                    }
-                                    else
-                                    {
-                                        textGenerator.WriteLine(
-                                            $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name});");
-                                    }
-                                    break;
-                                case ClassType.StructWrapper:
-                                case ClassType.UnionWrapper:
-                                    if (paramIndex == 0 && isInstanceMethod)
-                                    {
-                                        textGenerator.WriteLine($"var {argumentName} = MarshalUtils.MarshalStructToPtr({ConversionMethodName});");
-                                    }
-                                    else
-                                    {
-                                        textGenerator.WriteLine(
-                                        $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name}.{ConversionMethodName});");
-                                        actions.Add(DisposeWrapper);
-                                    }
-                                    break;
-                            }
-                            if (parameter.ParameterKind == ParameterKind.InOut)
-                            {
-                                actions.Add(ConvertPointerToClassOrStruct);
-                            }
-                            actions.Add(FrePtr);
-                        }
-                    }
-                    else if (parameter.ParameterKind == ParameterKind.Out)
-                    {
-                        if (wrapInteropObjects)
-                        {
-                            wrappedType = wrappedType.TrimEnd('?');
-                            textGenerator.WriteLine($"{wrappedType} {argumentName};");
-                            actions.Add(ConvertOutStructToClass);
-                        }
-                        else
-                        {
-                            argumentName = parameter.Name;
-                        }
-                    }
-                }
-
-                void WritePointerToSimpleType()
-                {
-                    var pointer = (PointerType)parameter.Type;
-
-                    TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-                    var interopType = parameter.Type.Visit(TypePrinter).Type;
-                    string wrappedType = string.Empty;
-                    if (wrapInteropObjects && parameter.WrappedType != null)
-                    {
-                        wrappedType = parameter.WrappedType.Visit(TypePrinter).Type;
-                        if (interopType == wrappedType)
-                        {
-                            interopType = $"{classDecl.Owner.FullNamespace}.{interopType}";
-                            wrappedType = $"{classDecl.AlternativeNamespace}.{interopType}";
-                        }
-                    }
-                    TypePrinter.PopMarshalType();
-
-                    if (parameter.ParameterKind == ParameterKind.In ||
-                        parameter.ParameterKind == ParameterKind.Readonly ||
-                        parameter.ParameterKind == ParameterKind.InOut)
-                    {
-                        // Input parameter is just ref to simple type like int, long or another, so we need to just pass it as is without any conversion
-                        if (classDecl.IsSimpleType && 
-                            Options.PodTypesAsSimpleTypes && 
-                            parameter.ParameterKind == ParameterKind.InOut)
-                        {
-                            argumentName = parameter.Name;
-                        }
-                        else
-                        {
-                            switch (classDecl.ClassType)
-                            {
-                                case ClassType.Struct:
-                                case ClassType.Union:
-                                    if (pointer.IsNullable)
-                                    {
-                                        textGenerator.WriteLine(
-                                            $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name}.Value);");
-                                    }
-                                    else
-                                    {
-                                        textGenerator.WriteLine(
-                                            $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name});");
-                                    }
-                                    break;
-                                case ClassType.StructWrapper:
-                                case ClassType.UnionWrapper:
-                                    textGenerator.WriteLine(
-                                        $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {IntPtrZero} : MarshalUtils.MarshalStructToPtr({parameter.Name}.{ConversionMethodName});");
-                                    actions.Add(DisposeWrapper);
-                                    break;
-                            }
-                            if (parameter.ParameterKind == ParameterKind.InOut && !classDecl.IsSimpleType)
-                            {
-                                actions.Add(ConvertPointerToClassOrStruct);
-                            }
-                            actions.Add(FrePtr);
-                        }
-                    }
-                    else if (parameter.ParameterKind == ParameterKind.Out)
-                    {
-                        if (wrapInteropObjects)
-                        {
-                            wrappedType = wrappedType.TrimEnd('?');
-                            textGenerator.WriteLine($"{wrappedType} {argumentName};");
-                            actions.Add(ConvertOutStructToClass);
-                        }
-                        else
-                        {
-                            argumentName = parameter.Name;
-                        }
-                    }
-                }
-
-                void WritePointerToArray()
-                {
-                    var pointer = parameter.Type as PointerType;
-                    currentArray = pointer.Pointee as ArrayType;
-                    var arraySizeSource = currentArray.ArraySizeSource;
-                    arrayLength = $"{parameter.Name}.Length";
-                    if (!string.IsNullOrEmpty(arraySizeSource))
-                    {
-                        arrayLength = arraySizeSource;
-                    }
-                    if (!classDecl.IsSimpleType)
-                    {
-                        TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-                        var typeStrResult = parameter.Type.Visit(TypePrinter);
-                        if (wrapInteropObjects && parameter.WrappedType != null)
-                        {
-                            typeStrResult = parameter.WrappedType.Visit(TypePrinter);
-                        }
-                        TypePrinter.PopMarshalType();
-                        if (parameter.ParameterKind == ParameterKind.In || parameter.ParameterKind == ParameterKind.Readonly)
-                        {
-                            if (classDecl.ClassType == ClassType.Class)
-                            {
-                                textGenerator.WriteLine($"{classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[] {argumentName} = null;");
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine($"{classDecl.AlternativeNamespace}.{typeStrResult}[] {argumentName} = null;");
-                            }
-
-                            if (classDecl.ClassType == ClassType.Class)
-                            {
-                                textGenerator.WriteLine($"{argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[{arrayLength}];");
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine($"{argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {classDecl.AlternativeNamespace}.{typeStrResult}[{arrayLength}];");
-                            }
-                            ImplicitTwoWayArrayTypeConversion();
-                        }
-                        else if (parameter.ParameterKind == ParameterKind.InOut)
-                        {
-                            if (classDecl.ClassType == ClassType.Class)
-                            {
-                                textGenerator.WriteLine($"{classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[] {argumentName} = null;");
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine($"{classDecl.AlternativeNamespace}.{typeStrResult}[] {argumentName} = null;");
-                            }
-
-                            if (classDecl.ClassType == ClassType.Class)
-                            {
-                                textGenerator.WriteLine($"{argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}[{arrayLength}];");
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine($"{argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {classDecl.AlternativeNamespace}.{typeStrResult}[{arrayLength}];");
-                            }
-
-                            actions.Add(ImplicitTwoWayArrayTypeConversion);
-                        }
-                        else if (parameter.ParameterKind == ParameterKind.Out)
-                        {
-                            textGenerator.WriteLine($"var {argumentName} = {IntPtrZero};");
-                            if (classDecl.ClassType != ClassType.Struct && classDecl.ClassType != ClassType.Union)
-                            {
-                                actions.Add(ConvertPtrToWrappedStructArray);
-                            }
-                            else
-                            {
-                                actions.Add(ConvertIntPtrToArray);
-                            }
-                        }
-                    }
-                    else if (!string.IsNullOrEmpty(arraySizeSource) &&
-                             parameter.ParameterKind == ParameterKind.Out)
-                    {
-                        textGenerator.WriteLine($"var {argumentName} = {IntPtrZero};");
-                        actions.Add(ConvertIntPtrToArray);
-                    }
-                    else
-                    {
-                        argumentName = parameter.Name;
-                    }
-                }
-
-                void FrePtr()
-                {
-                    textGenerator.WriteLine($"Marshal.FreeHGlobal({argumentName});");
-                }
-
-                void FreeReference()
-                {
-                    textGenerator.WriteLine($"{argumentName}?.Dispose();");
-                }
-
-                void ConvertRefResultBackToEnum()
-                {
-                    textGenerator.WriteLine($"{parameter.Name} = ({parameter.Type.Declaration.Name}){argumentName};");
-                }
-
-                void DisposeWrapper()
-                {
-                    if (classDecl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && classDecl.IsDisposable)
-                    {
-                        textGenerator.WriteLine($"{parameter.Name}?.Dispose();");
-                    }
-                }
-
-                void DisposeWrappedArray()
-                {
-                    if (classDecl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && classDecl.IsDisposable)
-                    {
-                        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly)
-                        {
-                            textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
-                            textGenerator.WriteOpenBraceAndIndent();
-                            textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
-                            textGenerator.WriteOpenBraceAndIndent();
-
-                            textGenerator.WriteLine($"{parameter.Name}[i]?.Dispose();");
-
-                            textGenerator.UnindentAndWriteCloseBrace();
-                            textGenerator.UnindentAndWriteCloseBrace();
-                        }
-                    }
-                }
-
-                void ConvertPointerToClassOrStruct()
-                {
-                    var tmp = $"temp{argumentName}";
-                    if (classDecl.ClassType == ClassType.Class)
-                    {
-                        textGenerator.WriteLine(
-                            $"var {tmp} =  Marshal.PtrToStructure<{classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}>({argumentName});");
-                        textGenerator.WriteLine($"{parameter.Name} = {tmp};");
-                    }
-                    else if (classDecl.ClassType == ClassType.StructWrapper || classDecl.ClassType == ClassType.UnionWrapper)
-                    {
-                        textGenerator.WriteLine(
-                            $"var {tmp} =  Marshal.PtrToStructure<{classDecl.WrappedStruct.AlternativeNamespace}.{classDecl.WrappedStruct.Name}>({argumentName});");
-                        textGenerator.WriteLine($"{parameter.Name} = new {classDecl.Owner.FullNamespace}.{classDecl.Name}({tmp});");
-                    }
-                    else
-                    {
-                        textGenerator.WriteLine($"{parameter.Name} =  Marshal.PtrToStructure<{classDecl.AlternativeNamespace}.{classDecl.Name}>({argumentName});");
-                    }
-                }
-
-                void ConvertOutStructToClass()
-                {
-                    if (wrapInteropObjects)
-                    {
-                        var wrapperType = GetTypeNameFromParameter(parameter, classDecl);
-                        textGenerator.WriteLine($"{parameter.Name} = new {wrapperType}({argumentName});");
-                    }
-                    else
-                    {
-                        textGenerator.WriteLine($"{parameter.Name} = {argumentName};");
-                    }
-                }
-
-                void ImplicitTwoWayArrayTypeConversion()
-                {
-                    if (parameter.ParameterKind != ParameterKind.Out)
-                    {
-                        textGenerator.WriteLine($"if (!ReferenceEquals({parameter.Name}, null))");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        InnerArrayCopy();
-                        textGenerator.UnindentAndWriteCloseBrace();
-                    }
-                    else
-                    {
-                        textGenerator.WriteLine($"{parameter.Name} = new {classDecl.Name}[{arrayLength}];");
-                        InnerArrayCopy();
-                    }
-
-                    void InnerArrayCopy()
-                    {
-                        textGenerator.WriteLine($"for (var i = 0U; i < {arrayLength}; ++i)");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        if (parameter.ParameterKind != ParameterKind.In && parameter.ParameterKind != ParameterKind.Readonly)
-                        {
-                            if (wrapInteropObjects)
-                            {
-                                textGenerator.WriteLine($"{parameter.Name}[i] = new {classDecl.Name}({argumentName}[i]);");
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine($"{parameter.Name}[i] = {argumentName}[i];");
-                            }
-                        }
-                        else
-                        {
-                            if (wrapInteropObjects && classDecl.ClassType != ClassType.Class)
-                            {
-                                textGenerator.WriteLine($"{argumentName}[i] = {parameter.Name}[i].{ConversionMethodName};");
-                                actions.Add(DisposeWrappedArray);
-                            }
-                            else
-                            {
-                                textGenerator.WriteLine($"{argumentName}[i] = {parameter.Name}[i];");
-                            }
-                        }
-
-                        textGenerator.UnindentAndWriteCloseBrace();
-                    }
-                }
-
-                void ConvertIntPtrToArray()
-                {
-                    TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
-                    var type = parameter.Type.Visit(TypePrinter);
-                    TypePrinter.PopMarshalType();
-
-                    ClassType classType = ClassType.Struct;
-                    if (classDecl != null && !classDecl.IsSimpleType &&
-                        !string.IsNullOrEmpty(classDecl.AlternativeNamespace))
-                    {
-                        if (classDecl.ClassType == ClassType.Class)
-                        {
-                            classType = ClassType.Class;
-                            type = classDecl.InnerStruct.Name;
-                        }
-
-                        type = $"{classDecl.AlternativeNamespace}.{type}";
-                    }
-
-                    textGenerator.WriteLine($"{parameter.Name} = new {type}[{currentArray.ArraySizeSource}];");
-                    textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray<{type}>({argumentName}, {parameter.Name});");
-                    if ((CurrentTranslationUnit.Module.WrapInteropObjects && classType == ClassType.Struct) ||
-                        classType == ClassType.Class)
-                    {
-                        textGenerator.WriteLine($"for (var i = 0U; i< {arrayLength}; ++i)");
-                        textGenerator.WriteOpenBraceAndIndent();
-                        if (wrapInteropObjects && classType != ClassType.Class)
-                        {
-                            textGenerator.WriteLine($"{parameter.Name}[i] = new {type}({argumentName}[i]);");
-                        }
-                        else
-                        {
-                            textGenerator.WriteLine($"{parameter.Name}[i] = {argumentName}[i];");
-                        }
-                        
-                        textGenerator.UnindentAndWriteCloseBrace();
-                    }
-
-                    textGenerator.WriteLine($"Marshal.FreeHGlobal({argumentName});");
-                }
-
-                void ConvertPtrToWrappedStructArray()
-                {
-
-                    TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-                    var typeStrResult = parameter.Type.Visit(TypePrinter);
-                    TypePrinter.PopMarshalType();
-                    string interopNamespace;
-                    if (classDecl.ClassType == ClassType.Class)
-                    {
-                        interopNamespace = $"{classDecl.InnerStruct.AlternativeNamespace}.{classDecl.InnerStruct.Name}";
-                    }
-                    else
-                    {
-                        TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
-                        var nativeResult = parameter.Type.Visit(TypePrinter);
-                        interopNamespace = $"{classDecl.AlternativeNamespace}.{nativeResult}";
-                        TypePrinter.PopMarshalType();
-                    }
-
-                    textGenerator.WriteLine($"var _{parameter.Name} = new {interopNamespace}[{currentArray.ArraySizeSource}];");
-
-                    if (classDecl.ClassType == ClassType.Class)
-                    {
-                        textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray2<{interopNamespace}>({argumentName}, _{parameter.Name});");
-                    }
-                    else
-                    {
-                        textGenerator.WriteLine($"MarshalUtils.IntPtrToManagedArray<{interopNamespace}>({argumentName}, _{parameter.Name});");
-                    }
-
-                    if (classDecl.ClassType == ClassType.Struct || classDecl.ClassType == ClassType.Union)
-                    {
-                        textGenerator.WriteLine($"Marshal.FreeHGlobal({argumentName});");
-                    }
-                    textGenerator.WriteLine($"{parameter.Name} = new {typeStrResult}[{currentArray.ArraySizeSource}];");
-                    textGenerator.WriteLine($"for (var i = 0U; i< {arrayLength}; ++i)");
-                    textGenerator.WriteOpenBraceAndIndent();
-                    textGenerator.WriteLine($"{parameter.Name}[i] = new {typeStrResult}(_{parameter.Name}[i]);");
-                    textGenerator.UnindentAndWriteCloseBrace();
-                }
-            }
-
-            if (!isVoid && actions.Count == 0)
-            {
-                textGenerator.Write("return ");
-            }
-            else if (!isVoid && actions.Count > 0)
-            {
-                textGenerator.Write("var result = ");
-            }
-
-            var @namespace = method.Function.AlternativeNamespace;
-
-            var functionCall = $"{@namespace}.{CurrentTranslationUnit.Module.InteropClassName}.{method.Function.Name}({TypePrinter.VisitParameters(nativeParams, MarshalTypes.SkipParamTypes)});";
-            textGenerator.WriteLine(functionCall);
-
-            foreach (var action in actions)
-            {
-                action?.Invoke();
-            }
-
-            if (actions.Count > 0 && !isVoid)
-            {
-                textGenerator.WriteLine("return result;");
-            }
-
-            return textGenerator.ToString();
-        }
-
-        private string GetTypeNameFromParameter(Parameter parameter, Class classDecl)
-        {
-            TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-            var interopType = parameter.Type.Visit(TypePrinter).Type;
-            if (parameter.WrappedType != null)
-            {
-                var wrappedType = parameter.WrappedType.Visit(TypePrinter).Type;
-                if (interopType == wrappedType)
-                {
-                    interopType = $"{classDecl.Owner.FullNamespace}.{interopType}";
-                }
-            }
-            TypePrinter.PopMarshalType();
-            return interopType;
+            var methodToFunction = new MethodToFunctionCodeGenerator(Options, CurrentTranslationUnit, ConversionMethodName);
+            return methodToFunction.GenerateMethodBody(method);
         }
 
         private void CheckParameters(IEnumerable<Parameter> parameters)
@@ -1493,12 +845,11 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void WriteLocation(Declaration declaration)
         {
-            if (Options.DebugMode)
-            {
-                PushBlock(CodeBlockKind.DebugInfo);
-                WriteLine($"// {declaration.Location}");
-                PopBlock();
-            }
+            if (!Options.DebugMode) return;
+            
+            PushBlock(CodeBlockKind.DebugInfo);
+            WriteLine($"// {declaration.Location}");
+            PopBlock();
         }
     }
 }

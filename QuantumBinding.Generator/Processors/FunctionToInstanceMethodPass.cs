@@ -9,9 +9,17 @@ namespace QuantumBinding.Generator.Processors
 {
     public class FunctionToInstanceMethodPass : PreGeneratorPass
     {
+        private List<string> skipOverloadList;
+
         public FunctionToInstanceMethodPass()
         {
+            skipOverloadList = new List<string>();
             Options.VisitFunctions = true;
+        }
+
+        public void SkipOverloadForFunction(string name)
+        {
+            skipOverloadList.Add(name);
         }
 
         public override bool VisitFunction(Function function)
@@ -44,9 +52,12 @@ namespace QuantumBinding.Generator.Processors
 
                 CurrentNamespace.AddDeclaration(globalMethod);
 
-                var overload = GenerateMethodOverload(globalMethod);
+                if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !skipOverloadList.Contains(function.Name))
+                {
+                    var overload = GenerateMethodOverload(globalMethod);
                 
-                CurrentNamespace.AddDeclaration(overload);
+                    CurrentNamespace.AddDeclaration(overload);
+                }
 
                 return true;
             }
@@ -115,8 +126,11 @@ namespace QuantumBinding.Generator.Processors
             method.Class = @class;
             @class.AddMethod(method);
 
-            var overloadMethod = GenerateMethodOverload(method);
-            @class.AddMethod(overloadMethod);
+            if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !skipOverloadList.Contains(function.Name))
+            {
+                var overloadMethod = GenerateMethodOverload(method);
+                @class.AddMethod(overloadMethod);
+            }
 
             return true;
         }
@@ -160,7 +174,7 @@ namespace QuantumBinding.Generator.Processors
 
         private Method GenerateMethodOverload(Method method)
         {
-            if (method.Name.Contains("FreeCommandBuffers"))
+            if (method.Name.Contains("BindVertexBuffers"))
             {
                 int bug = 0;
             }
@@ -180,6 +194,7 @@ namespace QuantumBinding.Generator.Processors
             if (parameters.Count > 0)
             {
                 overloadedMethod = (Method)method.Clone();
+                overloadedMethod.IsOverload = true;
                 for (var index = 0; index < method.Parameters.Count; index++)
                 {
                     var parameter = method.Parameters[index];
@@ -192,11 +207,18 @@ namespace QuantumBinding.Generator.Processors
                         typeClone.IsNullable = true;
                         parameterClone.Type = typeClone;
 
+                        var functionParameter = method.Function.Parameters.FirstOrDefault(x => x.Name == parameter.Name);
+                        if (functionParameter != null)
+                        {
+                            var funcParamClone = (Parameter)parameterClone.Clone();
+                            funcParamClone.IsOverload = true;
+                            overloadedMethod.Function.Parameters[(int)functionParameter.Index] = funcParamClone;
+                        }
+
+                        parameterClone.IsOverload = true;
                         overloadedMethod.Parameters[index] = parameterClone;
                     }
                 }
-
-                
             }
 
             return overloadedMethod;
