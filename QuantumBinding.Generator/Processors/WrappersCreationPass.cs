@@ -105,7 +105,7 @@ namespace QuantumBinding.Generator.Processors
                 
                 property.Type = (BindingType)field.Type.Clone();
                 
-                if (field.Type.Declaration is Class declaration && (!declaration.IsSimpleType && ProcessingContext.Options.PodTypesAsSimpleTypes))
+                if (field.Type.Declaration is Class declaration && !declaration.IsSimpleType)
                 {
                     if ((declaration.ClassType == ClassType.Struct && declaration.ConnectedTo == null) || declaration.ClassType == ClassType.Union)
                     {

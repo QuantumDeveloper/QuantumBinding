@@ -11,7 +11,7 @@ namespace QuantumBinding.Generator.Types
 
         public CustomType(string typeName)
         {
-            Name = typeName;
+            Name = typeName.Trim();
         }
 
         public CustomType(CustomType type) : base(type)

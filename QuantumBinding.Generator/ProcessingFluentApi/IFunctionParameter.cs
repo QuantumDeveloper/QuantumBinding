@@ -52,14 +52,12 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         IFunctionParameterName SetDefaultValue(string value);
 
-        //IFunctionParameterName SetNullable(bool value);
-
         IInterpretFunctionParameterByName WithParameterName(string paramName);
     }
 
     public interface IInterpretFunctionParameterByName
     {
-        IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "");
+        IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1);
 
         IFunctionParameterName InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
 
@@ -68,5 +66,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         IFunctionParameterName InterpretAsIs();
         
         IFunctionParameterName InterpretAsBuiltinType(PrimitiveType type);
+        
+        IFunctionParameterName ChangeType(BindingType type);
     }
 }

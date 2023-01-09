@@ -31,33 +31,28 @@ public static unsafe class NativeUtils
     public static T* ManagedArrayToPointer<T>(T[] arr) where T : unmanaged
     {
         if (arr == null) return null;
+        T* ptr = null;
+        var size = arr.Length * sizeof(T);
 #if NET6_0_OR_GREATER
-        var size = (nuint)arr.Length * (nuint)sizeof(T);
-        var ptr = (T*)NativeMemory.Alloc((nuint)arr.Length, (nuint)sizeof(T));
-        fixed (T* t = arr)
-        {
-            System.Buffer.MemoryCopy(t, ptr, (int)size, (int)size);
-        }
-        return ptr;
+        ptr = (T*)NativeMemory.Alloc((nuint)arr.Length, (nuint)sizeof(T));
 #else
-        var size = arr.Length * Marshal.SizeOf<T>();
         var intPtr = Marshal.AllocHGlobal(size);
-        var ptr = (T*)intPtr.ToPointer();
+        ptr = (T*)intPtr.ToPointer();
+#endif
+        
         fixed (T* t = arr)
         {
             System.Buffer.MemoryCopy(t, ptr, size, size);
         }
-
+        
         return ptr;
-#endif
     }
 
     public static T* GetPointerToManagedArray<T>(long arraySize) where T : unmanaged
     {
         if (arraySize <= 0) return null;
 #if NET6_0_OR_GREATER
-        var ptr = (T*)NativeMemory.Alloc((nuint)arraySize, (nuint)sizeof(T));
-        return ptr;
+        return (T*)NativeMemory.Alloc((nuint)arraySize, (nuint)sizeof(T));
 #else
         var intPtr = Marshal.AllocHGlobal((int)arraySize * Marshal.SizeOf<T>());
         return (T*)intPtr.ToPointer();

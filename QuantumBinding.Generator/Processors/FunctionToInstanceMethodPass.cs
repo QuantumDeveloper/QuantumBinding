@@ -21,6 +21,11 @@ namespace QuantumBinding.Generator.Processors
         {
             skipOverloadList.Add(name);
         }
+        
+        public void SkipOverloadForFunctions(params string[] names)
+        {
+            skipOverloadList.AddRange(names);
+        }
 
         public override bool VisitFunction(Function function)
         {

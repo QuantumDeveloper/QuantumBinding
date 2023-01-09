@@ -138,7 +138,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateFields(Class @class)
         {
-            if (@class.Name == "VkQueueFamilyGlobalPriorityPropertiesKHR")
+            if (@class.Name == "VkDebugUtilsMessengerCreateInfoEXT")
             {
                 int bug = 0;
             }
@@ -169,11 +169,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 PushBlock(CodeBlockKind.FieldDefinition, field);
                 if (field.Type.IsConstArrayOfCustomTypes(out var size) || field.Type.IsConstArrayOfEnums(out var s))
                 {
-                    if (field.Type.IsConstArrayOfEnums(out var s1))
-                    {
-                        int bug = 0;
-                    }
-                    
                     // To workaround limitation of current .Net (version 6/7) regarding marshaling of const arrays
                     // we need to create struct wrapper which will contain {size} fields and place it instead this field
                     // to correctly pass struct by raw pointer.

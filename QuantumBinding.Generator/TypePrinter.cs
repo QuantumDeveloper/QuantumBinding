@@ -117,6 +117,7 @@ namespace QuantumBinding.Generator
         public abstract TypePrinterResult VisitBuiltinType(BuiltinType builtin);
 
         public abstract TypePrinterResult VisitCustomType(CustomType customType);
+        public abstract TypePrinterResult VisitDelegateType(DelegateType delegateType);
 
         public abstract TypePrinterResult VisitDependentNameType(DependentNameType dependentNameType);
 

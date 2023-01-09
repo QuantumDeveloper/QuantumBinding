@@ -124,6 +124,15 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField ISetField.SetType(BindingType type)
         {
             _currentField.Type = type ?? throw new ArgumentNullException(nameof(type));
+            _currentField.ReplaceDeclaration = false;
+
+            return this;
+        }
+
+        ISetField ISetField.ChangeType(BindingType type)
+        {
+            _currentField.Type = type ?? throw new ArgumentNullException(nameof(type));
+            _currentField.ReplaceDeclaration = true;
 
             return this;
         }
@@ -279,6 +288,12 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         ISetField ISetField.InterpretAsIs()
         {
+            return this;
+        }
+
+        public ISetField InterpretAsDelegateType(IEnumerable<Parameter> parameters, string name)
+        {
+            _currentField.Type = new DelegateType() { Name = name, Parameters = new List<Parameter>(parameters)};
             return this;
         }
 

@@ -14,7 +14,6 @@ namespace QuantumBinding.Generator.Types
             Declaration = type.Declaration;
             Pointee = type.Pointee;
             IsNullable = type.IsNullable;
-            //Pointee = Pointee.Clone() as BindingType;
         }
 
         public BindingType Pointee { get; set; }
@@ -74,6 +73,11 @@ namespace QuantumBinding.Generator.Types
         public static bool operator !=(PointerType type1, PointerType type2)
         {
             return !(type1 == type2);
+        }
+
+        public override string ToString()
+        {
+            return Pointee.ToString();
         }
     }
 }

@@ -22,5 +22,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public List<string> Attributes { get; set; }
 
         public bool RemoveExistingAttributes { get; set; }
+        
+        public bool ReplaceDeclaration { get; set; }
     }
 }

@@ -6,6 +6,8 @@
         T VisitPointerType(PointerType pointer);
         T VisitBuiltinType(BuiltinType builtin);
         T VisitCustomType(CustomType customType);
+        T VisitDelegateType(DelegateType delegateType);
         T VisitDependentNameType(DependentNameType dependentNameType);
+        
     }
 }

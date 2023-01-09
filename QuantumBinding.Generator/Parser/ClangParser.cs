@@ -228,7 +228,7 @@ namespace QuantumBinding.Generator.Parser
             fieldPosition = 0;
             var structName = cursor.getCursorSpelling().ToString();
 
-            if (structName == "VkInstanceCreateInfo")
+            if (structName == "VkDebugUtilsMessengerCreateInfoEXT")
             {
                 int bug = 0;
             }

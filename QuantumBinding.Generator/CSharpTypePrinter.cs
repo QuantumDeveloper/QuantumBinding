@@ -248,6 +248,10 @@ namespace QuantumBinding.Generator
 
                     if (Parameter is { ParameterKind: ParameterKind.Out })
                     {
+                        if (pointee.IsPointerToArray())
+                        {
+                            return result;
+                        }
                         return Result(result.Type, PointerOperator);
                     }
                     else
@@ -367,9 +371,9 @@ namespace QuantumBinding.Generator
         {
             if (customType.TryGetClass(out Class @class))
             {
-                if (@class.IsSimpleType && Options.PodTypesAsSimpleTypes)
+                if (@class.IsSimpleType)
                 {
-                    return @class.UnderlyingNativeType.Visit(this);
+                    return Options.PodTypesAsSimpleTypes ? @class.UnderlyingNativeType.Visit(this) : Result(@class.Name);
                 }
                 
                 if (MarshalType is MarshalTypes.NativeField or
@@ -421,6 +425,36 @@ namespace QuantumBinding.Generator
                 true when MarshalType == MarshalTypes.NativeField => Result("void"),
                 _ => customType.Name
             };
+        }
+
+        public override TypePrinterResult VisitDelegateType(DelegateType delegateType)
+        {
+            TypePrinterResult result;
+            if (delegateType.Declaration is Delegate @delegate)
+            {
+                PushMarshalType(MarshalTypes.DelegateType);
+                result = VisitParameters(@delegate.Parameters);
+                var returnType = @delegate.ReturnType.Visit(this);
+                PopMarshalType();
+                result.Type = $"{result.Type}, {returnType.Type}";
+            }
+            else
+            {
+                PushMarshalType(MarshalTypes.DelegateType);
+                result = VisitParameters(delegateType.Parameters);
+                PopMarshalType();
+            }
+
+            if (Module.GeneratorMode == GeneratorMode.Compatible)
+            {
+                result.Type = $"void*";
+            }
+            else
+            {
+                result.Type = $"delegate* unmanaged<{result.Type}>";
+            }
+            
+            return result;
         }
 
         public override TypePrinterResult VisitDependentNameType(DependentNameType dependentNameType)
@@ -557,11 +591,6 @@ namespace QuantumBinding.Generator
                     break;
             }
             
-            // if (parameter.Type.IsDoublePointer())
-            // {
-            //     hasModifier = false;
-            // }
-
             if (hasModifier)
             {
                 if (!string.IsNullOrEmpty(attribute))

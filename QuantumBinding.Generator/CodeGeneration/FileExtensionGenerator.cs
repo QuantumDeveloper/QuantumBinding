@@ -80,9 +80,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 PushBlock(CodeBlockKind.Namespace);
                 WriteCurrentNamespace(unit);
-                
-
-                UsingsBlock.WriteLine($"using {Module.UtilsNamespace};");
 
                 NewLine();
 
@@ -121,8 +118,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             
             PushBlock(CodeBlockKind.Namespace);
             WriteCurrentNamespace(CurrentTranslationUnit);
-
-            UsingsBlock.WriteLine($"using {Module.UtilsNamespace};");
 
             NewLine();
 

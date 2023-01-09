@@ -213,7 +213,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteOpenBraceAndIndent();
                 TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
 
-                if (@class.Name == "DeviceCreateInfo")
+                if (@class.Name == "AccelerationStructureVersionInfoKHR")
                 {
                     int bug = 0;
                 }
@@ -600,9 +600,9 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateWrappedProperties(Class @class)
         {
-            if (@class.Name == "AttachmentSampleCountInfoAMD")
+            if (@class.Name == "AccelerationStructureVersionInfoKHR")
             {
-                int bug = 0;
+                 int bug = 0;
             }
             
             foreach (var property in @class.Properties)
@@ -871,7 +871,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 WriteLine($"{property.Name} = {structFieldPath};");
             }
-            else if ((property.Type.IsPointerToBuiltInType(out var primitive) || decl is { IsSimpleType: true }) && Options.PodTypesAsSimpleTypes)
+            else if ((property.Type.IsPointerToBuiltInType(out var primitive) || (decl is { IsSimpleType: true }) ))
             {
                 WriteLine($"if ({structFieldPath} != null)");
                 WriteOpenBraceAndIndent();

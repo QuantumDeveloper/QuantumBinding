@@ -70,7 +70,7 @@ namespace QuantumBinding.Generator.Types
             var isPrimitive = IsPointerToPrimitiveType(type, out primitive);
             
             if (isPrimitive &&
-                primitive is PrimitiveType.IntPtr or PrimitiveType.UintPtr or PrimitiveType.Void)
+                (primitive is PrimitiveType.IntPtr or PrimitiveType.UintPtr or PrimitiveType.Void))
             {
                 return false;
             }
@@ -131,6 +131,28 @@ namespace QuantumBinding.Generator.Types
             var pointer = type as PointerType;
             var array = pointer?.Pointee as ArrayType;
             return array != null;
+        }
+        
+        public static bool IsPointerToArray(this BindingType type, out ArrayType arrayType, out uint depth)
+        {
+            depth = 1;
+            arrayType = null;
+            var pointer = type as PointerType;
+            do
+            {
+                if (pointer.Pointee is PointerType pointee)
+                {
+                    depth++;
+                    pointer = pointee;
+                }
+                
+                if (pointer.Pointee is ArrayType array)
+                {
+                    arrayType = array;
+                }
+            } while (pointer.Pointee is PointerType);
+            
+            return arrayType != null;
         }
 
         public static bool IsPointerToEnum(this BindingType type)

@@ -615,7 +615,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
 
-            if (function.Name == "vkCmdBuildAccelerationStructuresIndirectKHR")
+            if (function.Name == "spvc_resources_get_resource_list_for_type")
             {
                 int bug = 0;
             }
@@ -663,7 +663,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var nativeParams = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
             var paramsWithoutTypes = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.SkipParamTypes);
             
-            WriteLine($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} readonly unsafe struct {@delegate.Name}");
+            WriteLine($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} unsafe struct {@delegate.Name}");
             WriteOpenBraceAndIndent();
             
             string delegateParams = ValidateDelegateParameters(types, returnType);
@@ -679,6 +679,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteNativePointerProperty();
                 NewLine();
                 WriteInvokeMethodDelegateCompatible(@delegate, @nativeParams, paramsWithoutTypes, returnType);
+                NewLine();
+                WriteStaticInvokeMethodDelegateCompatible(@delegate, @delegateParams, nativeParams, paramsWithoutTypes,
+                    returnType);
             }
             else
             {
@@ -689,6 +692,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteNativePointerProperty();
                 NewLine();
                 WriteInvokeMethodDelegatePreview(@delegate, @nativeParams, paramsWithoutTypes, returnType);
+                WriteStaticInvokeMethodDelegatePreview(@delegate, @delegateParams, nativeParams, paramsWithoutTypes,
+                    returnType);
             }
 
             NewLine();
@@ -728,12 +733,12 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void WriteInvokeFieldDelegateCompatible(string delegateParams, string callConv)
         {
-            WriteLine($"private readonly delegate* unmanaged[{callConv}]<{delegateParams}> Invoke{callConv};");
+            WriteLine($"private delegate* unmanaged[{callConv}]<{delegateParams}> Invoke{callConv};");
         }
         
         private void WriteInvokeFieldDelegatePreview(string delegateParams)
         {
-            WriteLine($"private readonly delegate* unmanaged<{delegateParams}> {DelegateInvokeFuncName};");
+            WriteLine($"private delegate* unmanaged<{delegateParams}> {DelegateInvokeFuncName};");
         }
 
         private void WriteNativePointerProperty()
@@ -747,16 +752,37 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteOpenBraceAndIndent();
             WriteCheckForWindowsRuntimeString();
             WriteOpenBraceAndIndent();
-            string returnKeyword = "return ";
+            string returnKeyword = "return";
             if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
             {
                 returnKeyword = string.Empty;
             }
-            WriteLine($"{returnKeyword}InvokeStdcall({argumentsOnly});");
+            WriteLine($"{returnKeyword} InvokeStdcall({argumentsOnly});");
             UnindentAndWriteCloseBrace();
             WriteLine("else");
             WriteOpenBraceAndIndent();
-            WriteLine($"{returnKeyword}InvokeCdecl({argumentsOnly});");
+            WriteLine($"{returnKeyword} InvokeCdecl({argumentsOnly});");
+            UnindentAndWriteCloseBrace();
+            UnindentAndWriteCloseBrace();
+        }
+        
+        private void WriteStaticInvokeMethodDelegateCompatible(Delegate @delegate, TypePrinterResult @delegateParams, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
+        {
+            @params.Type = string.IsNullOrEmpty(@params.Type) ? "void* ptr" : $"void* ptr, {@params}";
+            WriteLine($"public static {returnType} Invoke({@params})");
+            WriteOpenBraceAndIndent();
+            string returnKeyword = "return";
+            if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
+            {
+                returnKeyword = string.Empty;
+            }
+            WriteCheckForWindowsRuntimeString();
+            WriteOpenBraceAndIndent();
+            WriteLine($"{returnKeyword} ((delegate* unmanaged[Stdcall]<{delegateParams}>)ptr)({argumentsOnly});");
+            UnindentAndWriteCloseBrace();
+            WriteLine("else");
+            WriteOpenBraceAndIndent();
+            WriteLine($"{returnKeyword} ((delegate* unmanaged[Cdecl]<{delegateParams}>)ptr)({argumentsOnly});");
             UnindentAndWriteCloseBrace();
             UnindentAndWriteCloseBrace();
         }
@@ -765,12 +791,26 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             WriteLine($"public {returnType} Invoke({@params})");
             WriteOpenBraceAndIndent();
-            string returnKeyword = "return ";
+            string returnKeyword = "return";
             if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
             {
                 returnKeyword = string.Empty;
             }
-            WriteLine($"{returnKeyword}{DelegateInvokeFuncName}({argumentsOnly});");
+            WriteLine($"{returnKeyword} {DelegateInvokeFuncName}({argumentsOnly});");
+            UnindentAndWriteCloseBrace();
+        }
+        
+        private void WriteStaticInvokeMethodDelegatePreview(Delegate @delegate, TypePrinterResult @delegateParams, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
+        {
+            @params.Type = string.IsNullOrEmpty(@params.Type) ? "void* ptr" : $"void* ptr, {@params}";
+            WriteLine($"public static {returnType} Invoke({@params})");
+            WriteOpenBraceAndIndent();
+            string returnKeyword = "return";
+            if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
+            {
+                returnKeyword = string.Empty;
+            }
+            WriteLine($"{returnKeyword} ((delegate* unmanaged<{delegateParams}>)ptr)({argumentsOnly});");
             UnindentAndWriteCloseBrace();
         }
 
@@ -804,7 +844,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             if (method.IsIgnored)
                 return;
             
-            if (method.Name == "SetSampleMaskEXT")
+            if (method.Name == "GetResourceListForType")
             {
                 int bug = 0;
             }

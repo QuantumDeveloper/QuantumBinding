@@ -41,7 +41,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         this.method = method;
 
-        if (method.Name == "CreateGraphicsPipelines")
+        if (method.Name == "GetResourceListForType")
         {
             int bug = 0;
         }
@@ -114,14 +114,21 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                 }
                 else if (parameter.Type.IsPointerToPrimitiveType(out var prim) && !parameter.Type.IsPurePointer())
                 {
-                    //if (parameter.ParameterKind != ParameterKind.InOut)
+                    WritePointerToPrimitiveType(parameter, argumentName);
+                    var nativeParam = new Parameter()
                     {
-                        WritePointerToPrimitiveType(parameter, argumentName);
-                        nativeParams.Add(new Parameter()
-                        {
-                            Name = $"{argumentName}", ParameterKind = ParameterKind.In, Type = parameter.Type
-                        });
+                        ParameterKind = parameter.ParameterKind, Type = parameter.Type
+                    };
+                    switch (parameter.ParameterKind)
+                    {
+                        case ParameterKind.Out:
+                            nativeParam.Name = parameter.Name;
+                            break;
+                        default:
+                            nativeParam.Name = argumentName;
+                            break;
                     }
+                    nativeParams.Add(nativeParam);
 
                     continue;
                 }
@@ -156,9 +163,9 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                     var type = parameter.Type;
                     if (type.IsPointer())
                     {
-                        if (type.IsPointerToArray())
+                        if (type.IsPointerToArray(out var arrayType, out var depth))
                         {
-                            WritePointerToArray(parameter, argumentName, classDecl);
+                            WritePointerToArray(parameter, argumentName, classDecl, arrayType, depth);
                         }
                         else if (type.IsPointerToStructOrUnion() && !classDecl.IsSimpleType)
                         {
@@ -584,7 +591,11 @@ public class MethodToFunctionCodeGenerator : TextGenerator
 
     void WritePointerToPrimitiveType(Parameter parameter, string argumentName)
     {
-        WriteLine($"var {argumentName} = {NativeUtilsStructOrEnumToPointer}({parameter.Name});");
+        if (parameter.ParameterKind is not ParameterKind.Out)
+        {
+            WriteLine($"var {argumentName} = {NativeUtilsStructOrEnumToPointer}({parameter.Name});");
+        }
+
         if (parameter.ParameterKind is ParameterKind.InOut)
         {
             postActions.Add(() => ConvertOutPrimitiveTypePointerToValue(parameter, argumentName));
@@ -597,10 +608,8 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         WriteLine($"{parameter.Name} = *{argumentName};");
     }
 
-    void WritePointerToArray(Parameter parameter, string argumentName, Class classDecl)
+    void WritePointerToArray(Parameter parameter, string argumentName, Class classDecl, ArrayType arrayType, uint pointerDepth)
     {
-        var pointer = parameter.Type as PointerType;
-        var arrayType = pointer.Pointee as ArrayType;
         var arraySizeSource = arrayType.ArraySizeSource;
         var arrayLength = $"{parameter.Name}.Length";
         if (!string.IsNullOrEmpty(arraySizeSource))
@@ -609,12 +618,13 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         }
 
         TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+        TypePrinter.PushParameter(parameter);
         var typeStrResult = parameter.Type.Visit(TypePrinter);
         if (WrapInteropObjects && classDecl.WrappedStruct != null)
         {
             typeStrResult.Type = classDecl.WrappedStruct.Name;
         }
-
+        TypePrinter.PopParameter();
         TypePrinter.PopMarshalType();
         if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly)
         {
@@ -670,23 +680,21 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         }
         else if (parameter.ParameterKind == ParameterKind.Out)
         {
+            if (pointerDepth > 1)
+            {
+                int bug = 0;
+            }
             if (classDecl.IsWrapper)
             {
                 WriteLine($"{classDecl.WrappedStruct.Namespace}.{typeStrResult} {argumentName} = {NullPointer};");
-            }
-            else
-            {
-                WriteLine($"{typeStrResult} {argumentName} = {NativeUtilsGetPointerToArray}<{typeStrResult.Type}>({arrayLength});");
-            }
-            
-            if (classDecl.IsWrapper)
-            {
                 postActions.Add(() => ConvertPtrToWrappedStructArray(parameter, argumentName, classDecl, arrayType));
             }
             else
             {
+                WriteLine($"{typeStrResult} {argumentName} = {NativeUtilsGetPointerToArray}<{typeStrResult.Type}>({arrayLength});");
                 postActions.Add(() => ConvertPointerToArray(parameter, argumentName, classDecl, arrayType));
             }
+            
         }
         
         CreateNativeParameter(parameter, argumentName, classDecl);
@@ -902,7 +910,10 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         WriteOpenBraceAndIndent();
         WriteLine($"{parameter.Name}[i] = new {classDecl.FullName}(_{parameter.Name}[i]);");
         UnindentAndWriteCloseBrace();
-        
-        FreeNativePointer(argumentName);
+
+        if (parameter.ParameterKind != ParameterKind.Out)
+        {
+            FreeNativePointer(argumentName);
+        }
     }
 }

@@ -31,7 +31,7 @@ namespace QuantumBinding.ClangGenerator
             clangModule.CallingConvention = CallingConvention.Cdecl;
             clangModule.MethodClassName = "clang";
             clangModule.InteropClassName = "ClangInterop";
-            clangModule.GeneratorSpecializations = GeneratorSpecializationUtils.AllExcept(GeneratorSpecializations.Constants); 
+            clangModule.GeneratorSpecializations = GeneratorSpecializationUtils.AllExcept(GeneratorSpecializations.Macros); 
             clangModule.OutputPath = outputPath;
             clangModule.OutputFileName = "QuantumBinding.Clang";
             clangModule.OutputNamespace = "QuantumBinding.Clang";
