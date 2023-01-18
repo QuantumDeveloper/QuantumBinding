@@ -156,6 +156,18 @@ namespace QuantumBinding.Generator.Processors
                             typePrinter.PushModule(CurrentNamespace.Module);
                             typePrinter.PushMarshalType(MarshalTypes.NativeField);
                             var underlyingType = pointerType.Visit(typePrinter).Type;
+                            if (pointerType.Declaration != null)
+                            {
+                                if (pointerType.Declaration is Class @class1 && @class1.UnderlyingNativeType != null)
+                                {
+                                    underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
+                                }
+                                else
+                                {
+                                    underlyingType = $"{pointerType.Declaration.Namespace}.{underlyingType}";
+                                }
+                            }
+
                             typePrinter.PopMarshalType();
                             property.PairedField.Type = new CustomType($"NativeStructArray<{underlyingType}>");
                         }
@@ -177,6 +189,19 @@ namespace QuantumBinding.Generator.Processors
                             typePrinter.PushModule(CurrentNamespace.Module);
                             typePrinter.PushMarshalType(MarshalTypes.NativeField);
                             var underlyingType = pointerType.Visit(typePrinter).Type;
+
+                            if (pointerType.Declaration != null)
+                            {
+                                if (pointerType.Declaration is Class @class1 && @class1.UnderlyingNativeType != null)
+                                {
+                                    underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
+                                }
+                                else
+                                {
+                                    underlyingType = $"{pointerType.Declaration.Namespace}.{underlyingType}";
+                                }
+                            }
+
                             typePrinter.PopMarshalType();
                             property.PairedField.Type = new CustomType($"NativeStruct<{underlyingType}>");
                         }

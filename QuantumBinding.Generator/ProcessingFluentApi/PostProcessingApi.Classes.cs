@@ -129,9 +129,8 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        ISetField ISetField.ChangeType(BindingType type)
+        ISetField ISetField.ChangeType()
         {
-            _currentField.Type = type ?? throw new ArgumentNullException(nameof(type));
             _currentField.ReplaceDeclaration = true;
 
             return this;
@@ -288,6 +287,20 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         ISetField ISetField.InterpretAsIs()
         {
+            return this;
+        }
+
+        public ISetField InterpretAs(BindingType type)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            
+            _currentField.Type = type;
+            return this;
+        }
+
+        public ISetField InterpretAsCustomType(string typeName)
+        {
+            _currentField.Type = new CustomType(typeName);
             return this;
         }
 

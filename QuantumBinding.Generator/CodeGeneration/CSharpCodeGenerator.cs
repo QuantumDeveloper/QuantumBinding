@@ -94,8 +94,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
             
                 PopBlock(NewLineStrategy.NewLineBeforeNextBlock);
-
-                IsEmpty = false;
             }
             catch (Exception e)
             {

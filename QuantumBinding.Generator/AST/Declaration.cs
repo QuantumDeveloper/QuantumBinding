@@ -40,6 +40,8 @@ namespace QuantumBinding.Generator.AST
             }
         }
 
+        public string InteropNamespace => $"{Owner.FullNamespace}.{Owner.Module.InteropSubNamespace}";
+
         public abstract T Visit<T>(IDeclarationVisitor<T> visitor);
 
         public abstract object Clone();

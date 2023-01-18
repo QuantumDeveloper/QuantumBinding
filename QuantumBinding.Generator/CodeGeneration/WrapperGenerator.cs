@@ -122,8 +122,20 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateStructWrapper(Class @class)
         {
+            if (@class.Name == "DeviceCreateInfo")
+            {
+                int bug = 0;
+            }
+            
+            if (@class.Owner != CurrentTranslationUnit)
+            {
+                IsEmpty = true;
+                return;
+            }
+            
             if (@class.IsSimpleType && CurrentTranslationUnit.Module.SkipTypedefsGeneration)
             {
+                IsEmpty = true;
                 return;
             }
 

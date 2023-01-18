@@ -399,11 +399,6 @@ namespace QuantumBinding.Generator.Parser
                     dependentType.Declaration = @class;
                     @class.UnderlyingNativeType = dependentType;
                     
-                    if (@class.Name.Contains("VkFramebuffer"))
-                    {
-                        int bug = 0;
-                    }
-
                     var field = new Field();
                     if (classType == ClassType.Class)
                     {
@@ -412,7 +407,7 @@ namespace QuantumBinding.Generator.Parser
                         field.Type = new CustomType(@class.InnerStruct.Name);
                         field.Type.Declaration = @class.InnerStruct;
                     }
-                    else if (classType == ClassType.Struct)
+                    else
                     {
                         field.AccessSpecifier = AccessSpecifier.Public;
                         field.Name = "pointer";

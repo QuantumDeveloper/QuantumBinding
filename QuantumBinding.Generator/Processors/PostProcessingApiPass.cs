@@ -167,7 +167,7 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (@class.Name == "VkMemoryType")
+            if (@class.Name == "VkSubmitInfo")
             {
                 int bug = 0;
             }

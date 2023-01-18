@@ -142,9 +142,6 @@ namespace QuantumBinding.Generator
 
                     OnPostProcess(processingCtx);
 
-                    // var generatorOutputs = GenerateCode(processingCtx, module);
-                    // context.GeneratorOutputs.AddRange(generatorOutputs);
-
                     processingCtx.RunCodeGenerationPasses(module);
                     
                     processingCtx.RunPostGeneratorPasses(module);
