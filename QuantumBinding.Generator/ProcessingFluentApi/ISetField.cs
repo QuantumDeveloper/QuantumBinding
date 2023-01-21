@@ -11,7 +11,8 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField ChangeType();
         ISetField AddAttribute(string attribute);
         ISetField RemoveExistingAttributes();
-        ISetField InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "");
+        ISetField InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1);
+        ISetField InterpretAsPointerToPrimitiveType(PrimitiveType primitiveType, uint pointerDepth = 1);
         ISetField InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
         ISetField InterpretAsPointerType(BindingType pointeeType);
         ISetField InterpretAsIs();

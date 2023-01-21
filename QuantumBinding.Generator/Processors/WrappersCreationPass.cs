@@ -133,6 +133,10 @@ namespace QuantumBinding.Generator.Processors
                 if (field.IsPointer)
                 {
                     pointersCount++;
+                }
+                
+                if (field.IsPointer && !field.Type.IsPointerToVoid())
+                {
                     var pointerType = (PointerType)field.Type;
                     property.PairedField = new Field($"{name}") { ShouldDispose = true };
                     if (field.Type.IsAnsiString() || field.Type.IsUnicodeString())
@@ -151,9 +155,11 @@ namespace QuantumBinding.Generator.Processors
                             typePrinter.PushModule(CurrentNamespace.Module);
                             typePrinter.PushMarshalType(MarshalTypes.NativeField);
                             var underlyingType = pointerType.Visit(typePrinter).Type;
-                            if (pointerType.Declaration != null)
+                            typePrinter.PopMarshalType();
+                            
+                            if (pointerType.Declaration != null && !pointerType.Pointee.IsPrimitiveType(out var primitive))
                             {
-                                if (pointerType.Declaration is Class @class1 && @class1.UnderlyingNativeType != null)
+                                if ( pointerType.Declaration is Class @class1 && @class1.UnderlyingNativeType != null)
                                 {
                                     underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
                                 }
@@ -163,7 +169,6 @@ namespace QuantumBinding.Generator.Processors
                                 }
                             }
 
-                            typePrinter.PopMarshalType();
                             property.PairedField.Type = new CustomType($"NativeStructArray<{underlyingType}>");
                         }
                         catch (Exception e)
@@ -172,11 +177,10 @@ namespace QuantumBinding.Generator.Processors
                             throw;
                         }
                     }
-                    else if (!field.Type.IsPointerToVoid() && 
-                             !field.Type.IsPointerToSystemType(out var customType) &&
-                            (field.Type.IsPointerToStructOrUnion() || 
-                            field.Type.IsPointerToCustomType(out var custom)||
-                            field.Type.IsPointerToPrimitiveType(out var primitive)))
+                    else if (!field.Type.IsPointerToSystemType(out var customType) &&
+                             (field.Type.IsPointerToStructOrUnion() || 
+                              field.Type.IsPointerToCustomType(out var custom)||
+                              field.Type.IsPointerToPrimitiveType(out var primitive)))
                     {
                         try
                         {

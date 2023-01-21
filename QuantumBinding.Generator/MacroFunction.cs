@@ -17,6 +17,6 @@ namespace QuantumBinding.Generator
 
         public BindingType ReturnType { get; set; }
 
-        public bool ApplyOnlyReturnType { get; set; }
+        public MacroFunctionStrategy ApplyStrategy { get; set; }
     }
 }

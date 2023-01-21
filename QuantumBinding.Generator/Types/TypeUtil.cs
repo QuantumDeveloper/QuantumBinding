@@ -61,7 +61,25 @@ namespace QuantumBinding.Generator.Types
 
         public static bool IsPointerToVoid(this BindingType type)
         {
-            type.IsPointerToBuiltInType(out var primitive);
+            var depth = 1;
+            PrimitiveType primitive = PrimitiveType.Unknown;
+            var pointer = type as PointerType;
+            if (pointer == null) return false;
+            
+            do
+            {
+                if (pointer.Pointee is PointerType pointee)
+                {
+                    depth++;
+                    pointer = pointee;
+                }
+                
+                if (pointer.Pointee is BuiltinType builtin)
+                {
+                    pointer.IsPointerToBuiltInType(out primitive);
+                }
+            } while (pointer.Pointee is PointerType);
+            
             return primitive == PrimitiveType.Void;
         }
 

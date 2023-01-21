@@ -104,6 +104,8 @@ namespace QuantumBinding.Generator
 
         public override TypePrinterResult VisitPointerType(PointerType pointer)
         {
+            var pointerDepth = pointer.GetDepth();
+            
             if (MarshalType is 
                 MarshalTypes.NativeField or 
                 MarshalTypes.NativeParameter or 
@@ -111,7 +113,12 @@ namespace QuantumBinding.Generator
                 MarshalTypes.DelegateType or 
                 MarshalTypes.DelegateParameter)
             {
-                var pointerDepth = pointer.GetDepth();
+                // TODO experimantal change if to switch
+                // switch (pointer)
+                // {
+                //     case not null when pointer.IsAnsiString():
+                //         break;
+                // }
                 if (pointer.IsAnsiString())
                 {
                     return Result("sbyte", TextGenerator.GetPointerString(pointerDepth));
@@ -136,7 +143,12 @@ namespace QuantumBinding.Generator
 
                 if (pointer.IsPointerToVoid())
                 {
-                    return Result("void", TextGenerator.GetPointerString(pointerDepth));
+                    var depth = pointerDepth;
+                    if (pointerDepth > 1 && Parameter is { ParameterKind: ParameterKind.Out })
+                    {
+                        depth--;
+                    }
+                    return Result("void", TextGenerator.GetPointerString(depth));
                 }
 
                 if (pointer.IsPointerToIntPtr())
@@ -219,7 +231,6 @@ namespace QuantumBinding.Generator
             }
             else if (MarshalType is MarshalTypes.MethodParameter or MarshalTypes.Property or MarshalTypes.WrappedProperty)
             {
-                var pointerDepth = pointer.GetDepth();
                 if (pointer.IsAnsiString() || pointer.IsUnicodeString())
                 {
                     return Result("string");
@@ -232,7 +243,7 @@ namespace QuantumBinding.Generator
                 
                 if (pointer.IsPointerToVoid() )
                 {
-                    return Result("void", PointerOperator);
+                    return Result("void", TextGenerator.GetPointerString(pointerDepth));
                 }
                 
                 if (pointer.IsPointerToIntPtr())

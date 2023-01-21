@@ -254,16 +254,40 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return false;
         }
 
-        ISetField ISetField.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
+        ISetField ISetField.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource, uint pointerDepth)
         {
             var pointer = new PointerType();
             pointer.IsNullable = isNullable;
+            _currentField.Type = pointer;
+            for (int i = 1; i < pointerDepth; i++)
+            {
+                var ptr = new PointerType();
+                pointer.Pointee = ptr;
+                pointer = ptr;
+            }
+            
             var arrayType = new ArrayType();
             arrayType.ArraySizeSource = arraySizeSource;
             arrayType.SizeType = ArraySizeType.Incomplete;
             arrayType.ElementType = elementType;
             pointer.Pointee = arrayType;
+            
+            return this;
+        }
+
+        public ISetField InterpretAsPointerToPrimitiveType(PrimitiveType primitiveType, uint pointerDepth = 1)
+        {
+            var pointer = new PointerType();
             _currentField.Type = pointer;
+            for (int i = 1; i < pointerDepth; i++)
+            {
+                var ptr = new PointerType();
+                pointer.Pointee = ptr;
+                pointer = ptr;
+            }
+
+            var builtin = new BuiltinType(PrimitiveType.Void);
+            pointer.Pointee = builtin;
 
             return this;
         }
