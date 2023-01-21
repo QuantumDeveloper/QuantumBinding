@@ -275,7 +275,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                             }
                             else if (property.Type.IsConstArray(out var size))
                             {
-                                ConstArrayConversionGetter(property, @class, decl, propertyTypeName, constArrayIndex++);
+                                ConstArrayConversionGetter(property, @class, decl, propertyTypeName);
                             }
                             else if (decl != null && !decl.IsSimpleType)
                             {
@@ -767,7 +767,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
         }
 
-        private void ConstArrayConversionGetter(Property property, Class parentClass, Class decl, TypePrinterResult propertyTypeName, int index)
+        private void ConstArrayConversionGetter(Property property, Class parentClass, Class decl, TypePrinterResult propertyTypeName)
         {
             var arrayType = property.Type as ArrayType;
             var size = arrayType.Size;
@@ -775,31 +775,22 @@ namespace QuantumBinding.Generator.CodeGeneration
             if (arrayType.ElementType.CanConvertToFixedArray())
             {
                 var arrayName = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
-                TypePrinter.PushMarshalType(MarshalTypes.NativeField);
-                var nativeArrayElementType = arrayType.ElementType.Visit(TypePrinter);
-                TypePrinter.PopMarshalType();
-                bool castToByte = false;
-                if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar) && propertyTypeName.Type == "string")
-                {
-                    nativeArrayElementType = "byte";
-                    castToByte = true;
-                }
 
                 if (propertyTypeName.Type == "string")
                 {
                     if (property.Type.IsAnsiString()
                         || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar))
                     {
-                        WriteLine($"{property.Name} = new string((sbyte*){parentClass.WrappedStructFieldName}.{property.Field.Name});");
+                        WriteLine($"{property.Name} = new string((sbyte*){arrayName});");
                     }
                     else if (property.Type.IsUnicodeString() || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
                     {
-                        WriteLine($"{property.Name} = new string((char*){parentClass.WrappedStructFieldName}.{property.Field.Name});");
+                        WriteLine($"{property.Name} = new string((char*){arrayName});");
                     }
                 }
                 else
                 {
-                    WriteLine($"{property.Name} = {TextGenerator.NativeUtilsPointerToArray}({parentClass.WrappedStructFieldName}.{property.Field.Name}, {size});");
+                    WriteLine($"{property.Name} = {TextGenerator.NativeUtilsPointerToArray}({arrayName}, {size});");
                 }
             }
             else if (arrayType.ElementType.IsPurePointer())
