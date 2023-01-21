@@ -122,11 +122,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateStructWrapper(Class @class)
         {
-            if (@class.Name == "DeviceCreateInfo")
-            {
-                int bug = 0;
-            }
-            
             if (@class.Owner != CurrentTranslationUnit)
             {
                 IsEmpty = true;
@@ -224,11 +219,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
                 WriteOpenBraceAndIndent();
                 TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-
-                if (@class.Name == "AccelerationStructureVersionInfoKHR")
-                {
-                    int bug = 0;
-                }
 
                 foreach (var param in ctor.InputParameters)
                 {
@@ -348,11 +338,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             int structIndex = 0;
             int pointerArrayIndex = 0;
             int constArrayIndex = 0;
-
-            if (@class.Name == "ExportFenceWin32HandleInfoKHR")
-            {
-                int bug = 0;
-            }
 
             PushBlock(CodeBlockKind.Method);
             NewLine();
@@ -612,11 +597,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void GenerateWrappedProperties(Class @class)
         {
-            if (@class.Name == "AccelerationStructureVersionInfoKHR")
-            {
-                 int bug = 0;
-            }
-            
             foreach (var property in @class.Properties)
             {
                 AddUsingIfNeeded(property.Type);

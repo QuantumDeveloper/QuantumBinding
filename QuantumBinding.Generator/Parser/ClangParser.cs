@@ -228,11 +228,6 @@ namespace QuantumBinding.Generator.Parser
             fieldPosition = 0;
             var structName = cursor.getCursorSpelling().ToString();
 
-            if (structName == "VkDebugUtilsMessengerCreateInfoEXT")
-            {
-                int bug = 0;
-            }
-
             // struct names can be empty, and so we visit its sibling to find the name
             if (string.IsNullOrEmpty(structName))
             {
@@ -319,11 +314,6 @@ namespace QuantumBinding.Generator.Parser
             visitedTypeDefs.Add(spelling);
 
             var type = cursor.getTypedefDeclUnderlyingType().getCanonicalType();
-
-            if (spelling == "VkInstanceCreateFlags")
-            {
-                int bug = 0;
-            }
 
             // we handle enums and records in struct and enum visitors with forward declarations also
             if (type.Kind is CXTypeKind.CXType_Record or CXTypeKind.CXType_Enum)

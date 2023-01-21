@@ -84,11 +84,6 @@ namespace QuantumBinding.Generator.Processors
             op.OperatorKind = OperatorKind.Implicit;
             wrapper.Operators.Add(op);
 
-            if (@class.Name == "VkInstanceCreateInfo")
-            {
-                int bug = 0;
-            }
-
             int pointersCount = 0;
             foreach (var field in @class.Fields)
             {

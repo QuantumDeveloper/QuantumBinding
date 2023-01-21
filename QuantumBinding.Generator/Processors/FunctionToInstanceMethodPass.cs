@@ -179,11 +179,6 @@ namespace QuantumBinding.Generator.Processors
 
         private Method GenerateMethodOverload(Method method)
         {
-            if (method.Name.Contains("BindVertexBuffers"))
-            {
-                int bug = 0;
-            }
-            
             var parameters = new List<Parameter>();
 
             foreach (var parameter in method.Parameters)

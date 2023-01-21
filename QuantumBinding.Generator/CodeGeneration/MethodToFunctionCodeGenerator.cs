@@ -41,11 +41,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         this.method = method;
 
-        if (method.Name == "GetResourceListForType")
-        {
-            int bug = 0;
-        }
-
         Clear();
 
         nativeParams = new List<Parameter>();
@@ -431,10 +426,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         }
         else
         {
-            if (method.Name == "CreateInstance")
-            {
-                int bug = 0;
-            }
             TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
             TypePrinter.PushParameter(parameter);
             var argumentType = parameter.Type.Visit(TypePrinter);
@@ -680,10 +671,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         }
         else if (parameter.ParameterKind == ParameterKind.Out)
         {
-            if (pointerDepth > 1)
-            {
-                int bug = 0;
-            }
             if (classDecl.IsWrapper)
             {
                 WriteLine($"{classDecl.WrappedStruct.Namespace}.{typeStrResult} {argumentName} = {NullPointer};");
@@ -708,10 +695,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
 
     void ConvertPointerToArray(Parameter parameter, string argumentName, Class classDecl, ArrayType arrayType)
     {
-        if (parameter.Name == "pPhysicalDevices")
-        {
-            int bug = 0;
-        }
         TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
         var type = parameter.Type.Visit(TypePrinter).Type;
         TypePrinter.PopMarshalType();

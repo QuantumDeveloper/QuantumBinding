@@ -138,10 +138,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected virtual void GenerateFields(Class @class)
         {
-            if (@class.Name == "VkDebugUtilsMessengerCreateInfoEXT")
-            {
-                int bug = 0;
-            }
             TypePrinter.PushMarshalType(MarshalTypes.NativeField);
             foreach (var field in @class.Fields)
             {

@@ -88,11 +88,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (field.Name == "propertyFlags")
-            {
-                int bug = 0;
-            }
-
             if (field.Type.IsCustomType(out CustomType customType))
             {
                 if (DeclarationUnit.DummyTypes.TryGetValue(customType.Name, out string realTypeName))

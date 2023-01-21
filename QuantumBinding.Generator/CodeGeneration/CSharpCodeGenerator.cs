@@ -162,11 +162,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             
             NewLine();
 
-            if (Category == GeneratorCategory.Functions)
-            {
-                int bug = 0;
-            }
-
             PushBlock(CodeBlockKind.Namespace);
             WriteCurrentNamespace(@namespace);
 
@@ -612,11 +607,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
-
-            if (function.Name == "spvc_resources_get_resource_list_for_type")
-            {
-                int bug = 0;
-            }
             
             var @params = TypePrinter.VisitParameters(function.Parameters, MarshalTypes.NativeParameter);
             Write(@params.ToString());
@@ -646,11 +636,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLocation(@delegate);
 
             GenerateCommentIfNotEmpty(@delegate.Comment);
-
-            if (@delegate.Name == "PFN_vkGetDeviceAccelerationStructureCompatibilityKHR")
-            {
-                int bug = 0;
-            }
 
             string pointerArg = "ptr";
             TypePrinter.PushMarshalType(MarshalTypes.NativeReturnType);
@@ -842,11 +827,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             if (method.IsIgnored)
                 return;
             
-            if (method.Name == "GetResourceListForType")
-            {
-                int bug = 0;
-            }
-
             PushBlock(CodeBlockKind.Method, method);
             GenerateCommentIfNotEmpty(method.Function.Comment);
             CheckParameters(method.Parameters);
