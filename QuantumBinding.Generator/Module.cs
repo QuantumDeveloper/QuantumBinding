@@ -58,8 +58,7 @@ namespace QuantumBinding.Generator
 
         public bool ForceCallingConvention { get; set; }
 
-        // TODO: should be removed!!!
-        public bool SkipTypedefsGeneration { get; set; }
+        public bool SkipGenerationForSimpleTypes { get; set; }
 
         public bool AllowConvertStructToClass { get; set; }
         

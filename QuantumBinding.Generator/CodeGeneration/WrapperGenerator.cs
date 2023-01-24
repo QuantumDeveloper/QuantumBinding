@@ -128,7 +128,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 return;
             }
             
-            if (@class.IsSimpleType && CurrentTranslationUnit.Module.SkipTypedefsGeneration)
+            if (@class.IsSimpleType && CurrentTranslationUnit.Module.SkipGenerationForSimpleTypes)
             {
                 IsEmpty = true;
                 return;
@@ -512,7 +512,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     GenerateCommentIfNotEmpty(field.Comment);
 
                     var fieldStr = TypePrinter.VisitField(field);
-
+                    
                     var typeResult = field.Type.Visit(TypePrinter);
 
                     if (typeResult.Type == @class.Name)

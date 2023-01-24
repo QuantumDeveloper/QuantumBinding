@@ -73,7 +73,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                 }
             }
 
-            if (parameter.Type.IsPointerToPrimitiveType(out var primType))
+            if (parameter.Type.IsPointerToBuiltInType(out var primType))
             {
                 classDecl = null;
             }
@@ -107,7 +107,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                         Name = $"{argumentName}", ParameterKind = parameter.ParameterKind, Type = parameter.Type
                     });
                 }
-                else if (parameter.Type.IsPointerToPrimitiveType(out var prim) && !parameter.Type.IsPurePointer())
+                else if (parameter.Type.IsPointerToBuiltInType(out var prim) && !parameter.Type.IsPurePointer())
                 {
                     WritePointerToPrimitiveType(parameter, argumentName);
                     var nativeParam = new Parameter()

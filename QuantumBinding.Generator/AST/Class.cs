@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using QuantumBinding.Generator.Types;
 
@@ -123,6 +122,12 @@ namespace QuantumBinding.Generator.AST
         {
             if (method == null) return;
             methods.Add(method);
+        }
+        
+        public void AddMethods(IEnumerable<Method> methodsList)
+        {
+            if (methodsList == null) return;
+            methods.AddRange(methodsList);
         }
 
         public void RemoveMethod(Method method)

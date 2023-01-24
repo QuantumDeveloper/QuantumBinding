@@ -116,7 +116,7 @@ namespace QuantumBinding.Generator.Types
             return false;
         }
 
-        public static bool IsPointerToPrimitiveType(this BindingType type, out PrimitiveType primitive)
+        private static bool IsPointerToPrimitiveType(this BindingType type, out PrimitiveType primitive)
         {
             primitive = PrimitiveType.Null;
 
@@ -309,7 +309,6 @@ namespace QuantumBinding.Generator.Types
 
             if (decl.ClassType is not (ClassType.Struct or ClassType.Union) &&
                 (decl.ClassType is not (ClassType.StructWrapper or ClassType.UnionWrapper)))
-            //if ((decl.ClassType != ClassType.Struct) && (decl.ClassType != ClassType.StructWrapper))
             {
                 return false;
             }
@@ -320,10 +319,10 @@ namespace QuantumBinding.Generator.Types
 
         public static bool IsPrimitiveType(this BindingType type, out PrimitiveType primitive)
         {
+            primitive = PrimitiveType.Null;
             var builtin = type as BuiltinType;
             if (builtin == null)
             {
-                primitive = PrimitiveType.Null;
                 return false;
             }
 
@@ -416,6 +415,18 @@ namespace QuantumBinding.Generator.Types
             return false;
         }
         
+        public static bool IsPointerToClass(this BindingType type, out Class @class)
+        {
+            @class = null;
+            if (type is PointerType && type.Declaration is Class { ClassType: ClassType.Class } decl)
+            {
+                @class = decl;
+                return true;
+            }
+
+            return false;
+        }
+        
         public static bool IsPointerToSystemType(this BindingType type, out CustomType customType)
         {
             customType = null;
@@ -448,14 +459,14 @@ namespace QuantumBinding.Generator.Types
 
         public static bool IsSimpleType(this BindingType type)
         {
-            if (type.Declaration is Class decl && decl.IsSimpleType)
+            if (type.Declaration is Class { IsSimpleType: true })
             {
                 return true;
             }
 
             return false;
         }
-
+        
         public static bool TryGetEnum(this BindingType type, out Enumeration @enum)
         {
             var decl = type.Declaration as Enumeration;

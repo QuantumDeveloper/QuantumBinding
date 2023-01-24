@@ -637,11 +637,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             GenerateCommentIfNotEmpty(@delegate.Comment);
 
-            if (@delegate.Name == "PFN_vkMapMemory")
-            {
-                int bug = 0;
-            }
-
             string pointerArg = "ptr";
             TypePrinter.PushMarshalType(MarshalTypes.NativeReturnType);
             var returnType = @delegate.ReturnType.Visit(TypePrinter);
@@ -837,6 +832,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             CheckParameters(method.Parameters);
             AddUsingIfNeeded(method.ReturnType);
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+
             var methodResult = TypePrinter.VisitMethod(method);
             TypePrinter.PopMarshalType();
             WriteLine(methodResult.ToString());

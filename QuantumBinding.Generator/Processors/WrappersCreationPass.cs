@@ -159,9 +159,15 @@ namespace QuantumBinding.Generator.Processors
                             
                             if (pointerType.Declaration != null && !pointerType.Pointee.IsPrimitiveType(out var primitive))
                             {
-                                if ( pointerType.Declaration is Class @class1 && @class1.UnderlyingNativeType != null)
+                                if (pointerType.Declaration is Class class1)
                                 {
-                                    underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
+                                    if (!class1.IsSimpleType || 
+                                        (class1.IsSimpleType && 
+                                         !ProcessingContext.Options.PodTypesAsSimpleTypes &&
+                                         class1.UnderlyingNativeType != null))
+                                    {
+                                        underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
+                                    }
                                 }
                                 else
                                 {
@@ -180,7 +186,7 @@ namespace QuantumBinding.Generator.Processors
                     else if (!field.Type.IsPointerToSystemType(out var customType) &&
                              (field.Type.IsPointerToStructOrUnion() || 
                               field.Type.IsPointerToCustomType(out var custom)||
-                              field.Type.IsPointerToPrimitiveType(out var primitive)))
+                              field.Type.IsPointerToBuiltInType(out var primitive)))
                     {
                         try
                         {
@@ -191,9 +197,15 @@ namespace QuantumBinding.Generator.Processors
 
                             if (pointerType.Declaration != null)
                             {
-                                if (pointerType.Declaration is Class @class1 && @class1.UnderlyingNativeType != null)
+                                if (pointerType.Declaration is Class class1)
                                 {
-                                    underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
+                                    if (!class1.IsSimpleType || 
+                                        (class1.IsSimpleType && 
+                                        !ProcessingContext.Options.PodTypesAsSimpleTypes &&
+                                        class1.UnderlyingNativeType != null))
+                                    {
+                                        underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
+                                    }
                                 }
                                 else
                                 {
@@ -226,7 +238,7 @@ namespace QuantumBinding.Generator.Processors
                         wrapper.AddField(property.PairedField);
                     }
 
-                    if ((property.Type.IsPointerToPrimitiveType(out var primitiveType) || property.Type.IsPointerToStructOrUnion() && !property.Type.IsPointerToArray()) || 
+                    if ((property.Type.IsPointerToBuiltInType(out var primitiveType) || property.Type.IsPointerToStructOrUnion() && !property.Type.IsPointerToArray()) || 
                         (decl?.IsSimpleType == true))
                     {
                         if (pointerType != null && !property.Type.IsArray())
