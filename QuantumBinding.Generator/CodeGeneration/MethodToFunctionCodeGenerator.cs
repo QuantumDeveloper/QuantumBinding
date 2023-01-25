@@ -41,10 +41,14 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         this.method = method;
 
+        if (this.method.Name.Contains("findIncludesInFile"))
+        {
+            int bug = 0;
+        }
+
         Clear();
 
         nativeParams = new List<Parameter>();
-
 
         bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
         int index = 0;
@@ -69,6 +73,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                         //parameter = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                         var p = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                         classDecl = p.Type.Declaration as Class;
+                        parameter = p;
                     }
                 }
             }
@@ -440,8 +445,17 @@ public class MethodToFunctionCodeGenerator : TextGenerator
 
     void WriteWrappedStruct(Parameter parameter, string argumentName, Class classDecl)
     {
+        string interopType = string.Empty;
         TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-        var interopType = parameter.WrappedType.Visit(TypePrinter).Type;
+        try
+        {
+            interopType = parameter.WrappedType.Visit(TypePrinter).Type;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
         TypePrinter.PopMarshalType();
 
         if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.InOut)
