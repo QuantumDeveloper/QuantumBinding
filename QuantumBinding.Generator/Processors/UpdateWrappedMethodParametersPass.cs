@@ -30,8 +30,7 @@ namespace QuantumBinding.Generator.Processors
 
             return true;
         }
-
-
+        
         private void UpdateReturnType(Method method)
         {
             if (method.ReturnType.Declaration is Class decl)
