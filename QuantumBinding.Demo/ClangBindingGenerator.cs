@@ -21,11 +21,12 @@ namespace QuantumBinding.ClangGenerator
             options.GenerateSequentialLayout = true;
             options.DebugMode = false;
             options.PodTypesAsSimpleTypes = true;
-            var clangModule = options.AddModule(library);
+            var clangModule = Module.Create(library);
             clangModule.Defines.Add("_MSC_VER");
+            clangModule.Defines.Add("CINDEX_EXPORTS");
             clangModule.Defines.Add("_CINDEX_LIB_");
-            clangModule.IncludeDirs.Add(@"C:\Source\llvm-project-master\clang\include\clang-c");
-            clangModule.Files.Add(@"C:\Source\llvm-project-master\clang\include\clang-c\Documentation.h");
+            clangModule.IncludeDirs.Add(@"F:\GitHUB\llvm-project\clang\include\clang-c");
+            clangModule.Files.Add(@"F:\GitHUB\llvm-project\clang\include\Documentation.h");
             clangModule.ForceCallingConvention = true;
             clangModule.AllowConvertStructToClass = true;
             clangModule.CallingConvention = CallingConvention.Cdecl;
@@ -35,8 +36,11 @@ namespace QuantumBinding.ClangGenerator
             clangModule.OutputPath = outputPath;
             clangModule.OutputFileName = "QuantumBinding.Clang";
             clangModule.OutputNamespace = "QuantumBinding.Clang";
-            clangModule.SuppressUnmanagedCodeSecurity = false;
+            clangModule.SuppressUnmanagedCodeSecurity = true;
             clangModule.WrapInteropObjects = true;
+            clangModule.EachTypeInSeparateFile = true;
+
+            options.AddModule(clangModule);
         }
         public override void OnSetupPostProcessing(ProcessingContext context)
         {

@@ -55,10 +55,6 @@ namespace QuantumBinding.Generator
                     do
                     {
                         pass.ProcessingContext = this;
-                        if (index == 9)
-                        {
-
-                        }
                         pass.Run();
                     } while (pass.RunAgain);
                 }
