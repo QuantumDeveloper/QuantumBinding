@@ -19,7 +19,7 @@ namespace QuantumBinding.Generator
             processingCtx.AddPreGeneratorPass(new CheckMacrosPass(), ExecutionPassKind.PerTranslationUnit);
             processingCtx.AddPreGeneratorPass(new NormalizeParametersPass(), ExecutionPassKind.PerTranslationUnit);
             OnSetup(options);
-            if (!string.IsNullOrEmpty(options.PathToBindingsFile) && File.Exists(options.PathToBindingsFile))
+            if (File.Exists(options.PathToBindingsFile))
             {
                 processingCtx.AddPreGeneratorPass(new LoadBindingsFromFilePass(options.PathToBindingsFile), ExecutionPassKind.PerTranslationUnit);
             }

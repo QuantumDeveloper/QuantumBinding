@@ -22,11 +22,9 @@ namespace QuantumBinding.Generator
 
         public List<string> ParserArguments { get; set; }
 
-        public Module AddModule(string libraryName)
+        public void AddModule(Module module)
         {
-            var module = new Module(libraryName);
             modulesInternal.Add(module);
-            return module;
         }
 
         private readonly List<Module> modulesInternal;

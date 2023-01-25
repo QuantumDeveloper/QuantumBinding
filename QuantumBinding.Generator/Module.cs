@@ -92,5 +92,10 @@ namespace QuantumBinding.Generator
             var @namespace = new NamespaceMapping() { FileName = fileName, SubNamespace = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = replaceBaseNamespace};
             namespaceMapping.Add(@namespace);
         }
+
+        public static Module Create(string libraryName)
+        {
+            return new Module(libraryName);
+        }
     }
 }
