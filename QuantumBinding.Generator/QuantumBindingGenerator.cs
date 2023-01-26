@@ -51,6 +51,11 @@ namespace QuantumBinding.Generator
                 {
                     throw new ArgumentNullException("OutputNamespace should not be empty");
                 }
+                
+                if (string.IsNullOrEmpty(module.InteropSubNamespace))
+                {
+                    throw new ArgumentNullException("InteropSubNamespace should not be empty");
+                }
 
                 if (string.IsNullOrEmpty(module.MethodClassName))
                 {

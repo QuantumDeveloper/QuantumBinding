@@ -105,86 +105,92 @@ namespace QuantumBinding.Generator
             var pointerDepth = pointer.GetDepth();
             TypePrinterResult result = null;
 
-                switch (MarshalType)
+            switch (MarshalType)
             {
                 case MarshalTypes.NativeField:
                 case MarshalTypes.NativeParameter:
                 case MarshalTypes.NativeReturnType:
                 case MarshalTypes.DelegateType:
                 case MarshalTypes.DelegateParameter:
-                switch (pointer)
-                {
-                    case not null when pointer.IsAnsiString():
-                        result = Result("sbyte", TextGenerator.GetPointerString(pointerDepth));
-                        break;
-                    case not null when pointer.IsUnicodeString():
-                        result = Result("char", TextGenerator.GetPointerString(pointerDepth));
-                        break;
-                    case not null when pointer.IsStringArray(out var isUnicode):
-                        result = Result(isUnicode ? "char" : "sbyte", DoublePointerOperator);
-                        break;
-                    case not null when pointer.IsPointerToVoid():
+                    switch (pointer)
                     {
-                        var depth = pointerDepth;
-                        if (pointerDepth > 1 && Parameter is { ParameterKind: ParameterKind.Out })
+                        case not null when pointer.IsAnsiString():
+                            result = Result("sbyte", TextGenerator.GetPointerString(pointerDepth));
+                            break;
+                        case not null when pointer.IsUnicodeString():
+                            result = Result("char", TextGenerator.GetPointerString(pointerDepth));
+                            break;
+                        case not null when pointer.IsStringArray(out var isUnicode):
+                            result = Result(isUnicode ? "char" : "sbyte", DoublePointerOperator);
+                            break;
+                        case not null when pointer.IsPointerToVoid():
                         {
-                            depth--;
+                            var depth = pointerDepth;
+                            if (pointerDepth > 1 && Parameter is { ParameterKind: ParameterKind.Out })
+                            {
+                                depth--;
+                            }
+
+                            result = Result("void", TextGenerator.GetPointerString(depth));
                         }
-
-                        result = Result("void", TextGenerator.GetPointerString(depth));
-                    }
-                        break;
-                    case not null when pointer.IsPointerToIntPtr():
-                        result = Result(IntPtr);
-                        break;
-                    case not null when pointer.IsDoublePointer():
-                    {
-                        var pointee = pointer.Pointee as PointerType;
-                        pointee.Declaration = pointer.Declaration;
-                        var printedType = pointee.Visit(this);
-                        var depth = pointerDepth;
-
-                        if (Parameter is { ParameterKind: ParameterKind.Out })
+                            break;
+                        case not null when pointer.IsPointerToIntPtr():
+                            result = Result(IntPtr);
+                            break;
+                        case not null when pointer.IsDoublePointer():
                         {
-                            depth--;
+                            var pointee = pointer.Pointee as PointerType;
+                            pointee.Declaration = pointer.Declaration;
+                            var printedType = pointee.Visit(this);
+                            var depth = pointerDepth;
+
+                            if (Parameter is { ParameterKind: ParameterKind.Out })
+                            {
+                                depth--;
+                            }
+
+                            result = Result(printedType.Type, TextGenerator.GetPointerString(depth));
                         }
-                        result = Result(printedType.Type, TextGenerator.GetPointerString(depth));
+                            break;
+                        case not null when pointer.IsPointerToArray(out var arrayType, out var depthCount):
+                        {
+                            pointer.Pointee.Declaration = pointer.Declaration;
+                            var printedType = pointer.Pointee.Visit(this);
+                            
+                            result = Result($"{printedType.Type}", TextGenerator.GetPointerString(depthCount));
+                        }
+                            break;
+                        case not null when pointer.IsPointerToStructOrUnion() ||
+                                           pointer.IsPointerToBuiltInType(out var primitive):
+                        {
+                            // To correctly visit pointee, we need to copy Declaration from pointer
+                            pointer.Pointee.Declaration = pointer.Declaration;
+                            var printedType = pointer.Pointee.Visit(this);
+                            result = Parameter is { ParameterKind: ParameterKind.Out }
+                                ? Result(printedType.ToString())
+                                : Result(printedType.ToString(), PointerOperator);
+                        }
+                            break;
+                        case not null when pointer.IsPointerToEnum() || pointer.IsPointerToArrayOfEnums():
+                            pointer.TryGetEnum(out var @enum);
+                            result = Result($"{@enum.Name}", PointerOperator);
+                            break;
+                        case not null when pointer.IsSimpleType():
+                            pointer.Pointee.Declaration = pointer.Declaration;
+                            var simpleTypeResult = pointer.Pointee.Visit(this);
+                            result = Result(simpleTypeResult.Type, PointerOperator);
+                            break;
+                        case not null when pointer.IsPointerToClass(out var @classDecl) &&
+                                           @classDecl.InnerStruct != null:
+                            result = Parameter is { ParameterKind: ParameterKind.Out }
+                                ? Result(@classDecl.InnerStruct.Name)
+                                : Result(@classDecl.InnerStruct.Name, PointerOperator);
+                            break;
+                        default:
+                            var res = pointer.Pointee.Visit(this);
+                            result = Result(res.Type, TextGenerator.GetPointerString(pointerDepth));
+                            break;
                     }
-                        break;
-                    case not null when pointer.IsPointerToArray():
-                    {
-                        pointer.Pointee.Declaration = pointer.Declaration;
-                        var printedType = pointer.Pointee.Visit(this);
-                        result = Result($"{printedType.Type}", PointerOperator);
-                    }
-                        break;
-                    case not null when pointer.IsPointerToStructOrUnion() || pointer.IsPointerToBuiltInType(out var primitive):
-                    {
-                        // To correctly visit pointee, we need to copy Declaration from pointer
-                        pointer.Pointee.Declaration = pointer.Declaration;  
-                        var printedType = pointer.Pointee.Visit(this);
-                        result = Parameter is { ParameterKind: ParameterKind.Out } ? Result(printedType.ToString()) : Result(printedType.ToString(), PointerOperator);
-                    }
-                        break;
-                    case not null when pointer.IsPointerToEnum() || pointer.IsPointerToArrayOfEnums():
-                        pointer.TryGetEnum(out var @enum);
-                        result = Result($"{@enum.Name}", PointerOperator);
-                        break;
-                    case not null when pointer.IsSimpleType():
-                        pointer.Pointee.Declaration = pointer.Declaration;
-                        var simpleTypeResult = pointer.Pointee.Visit(this);
-                        result = Result(simpleTypeResult.Type, PointerOperator);
-                        break;
-                    case not null when pointer.IsPointerToClass(out var @classDecl) && @classDecl.InnerStruct != null:
-                        result = Parameter is { ParameterKind: ParameterKind.Out }
-                            ? Result(@classDecl.InnerStruct.Name)
-                            : Result(@classDecl.InnerStruct.Name, PointerOperator);
-                        break;
-                    default:
-                        var res = pointer.Pointee.Visit(this);
-                        result = Result(res.Type, TextGenerator.GetPointerString(pointerDepth));
-                        break;
-                }
                     break;
                 case MarshalTypes.MethodParameter:
                 case MarshalTypes.Property:
@@ -204,33 +210,13 @@ namespace QuantumBinding.Generator
                             {
                                 depth--;
                             }
+
                             result = Result("void", TextGenerator.GetPointerString(depth));
                             break;
                         case not null when pointer.IsPointerToIntPtr():
                             result = Result(IntPtr);
                             break;
-                        case not null when pointer.IsDoublePointer():
-                        {
-                            var pointee = pointer.Pointee as PointerType;
-                            pointee.Declaration = pointer.Declaration;
-                            var printedResult = pointer.Pointee.Visit(this);
-
-                            if (Parameter is { ParameterKind: ParameterKind.Out })
-                            {
-                                return Result(printedResult.Type, PointerOperator);
-                            }
-                            else
-                            {
-                                if (pointee.IsPointerToBuiltInType(out var primitive))
-                                {
-                                    return Result(printedResult.Type, TextGenerator.GetPointerString(pointerDepth));
-                                }
-
-                                return Result(printedResult.Type);
-                            }
-                        }
-                            break;
-                        case not null when pointer.IsPointerToArray():
+                        case not null when pointer.IsPointerToArray(out var arrayType, out var depthCount):
                             pointer.Pointee.Declaration = pointer.Declaration;
                             result = pointer.Pointee.Visit(this);
                             break;
@@ -243,6 +229,30 @@ namespace QuantumBinding.Generator
                             {
                                 result.TypeSuffix = NullableOperator;
                             }
+
+                            break;
+                        case not null when pointer.IsDoublePointer():
+                        {
+                            var pointee = pointer.Pointee as PointerType;
+                            pointee.Declaration = pointer.Declaration;
+                            var printedResult = pointer.Pointee.Visit(this);
+
+                            if (Parameter is { ParameterKind: ParameterKind.Out })
+                            {
+                                result = Result(printedResult.Type, PointerOperator);
+                            }
+                            else
+                            {
+                                if (pointee.IsPointerToBuiltInType(out var primitive))
+                                {
+                                    result = Result(printedResult.Type, TextGenerator.GetPointerString(pointerDepth));
+                                }
+                                else
+                                {
+                                    result = Result(printedResult.Type);
+                                }
+                            }
+                        }
                             break;
                         case not null when pointer.IsPointerToCustomType(out var customType):
                             customType.Declaration = pointer.Declaration;
@@ -256,7 +266,7 @@ namespace QuantumBinding.Generator
                     break;
             }
 
-                return result;
+            return result;
         }
 
         public override TypePrinterResult VisitBuiltinType(BuiltinType builtin)
@@ -541,7 +551,7 @@ namespace QuantumBinding.Generator
                     hasModifier = false;
                 }
                 else if(parameter.Type.IsPointerToArray() ||
-                        parameter.Type.Declaration is Class {IsWrapper: true} or Class { IsSimpleType: true })
+                        parameter.Type.Declaration is Class {IsWrapper: true} /*or Class { IsSimpleType: true }*/)
                 {
                     hasModifier = false;
                 }

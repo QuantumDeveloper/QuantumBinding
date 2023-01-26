@@ -18,6 +18,9 @@ namespace QuantumBinding.ClangGenerator
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
             string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
             string library = "libclang";
+            string interopSubNamespace = "Interop";
+            string mainNamespace = "QuantumBinding.Clang";
+            
             options.GenerateSequentialLayout = true;
             options.DebugMode = false;
             options.PodTypesAsSimpleTypes = true;
@@ -34,8 +37,9 @@ namespace QuantumBinding.ClangGenerator
             clangModule.InteropClassName = "ClangInterop";
             clangModule.GeneratorSpecializations = GeneratorSpecializationUtils.AllExcept(GeneratorSpecializations.Macros); 
             clangModule.OutputPath = outputPath;
-            clangModule.OutputFileName = "QuantumBinding.Clang";
-            clangModule.OutputNamespace = "QuantumBinding.Clang";
+            clangModule.OutputFileName = mainNamespace;
+            clangModule.OutputNamespace = mainNamespace;
+            clangModule.InteropSubNamespace = interopSubNamespace;
             clangModule.SuppressUnmanagedCodeSecurity = true;
             clangModule.WrapInteropObjects = true;
             clangModule.EachTypeInSeparateFile = true;
