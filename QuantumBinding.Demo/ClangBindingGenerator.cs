@@ -52,6 +52,24 @@ namespace QuantumBinding.ClangGenerator
             context.AddPreGeneratorPass(new FunctionToInstanceMethodPass(), ExecutionPassKind.PerTranslationUnit);
             context.AddPreGeneratorPass(new ForceCallingConventionPass(CallingConvention.Cdecl), ExecutionPassKind.PerTranslationUnit);
             context.AddPreGeneratorPass(new CheckFlagEnumsPass(), ExecutionPassKind.PerTranslationUnit);
+            
+            var macroAction = new MacroFunctionsToCSharpFunctionsPass();
+            macroAction.IgnoreList.Add("LLVM_CLANG_C_STRICT_PROTOTYPES_BEGIN");
+            macroAction.IgnoreList.Add("_WIN32");
+            macroAction.IgnoreList.Add("LLVM_CLANG_C_STRICT_PROTOTYPES_END");
+            macroAction.IgnoreList.Add("LLVM_CLANG_C_EXTERN_C_BEGIN");
+            macroAction.IgnoreList.Add("LLVM_CLANG_C_EXTERN_C_BEGIN");
+            macroAction.IgnoreList.Add("LLVM_CLANG_C_EXTERN_C_END");
+            macroAction.IgnoreList.Add("CINDEX_LINKAGE");
+            macroAction.IgnoreList.Add("CINDEX_DEPRECATED");
+            macroAction.IgnoreList.Add("CINDEX_EXPORTS");
+            macroAction.IgnoreList.Add("_CINDEX_LIB_");
+            macroAction.IgnoreList.Add("CINDEX_VERSION_STRINGIZE_");
+            
+            macroAction.SubstitutionList.Add("CINDEX_VERSION_ENCODE", ClangBindings.MacroFunctions.CIndexVersionEncode(0, 62));
+            macroAction.SubstitutionList.Add("CINDEX_VERSION_STRINGIZE", ClangBindings.MacroFunctions.CIndexVersionStringize(0, 62));
+
+            context.AddPreGeneratorPass(macroAction, ExecutionPassKind.PerTranslationUnit);
         }
 
         public override void OnSetupComplete(ProcessingContext context)

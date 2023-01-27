@@ -56,6 +56,12 @@ namespace QuantumBinding.Generator.Processors
                     parameter.WrappedType = wrappedType;
                     parameter.Type = (BindingType)wrappedType.Clone();
                     parameter.Type.Declaration = declaration;
+
+                    var nativeParameter = method.Function.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
+                    if (nativeParameter != null)
+                    {
+                        nativeParameter.WrappedType = wrappedType;
+                    }
                 }
             }
         }

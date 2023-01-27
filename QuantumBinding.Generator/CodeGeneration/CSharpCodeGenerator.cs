@@ -607,7 +607,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
-            
+
             var @params = TypePrinter.VisitParameters(function.Parameters, MarshalTypes.NativeParameter);
             Write(@params.ToString());
             Write(");");
@@ -832,7 +832,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             CheckParameters(method.Parameters);
             AddUsingIfNeeded(method.ReturnType);
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-
+            
             var methodResult = TypePrinter.VisitMethod(method);
             TypePrinter.PopMarshalType();
             WriteLine(methodResult.ToString());

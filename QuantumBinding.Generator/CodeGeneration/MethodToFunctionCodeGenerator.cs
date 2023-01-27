@@ -41,7 +41,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         this.method = method;
 
-        if (this.method.Name.Contains("findIncludesInFile"))
+        if (this.method.Name.Contains("GetResourceListForType"))
         {
             int bug = 0;
         }
@@ -73,7 +73,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                         //parameter = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                         var p = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                         classDecl = p.Type.Declaration as Class;
-                        parameter = p;
+                        //parameter = p;
                     }
                 }
             }

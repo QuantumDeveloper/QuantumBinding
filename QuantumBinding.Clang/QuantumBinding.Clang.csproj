@@ -24,4 +24,8 @@
     <ProjectReference Include="..\QuantumBinding.Utils\QuantumBinding.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+  </ItemGroup>
+
 </Project>
