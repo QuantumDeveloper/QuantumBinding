@@ -13,11 +13,12 @@ namespace QuantumBinding.Generator.CodeGeneration
         public const string NativeUtilsPointerToArray = "NativeUtils.PointerToManagedArray";
         public const string NativeUtilsGetPointerToArray = "NativeUtils.GetPointerToManagedArray";
         public const string NativeUtilsWritePointerToManagedArray = "NativeUtils.WritePointerToManagedArray";
-        public const string NativeUtilsPointerToString = "NativeUtils.PointerToString";
+        public const string NativeUtilsStringToPointer = "NativeUtils.StringToPointer";
         public const string NativeUtilsGetPointerToStringArray = "NativeUtils.GetPointerToStringArray";
         public const string NativeUtilsStringToFixedArray = "NativeUtils.StringToFixedArray";
         public const string NativeUtilsPrimitiveToFixedArray = "NativeUtils.PrimitiveToFixedArray";
         public const string NativeUtilsPointerToStringArray = "NativeUtils.PointerToStringArray";
+        public const string NativeUtilsStringArrayToPointer = "NativeUtils.StringArrayToPointer";
         
         public TextGenerator()
         {

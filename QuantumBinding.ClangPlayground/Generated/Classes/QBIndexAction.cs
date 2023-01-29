@@ -37,8 +37,8 @@ public unsafe partial class QBIndexAction
     {
         var arg1 = ReferenceEquals(client_data, null) ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
         var arg2 = ReferenceEquals(index_callbacks, null) ? null : NativeUtils.StructOrEnumToPointer(index_callbacks.ToNative());
-        var arg5 = (sbyte*)NativeUtils.PointerToString(source_filename, false);
-        var arg6 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)command_line_args.Length, false);
+        var arg5 = (sbyte*)NativeUtils.StringToPointer(source_filename, false);
+        var arg6 = (sbyte**)NativeUtils.StringArrayToPointer(command_line_args, false);
         var arg8 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
         CXTranslationUnitImpl arg10;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_indexSourceFile(this, arg1, arg2, index_callbacks_size, index_options, arg5, arg6, num_command_line_args, arg8, num_unsaved_files, out arg10, TU_options);
@@ -59,8 +59,8 @@ public unsafe partial class QBIndexAction
     {
         var arg1 = ReferenceEquals(client_data, null) ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
         var arg2 = ReferenceEquals(index_callbacks, null) ? null : NativeUtils.StructOrEnumToPointer(index_callbacks.ToNative());
-        var arg5 = (sbyte*)NativeUtils.PointerToString(source_filename, false);
-        var arg6 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)command_line_args.Length, false);
+        var arg5 = (sbyte*)NativeUtils.StringToPointer(source_filename, false);
+        var arg6 = (sbyte**)NativeUtils.StringArrayToPointer(command_line_args, false);
         var arg8 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
         CXTranslationUnitImpl arg10;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_indexSourceFileFullArgv(this, arg1, arg2, index_callbacks_size, index_options, arg5, arg6, num_command_line_args, arg8, num_unsaved_files, out arg10, TU_options);

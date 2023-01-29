@@ -35,7 +35,7 @@ public unsafe partial class QBModuleMapDescriptor
     ///</summary>
     public CXErrorCode ModuleMapDescriptor_setFrameworkModuleName(string name)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(name, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(name, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_setFrameworkModuleName(this, arg1);
         NativeUtils.Free(arg1);
         return result;
@@ -46,7 +46,7 @@ public unsafe partial class QBModuleMapDescriptor
     ///</summary>
     public CXErrorCode ModuleMapDescriptor_setUmbrellaHeader(string name)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(name, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(name, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_setUmbrellaHeader(this, arg1);
         NativeUtils.Free(arg1);
         return result;

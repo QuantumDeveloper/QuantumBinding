@@ -41,7 +41,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         this.method = method;
 
-        if (this.method.Name.Contains("getAllSkippedRanges"))
+        if (this.method.Name.Contains("parseTranslationUnit2"))
         {
             int bug = 0;
         }
@@ -289,7 +289,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         var ptr = parameter.Type as PointerType;
         var pointerString = GetPointerString(ptr.GetDepth());
         var conversionString = isUnicode ? $"char{pointerString}" : $"sbyte{pointerString}";
-        WriteLine($"var {argumentName} = ({conversionString}){NativeUtilsPointerToString}({parameter.Name}, {isUnicodeString});");
+        WriteLine($"var {argumentName} = ({conversionString}){NativeUtilsStringToPointer}({parameter.Name}, {isUnicodeString});");
 
         postActions.Add( () => FreeNativePointer(argumentName));
     }
@@ -301,7 +301,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         var ptr = parameter.Type as PointerType;
         var pointerString = GetPointerString(ptr.GetDepth());
         var conversionString = isUnicode ? $"char{pointerString}" : $"sbyte{pointerString}"; 
-        WriteLine($"var {argumentName} = ({conversionString}){NativeUtilsGetPointerToStringArray}((uint){parameter.Name}.Length, {isUnicodeString});");
+        WriteLine($"var {argumentName} = ({conversionString}){NativeUtilsStringArrayToPointer}({parameter.Name}, {isUnicodeString});");
         
         postActions.Add( () => FreeNativePointer(argumentName));
     }
@@ -663,7 +663,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
             }
             else
             {
-                if (WrapInteropObjects && classDecl.IsWrapper)
+                if (WrapInteropObjects && classDecl.IsWrapper && classDecl.WrappedStruct != null)
                 {
                     WriteLine(
                         $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : {NativeUtilsGetPointerToArray}<{classDecl.WrappedStruct.Namespace}.{typeStrResult.Type}>({arrayLength});");

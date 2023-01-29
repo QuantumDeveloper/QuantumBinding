@@ -57,7 +57,7 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBCodeCompleteResults codeCompleteAt(string complete_filename, uint complete_line, uint complete_column, QBUnsavedFile unsaved_files, uint num_unsaved_files, uint options)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(complete_filename, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(complete_filename, false);
         var arg4 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteAt(this, arg1, complete_line, complete_column, arg4, num_unsaved_files, options);
         NativeUtils.Free(arg1);
@@ -176,7 +176,7 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBFile getFile(string file_name)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(file_name, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(file_name, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getFile(this, arg1);
         NativeUtils.Free(arg1);
         return result;
@@ -361,7 +361,7 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public int saveTranslationUnit(string FileName, uint options)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(FileName, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(FileName, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_saveTranslationUnit(this, arg1, options);
         NativeUtils.Free(arg1);
         return result;

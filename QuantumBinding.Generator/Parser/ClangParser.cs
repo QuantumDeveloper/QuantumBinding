@@ -11,7 +11,7 @@ using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.Parser
 {
-    public class ClangParser : ICXCursorVisitor
+    public unsafe class ClangParser : ICXCursorVisitor
     {
         private readonly ISet<string> visitedEnums = new HashSet<string>();
         private readonly ISet<string> visitedStructs = new HashSet<string>();

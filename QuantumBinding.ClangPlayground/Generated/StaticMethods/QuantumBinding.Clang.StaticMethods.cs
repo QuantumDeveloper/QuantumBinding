@@ -62,7 +62,7 @@ public unsafe static class clang
     ///</summary>
     public static QBDiagnosticSet loadDiagnostics(string file, out CXLoadDiag_Error error, out QBString errorString)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(file, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(file, false);
         QuantumBinding.Clang.Interop.CXString arg2;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_loadDiagnostics(arg0, out error, out arg2);
         NativeUtils.Free(arg0);
@@ -204,7 +204,7 @@ public unsafe static class clang
     ///</summary>
     public static QBString constructUSR_ObjCClass(string class_name)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(class_name, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(class_name, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCClass(arg0);
         NativeUtils.Free(arg0);
         return result;
@@ -215,8 +215,8 @@ public unsafe static class clang
     ///</summary>
     public static QBString constructUSR_ObjCCategory(string class_name, string category_name)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(class_name, false);
-        var arg1 = (sbyte*)NativeUtils.PointerToString(category_name, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(class_name, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(category_name, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCCategory(arg0, arg1);
         NativeUtils.Free(arg0);
         NativeUtils.Free(arg1);
@@ -228,7 +228,7 @@ public unsafe static class clang
     ///</summary>
     public static QBString constructUSR_ObjCProtocol(string protocol_name)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(protocol_name, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(protocol_name, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCProtocol(arg0);
         NativeUtils.Free(arg0);
         return result;
@@ -239,7 +239,7 @@ public unsafe static class clang
     ///</summary>
     public static QBString constructUSR_ObjCIvar(string name, QBString classUSR)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(name, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(name, false);
         var arg1 = ReferenceEquals(classUSR, null) ? new QuantumBinding.Clang.Interop.CXString() : classUSR.ToNative();
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCIvar(arg0, arg1);
         NativeUtils.Free(arg0);
@@ -252,7 +252,7 @@ public unsafe static class clang
     ///</summary>
     public static QBString constructUSR_ObjCMethod(string name, uint isInstanceMethod, QBString classUSR)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(name, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(name, false);
         var arg2 = ReferenceEquals(classUSR, null) ? new QuantumBinding.Clang.Interop.CXString() : classUSR.ToNative();
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCMethod(arg0, isInstanceMethod, arg2);
         NativeUtils.Free(arg0);
@@ -265,7 +265,7 @@ public unsafe static class clang
     ///</summary>
     public static QBString constructUSR_ObjCProperty(string property, QBString classUSR)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(property, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(property, false);
         var arg1 = ReferenceEquals(classUSR, null) ? new QuantumBinding.Clang.Interop.CXString() : classUSR.ToNative();
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCProperty(arg0, arg1);
         NativeUtils.Free(arg0);
@@ -487,7 +487,7 @@ public unsafe static class clang
     ///</summary>
     public static QBRemapping getRemappings(string path)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(path, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(path, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getRemappings(arg0);
         NativeUtils.Free(arg0);
         return result;
@@ -498,7 +498,7 @@ public unsafe static class clang
     ///</summary>
     public static QBRemapping getRemappingsFromFileList(in string[] filePaths, uint numFiles)
     {
-        var arg0 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)filePaths.Length, false);
+        var arg0 = (sbyte**)NativeUtils.StringArrayToPointer(filePaths, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getRemappingsFromFileList(arg0, numFiles);
         NativeUtils.Free(arg0);
         return result;
@@ -636,7 +636,7 @@ public unsafe static class clang
     ///</summary>
     public static QBString getSymbolGraphForUSR(string usr, QBAPISet api)
     {
-        var arg0 = (sbyte*)NativeUtils.PointerToString(usr, false);
+        var arg0 = (sbyte*)NativeUtils.StringToPointer(usr, false);
         var arg1 = ReferenceEquals(api, null) ? new CXAPISetImpl() : (CXAPISetImpl)api;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getSymbolGraphForUSR(arg0, arg1);
         NativeUtils.Free(arg0);

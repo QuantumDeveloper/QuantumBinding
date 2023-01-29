@@ -759,8 +759,8 @@ public unsafe partial class QBCursor
 
     public void getDefinitionSpellingAndExtent(in string[] startBuf, in string[] endBuf, ref uint startLine, ref uint startColumn, ref uint endLine, ref uint endColumn)
     {
-        var arg1 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)startBuf.Length, false);
-        var arg2 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)endBuf.Length, false);
+        var arg1 = (sbyte**)NativeUtils.StringArrayToPointer(startBuf, false);
+        var arg2 = (sbyte**)NativeUtils.StringArrayToPointer(endBuf, false);
         var arg3 = NativeUtils.StructOrEnumToPointer(startLine);
         var arg4 = NativeUtils.StructOrEnumToPointer(startColumn);
         var arg5 = NativeUtils.StructOrEnumToPointer(endLine);

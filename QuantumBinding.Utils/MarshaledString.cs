@@ -13,7 +13,7 @@ public unsafe struct MarshaledString
     {
         this.isUnicode = isUnicode;
 
-        Handle = NativeUtils.PointerToString(str, this.isUnicode);
+        Handle = NativeUtils.StringToPointer(str, this.isUnicode);
         
         isDisposed = false;
     }

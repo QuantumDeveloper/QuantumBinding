@@ -318,7 +318,7 @@ public unsafe partial class QBType
     ///</summary>
     public long Type_getOffsetOf(string S)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(S, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(S, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getOffsetOf(ToNative(), arg1);
         NativeUtils.Free(arg1);
         return result;

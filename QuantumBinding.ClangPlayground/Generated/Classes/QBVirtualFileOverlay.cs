@@ -27,8 +27,8 @@ public unsafe partial class QBVirtualFileOverlay
     ///</summary>
     public CXErrorCode VirtualFileOverlay_addFileMapping(string virtualPath, string realPath)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(virtualPath, false);
-        var arg2 = (sbyte*)NativeUtils.PointerToString(realPath, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(virtualPath, false);
+        var arg2 = (sbyte*)NativeUtils.StringToPointer(realPath, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_addFileMapping(this, arg1, arg2);
         NativeUtils.Free(arg1);
         NativeUtils.Free(arg2);

@@ -27,7 +27,7 @@ public unsafe partial class QBIndex
     ///</summary>
     public QBTranslationUnit createTranslationUnit(string ast_filename)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(ast_filename, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(ast_filename, false);
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createTranslationUnit(this, arg1);
         NativeUtils.Free(arg1);
         return result;
@@ -38,7 +38,7 @@ public unsafe partial class QBIndex
     ///</summary>
     public CXErrorCode createTranslationUnit2(string ast_filename, out QBTranslationUnit out_TU)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(ast_filename, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(ast_filename, false);
         CXTranslationUnitImpl arg2;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createTranslationUnit2(this, arg1, out arg2);
         NativeUtils.Free(arg1);
@@ -51,8 +51,8 @@ public unsafe partial class QBIndex
     ///</summary>
     public QBTranslationUnit createTranslationUnitFromSourceFile(string source_filename, int num_clang_command_line_args, in string[] clang_command_line_args, uint num_unsaved_files, QBUnsavedFile unsaved_files)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(source_filename, false);
-        var arg3 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)clang_command_line_args.Length, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(source_filename, false);
+        var arg3 = (sbyte**)NativeUtils.StringArrayToPointer(clang_command_line_args, false);
         var arg5 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createTranslationUnitFromSourceFile(this, arg1, num_clang_command_line_args, arg3, num_unsaved_files, arg5);
         NativeUtils.Free(arg1);
@@ -83,7 +83,7 @@ public unsafe partial class QBIndex
     ///</summary>
     public void CXIndex_setInvocationEmissionPathOption(string Path)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(Path, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(Path, false);
         QuantumBinding.Clang.Interop.ClangInterop.clang_CXIndex_setInvocationEmissionPathOption(this, arg1);
         NativeUtils.Free(arg1);
     }
@@ -109,8 +109,8 @@ public unsafe partial class QBIndex
     ///</summary>
     public QBTranslationUnit parseTranslationUnit(string source_filename, in string[] command_line_args, int num_command_line_args, QBUnsavedFile unsaved_files, uint num_unsaved_files, uint options)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(source_filename, false);
-        var arg2 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)command_line_args.Length, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(source_filename, false);
+        var arg2 = (sbyte**)NativeUtils.StringArrayToPointer(command_line_args, false);
         var arg4 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_parseTranslationUnit(this, arg1, arg2, num_command_line_args, arg4, num_unsaved_files, options);
         NativeUtils.Free(arg1);
@@ -125,8 +125,8 @@ public unsafe partial class QBIndex
     ///</summary>
     public CXErrorCode parseTranslationUnit2(string source_filename, in string[] command_line_args, int num_command_line_args, QBUnsavedFile[] unsaved_files, uint num_unsaved_files, uint options, out QBTranslationUnit out_TU)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(source_filename, false);
-        var arg2 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)command_line_args.Length, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(source_filename, false);
+        var arg2 = (sbyte**)NativeUtils.StringArrayToPointer(command_line_args, false);
         var arg4 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files.Length);
         if (!ReferenceEquals(unsaved_files, null))
         {
@@ -155,8 +155,8 @@ public unsafe partial class QBIndex
     ///</summary>
     public CXErrorCode parseTranslationUnit2FullArgv(string source_filename, in string[] command_line_args, int num_command_line_args, QBUnsavedFile unsaved_files, uint num_unsaved_files, uint options, out QBTranslationUnit out_TU)
     {
-        var arg1 = (sbyte*)NativeUtils.PointerToString(source_filename, false);
-        var arg2 = (sbyte**)NativeUtils.GetPointerToStringArray((uint)command_line_args.Length, false);
+        var arg1 = (sbyte*)NativeUtils.StringToPointer(source_filename, false);
+        var arg2 = (sbyte**)NativeUtils.StringArrayToPointer(command_line_args, false);
         var arg4 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
         CXTranslationUnitImpl arg7;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_parseTranslationUnit2FullArgv(this, arg1, arg2, num_command_line_args, arg4, num_unsaved_files, options, out arg7);

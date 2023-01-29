@@ -84,7 +84,7 @@ public static unsafe class NativeUtils
 #endif
     }
 
-    public static void* PointerToString(string input, bool isUnicode)
+    public static void* StringToPointer(string input, bool isUnicode)
     {
         void* ptr;
         var bytes = isUnicode ? Encoding.Unicode.GetBytes(input + '\0') : Encoding.ASCII.GetBytes(input + '\0');
@@ -134,7 +134,7 @@ public static unsafe class NativeUtils
             var ptr = (char**)GetPointerToStringArray((uint)input.Length, isUnicode); 
             for (int i = 0; i < input.Length; i++)
             {
-                ptr[i] = (char*)PointerToString(input[i], isUnicode);
+                ptr[i] = (char*)StringToPointer(input[i], isUnicode);
             }
 
             return ptr;
@@ -144,7 +144,7 @@ public static unsafe class NativeUtils
             var ptr = (sbyte**)GetPointerToStringArray((uint)input.Length, isUnicode); 
             for (int i = 0; i < input.Length; i++)
             {
-                ptr[i] = (sbyte*)PointerToString(input[i], isUnicode);
+                ptr[i] = (sbyte*)StringToPointer(input[i], isUnicode);
             }
 
             return ptr;
