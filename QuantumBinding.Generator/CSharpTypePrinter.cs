@@ -513,7 +513,8 @@ namespace QuantumBinding.Generator
                         }
                     }
 
-                    if (parameter.ParameterKind == ParameterKind.Out && !parameter.Type.IsPointerToArray() &&
+                    if (parameter.ParameterKind == ParameterKind.Out && 
+                        !parameter.Type.IsPointerToArray() &&
                         !parameter.Type.IsDoublePointer())
                     {
                         result.TypeSuffix = string.Empty;
@@ -524,7 +525,7 @@ namespace QuantumBinding.Generator
                         result.Type = result.ToString();
                     }
                     else if (MarshalType != MarshalTypes.DelegateType &&
-                             parameter.ParameterKind == ParameterKind.InOut
+                             parameter.ParameterKind == ParameterKind.Ref
                              && !parameter.Type.IsPointer())
                     {
                         result.Type += $" {parameter.Name}";
@@ -544,7 +545,7 @@ namespace QuantumBinding.Generator
                 result.Type += $" = {parameter.DefaultValue}";
             }
 
-            if (Parameter.ParameterKind == ParameterKind.InOut)
+            if (Parameter.ParameterKind == ParameterKind.Ref)
             {
                 if (MarshalType is MarshalTypes.NativeParameter)
                 {
@@ -699,7 +700,7 @@ namespace QuantumBinding.Generator
             if (MarshalType is MarshalTypes.SkipParamTypes or MarshalTypes.DelegateType
                 or MarshalTypes.DelegateParameter)
             {
-                if (param.ParameterKind == ParameterKind.InOut && !(param.Type.IsPurePointer()))
+                if (param.ParameterKind == ParameterKind.Ref && !(param.Type.IsPurePointer()))
                 {
                     modifier = "ref";
                     return true;
@@ -715,7 +716,7 @@ namespace QuantumBinding.Generator
             }
 
             if (MarshalType == MarshalTypes.MethodParameter && param.Type.IsPointerToArray() &&
-                param.ParameterKind == ParameterKind.InOut)
+                param.ParameterKind == ParameterKind.Ref)
             {
                 return false;
             }
@@ -724,7 +725,7 @@ namespace QuantumBinding.Generator
             {
                 switch (param.ParameterKind)
                 {
-                    case ParameterKind.InOut:
+                    case ParameterKind.Ref:
                         modifier = "ref";
                         break;
                     case ParameterKind.Out:
@@ -739,7 +740,7 @@ namespace QuantumBinding.Generator
             {
                 switch (param.ParameterKind)
                 {
-                    case ParameterKind.InOut:
+                    case ParameterKind.Ref:
                         if (param.Type.IsPointerToIntPtr())
                         {
                             attribute = "[In, Out]";

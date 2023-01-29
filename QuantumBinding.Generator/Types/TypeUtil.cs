@@ -143,6 +143,17 @@ namespace QuantumBinding.Generator.Types
             var pPtr = pointer?.Pointee as PointerType;
             return pPtr != null;
         }
+        
+        public static bool IsPointerToVoidArray(this BindingType type)
+        {
+            var array = type as ArrayType;
+            if (array != null && array.ElementType is PointerType pointerType)
+            {
+                return pointerType.IsPointerToVoid();
+            }
+
+            return false;
+        }
 
         public static bool IsPointerToArray(this BindingType type)
         {

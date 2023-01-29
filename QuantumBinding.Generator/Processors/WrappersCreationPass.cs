@@ -138,6 +138,11 @@ namespace QuantumBinding.Generator.Processors
                 if (field.IsPointer && !field.Type.IsPointerToVoid())
                 {
                     var pointerType = (PointerType)field.Type;
+                    if (field.Name.StartsWith("@"))
+                    {
+                        name = field.Name.Substring(1);
+                    }
+                    name = $"_{name[0].ToString().ToLower()}{name.Substring(1)}";
                     property.PairedField = new Field($"{name}") { ShouldDispose = true };
                     if (field.Type.IsAnsiString() || field.Type.IsUnicodeString())
                     {

@@ -50,7 +50,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         protected string ConversionMethodName => "ToNative()";
 
         protected readonly Queue<FixedStructInfo> FixedStructInfos = new Queue<FixedStructInfo>();
-        protected readonly HashSet<string> FixedTypesHash = new HashSet<string>();
+        protected readonly Dictionary<string, FixedStructInfo> FixedTypesHash = new Dictionary<string, FixedStructInfo>();
 
         protected virtual void WriteCurrentNamespace(Namespace @namespace)
         {
@@ -163,21 +163,42 @@ namespace QuantumBinding.Generator.CodeGeneration
                 AddUsingIfNeeded(field.Type);
 
                 PushBlock(CodeBlockKind.FieldDefinition, field);
-                if (field.Type.IsConstArrayOfCustomTypes(out var size) || field.Type.IsConstArrayOfEnums(out var s))
+                if (field.Type.IsConstArrayOfCustomTypes(out var size) || field.Type.IsConstArrayOfEnums(out size))
                 {
                     // To workaround limitation of current .Net (version 6/7) regarding marshaling of const arrays
                     // we need to create struct wrapper which will contain {size} fields and place it instead this field
                     // to correctly pass struct by raw pointer.
                     TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
                     var fieldType = field.Type.Visit(TypePrinter);
-                    var fieldName = $"{fieldType.Type}__FixedBuffer";
-                    WriteLine($"public {fieldName} {field.Name};");
                     TypePrinter.PopMarshalType();
-                    if (!FixedTypesHash.Contains(fieldName))
+                    string fieldTypeName = string.Empty;
+                    int index = 0;
+
+                    if (field.Type.IsPointerToVoidArray())
                     {
-                        FixedTypesHash.Add(fieldName);
-                        FixedStructInfos.Enqueue(new FixedStructInfo(fieldName, @class, field, size));
+                        fieldType.Type = "Void";
                     }
+                    
+                    fieldTypeName = $"{fieldType.Type}{index}__FixedBuffer";
+                    
+                    if (FixedTypesHash.ContainsKey(fieldTypeName))
+                    {
+                        var item = FixedTypesHash[fieldTypeName];
+                        if (item.Size != size)
+                        {
+                            index = ++item.Index;
+                            fieldTypeName = $"{fieldType.Type}{index}__FixedBuffer";
+                        }
+                    }
+                    else
+                    {
+                        var fixedBufferInfo = new FixedStructInfo(fieldTypeName, @class, field, size, index);
+                        FixedTypesHash.Add(fieldTypeName, fixedBufferInfo);
+                        FixedStructInfos.Enqueue(fixedBufferInfo);
+                    }
+                    
+                    WriteLine($"public {fieldTypeName} {field.Name};");
+                    
                 }
                 else
                 {
@@ -196,12 +217,23 @@ namespace QuantumBinding.Generator.CodeGeneration
             TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
             var fieldType = fixedStructInfo.Field.Type.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
+            WriteLine("[StructLayout(LayoutKind.Sequential)]");
             WriteLine($"public partial struct {fixedStructInfo.Name}");
             WriteOpenBraceAndIndent();
+            
+            if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
+            {
+                fieldType.Type = "nuint";
+            }
             
             for (int i = 0; i < fixedStructInfo.Size; i++)
             {
                 WriteLine($"public {fieldType.Type} item{i};");
+            }
+            
+            if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
+            {
+                fieldType.Type = "void*";
             }
             
             NewLine();
@@ -220,8 +252,17 @@ namespace QuantumBinding.Generator.CodeGeneration
             
             WriteLine($"public {fieldType.Type} this[int index]");
             WriteOpenBraceAndIndent();
-            WriteLine($"get => Unsafe.Add(ref item0, index);");
-            WriteLine($"set => Unsafe.Add(ref item0, index) = value;");
+            if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
+            {
+                WriteLine($"get => (void*)Unsafe.Add(ref item0, index);");
+                WriteLine($"set => Unsafe.Add(ref item0, index) = (nuint)value;");
+            }
+            else
+            {
+                WriteLine($"get => Unsafe.Add(ref item0, index);");
+                WriteLine($"set => Unsafe.Add(ref item0, index) = value;");
+            }
+            
             UnindentAndWriteCloseBrace();
             
             UnindentAndWriteCloseBrace();

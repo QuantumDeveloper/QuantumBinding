@@ -5,6 +5,8 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System.Runtime.CompilerServices;
+
 namespace QuantumBinding.Clang.Interop
 {
     using System;
@@ -353,8 +355,23 @@ namespace QuantumBinding.Clang.Interop
     {
         public uint kind;
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-        public System.IntPtr[] data;
+        // [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
+        // public System.IntPtr[] data;
+        public __FixedBuffer data;
+        
+        
+        public unsafe struct __FixedBuffer
+        {
+            public nuint item0;
+
+            public nuint item1;
+
+            public nuint this[int index]
+            {
+                get => Unsafe.Add(ref item0, index);
+                set => Unsafe.Add(ref item0, index) = value;
+            }
+        }
 
     }
 

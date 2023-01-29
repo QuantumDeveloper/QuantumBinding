@@ -502,6 +502,11 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected override void GenerateFields(Class @class)
         {
+            if (@class.Name == "QBCodeCompleteResults")
+            {
+                int bug = 0;
+            }
+            
             try
             {
                 TypePrinter.PushMarshalType(MarshalTypes.Property);
@@ -511,6 +516,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                     GenerateCommentIfNotEmpty(field.Comment);
 
+                    //field.Name = $"_{field.Name[0].ToString().ToLower()}{field.Name.Substring(1)}";
                     var fieldStr = TypePrinter.VisitField(field);
                     
                     var typeResult = field.Type.Visit(TypePrinter);

@@ -166,7 +166,7 @@ namespace QuantumBinding.Generator.Processors
                     parameter.ParameterKind = ParameterKind.Readonly;
                     break;
                 case PointerType pointer when !pointer.CanConvertToString() && pointer.Pointee.IsPrimitiveType || classDecl?.IsSimpleType == true || decl is Enumeration:
-                    parameter.ParameterKind = ParameterKind.InOut;
+                    parameter.ParameterKind = ParameterKind.Ref;
                     break;
                 case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStructOrUnion():
                     {

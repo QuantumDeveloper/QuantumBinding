@@ -604,6 +604,11 @@ namespace QuantumBinding.Generator.CodeGeneration
             Write($"{TypePrinter.GetAccessSpecifier(function.AccessSpecifier)} static extern");
             PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
 
+            if (function.Name == "clang_loadDiagnostics")
+            {
+                int bug = 0;
+            }
+
             var returnType = function.ReturnType.Visit(TypePrinter);
             Write($"{returnType} {function.Name}(");
             CheckParameters(function.Parameters);
@@ -832,7 +837,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             CheckParameters(method.Parameters);
             AddUsingIfNeeded(method.ReturnType);
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-            
+
             var methodResult = TypePrinter.VisitMethod(method);
             TypePrinter.PopMarshalType();
             WriteLine(methodResult.ToString());

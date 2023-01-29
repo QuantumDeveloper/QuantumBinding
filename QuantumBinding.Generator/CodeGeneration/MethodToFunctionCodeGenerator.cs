@@ -41,11 +41,11 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         this.method = method;
 
-        if (this.method.Name.Contains("GetResourceListForType"))
+        if (this.method.Name.Contains("getAllSkippedRanges"))
         {
             int bug = 0;
         }
-
+        
         Clear();
 
         nativeParams = new List<Parameter>();
@@ -70,10 +70,8 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                     }
                     else
                     {
-                        //parameter = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                         var p = method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                         classDecl = p.Type.Declaration as Class;
-                        //parameter = p;
                     }
                 }
             }
@@ -223,6 +221,10 @@ public class MethodToFunctionCodeGenerator : TextGenerator
             case false when postActions.Count == 0 && method.ReturnType.IsString():
                 Write("var result = ");
                 break;
+            case false when method.ReturnType.IsPointerToStructOrUnion():
+                Write("var result = ");
+                postActions.Add(ConvertReturnType);
+                break;
             case false when postActions.Count == 0:
                 Write("return ");
                 break;
@@ -242,7 +244,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
             action?.Invoke();
         }
 
-        if (postActions.Count > 0 && !isVoid)
+        if (postActions.Count > 0 && !isVoid && !method.ReturnType.IsPointerToStructOrUnion())
         {
             if (method.ReturnType.IsString())
             {
@@ -259,6 +261,16 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         }
 
         return ToString();
+    }
+
+    private void ConvertReturnType()
+    {
+        TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+        var wrappedType = method.ReturnType.Visit(TypePrinter);
+        TypePrinter.PopMarshalType();
+        WriteLine($"var wrappedResult = new {wrappedType.Type}(*result);");
+        FreeNativePointer("result");
+        WriteLine("return wrappedResult;");
     }
 
     private void CreateNativeParameter(Parameter parameter, string argumentName, Class classDecl)
@@ -299,30 +311,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
         var nativeType = parameter.Type.Visit(TypePrinter);
         TypePrinter.PopMarshalType();
-        if (parameter.Type.IsPointer() && !parameter.Type.IsPointerToArray())
-        {
-            if (parameter.Type.IsDoublePointer())
-            {
-                WriteLine($"var {argumentName} = ({nativeType}){NativeUtilsStructOrEnumToPointer}({parameter.Name});");
-            }
-            else
-            {
-                WriteLine($"var {argumentName} = {NativeUtilsStructOrEnumToPointer}({parameter.Name});");
-            }
-            
-            if (parameter.ParameterKind is ParameterKind.Out or ParameterKind.InOut)
-            {
-                postActions.Add(() => ConvertPointerToEnum(parameter, argumentName));
-            }
-
-            postActions.Add(() => FreeNativePointer(argumentName));
-            
-            nativeParams.Add(new Parameter()
-            {
-                Name = $"{argumentName}", IsOverload = parameter.IsOverload, ParameterKind = parameter.ParameterKind, Type = parameter.Type
-            });
-        }
-        else if (parameter.Type.IsPointerToArray())
+        if (parameter.Type.IsPointerToArray())
         {
             if (parameter.Type.IsDoublePointer())
             {
@@ -333,12 +322,45 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                 WriteLine($"var {argumentName} = {NativeUtilsArrayToPointer}({parameter.Name});");
             }
             
-            if (parameter.ParameterKind is ParameterKind.InOut or ParameterKind.Out)
+            if (parameter.ParameterKind is ParameterKind.Ref or ParameterKind.Out)
             {
                 postActions.Add(() => ConvertPointerToArrayOfEnums(parameter, argumentName));
             }
 
             postActions.Add(() => FreeNativePointer(argumentName));
+            
+            nativeParams.Add(new Parameter()
+            {
+                Name = $"{argumentName}", IsOverload = parameter.IsOverload, ParameterKind = parameter.ParameterKind, Type = parameter.Type
+            });
+        }
+        else if (parameter.Type.IsPointer())
+        {
+            if (parameter.Type.IsDoublePointer())
+            {
+                WriteLine($"var {argumentName} = ({nativeType}){NativeUtilsStructOrEnumToPointer}({parameter.Name});");
+            }
+            else
+            {
+                if (parameter.ParameterKind is not ParameterKind.Out)
+                {
+                    WriteLine($"var {argumentName} = {NativeUtilsStructOrEnumToPointer}({parameter.Name});");
+                }
+                else
+                {
+                    argumentName = parameter.Name;
+                }
+            }
+            
+            if (parameter.ParameterKind is ParameterKind.Ref)
+            {
+                postActions.Add(() => ConvertPointerToEnum(parameter, argumentName));
+            }
+
+            if (parameter.ParameterKind is not ParameterKind.Out)
+            {
+                postActions.Add(() => FreeNativePointer(argumentName));
+            }
             
             nativeParams.Add(new Parameter()
             {
@@ -371,7 +393,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                 {
                     WriteLine(
                         $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? {NullPointer} : {NativeUtilsStructOrEnumToPointer}(({classDecl.InnerStruct.Name}){parameter.Name});");
-                    if (parameter.ParameterKind == ParameterKind.InOut)
+                    if (parameter.ParameterKind == ParameterKind.Ref)
                     {
                         postActions.Add(() => ConvertPointerToClassOrStruct(parameter, argumentName, classDecl));
                     }
@@ -395,7 +417,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                 WriteLine(
                     $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : new {classDecl.InnerStruct.Namespace}.{classDecl.InnerStruct.Name}[{arrayLength}];");
 
-                if (parameter.ParameterKind == ParameterKind.InOut)
+                if (parameter.ParameterKind == ParameterKind.Ref)
                 {
                     postActions.Add(
                         () => ImplicitTwoWayArrayTypeConversion(parameter, classDecl, argumentName, arrayLength));
@@ -458,10 +480,10 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         }
         TypePrinter.PopMarshalType();
 
-        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.InOut)
+        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.Ref)
         {
             WriteLine(
-                $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {classDecl.Namespace}.{interopType}() : {parameter.Name}.{ConversionMethodName};");
+                $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? new {classDecl.WrappedStruct.Namespace}.{interopType}() : {parameter.Name}.{ConversionMethodName};");
             postActions.Add(() => DisposeWrapper(parameter, classDecl));
         }
         else if (parameter.ParameterKind == ParameterKind.Out)
@@ -489,7 +511,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         TypePrinter.PopParameter();
         TypePrinter.PopMarshalType();
 
-        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.InOut)
+        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.Ref)
         {
             switch (classDecl.ClassType)
             {
@@ -525,7 +547,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                     break;
             }
 
-            if (parameter.ParameterKind == ParameterKind.InOut)
+            if (parameter.ParameterKind == ParameterKind.Ref)
             {
                 postActions.Add(() => ConvertPointerToClassOrStruct(parameter, argumentName, classDecl));
             }
@@ -549,7 +571,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
         var nativeType = parameter.Type.Visit(TypePrinter);
         TypePrinter.PopMarshalType();
-        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.InOut)
+        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.Ref)
         {
             switch (classDecl.ClassType)
             {
@@ -571,7 +593,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                     break;
             }
 
-            if (parameter.ParameterKind == ParameterKind.InOut)
+            if (parameter.ParameterKind == ParameterKind.Ref)
             {
                 postActions.Add(() => ConvertPointerToClassOrStruct(parameter, argumentName, classDecl));
             }
@@ -601,7 +623,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
             WriteLine($"var {argumentName} = {NativeUtilsStructOrEnumToPointer}({parameter.Name});");
         }
 
-        if (parameter.ParameterKind is ParameterKind.InOut)
+        if (parameter.ParameterKind is ParameterKind.Ref)
         {
             postActions.Add(() => ConvertOutPrimitiveTypePointerToValue(parameter, argumentName));
             postActions.Add(() => FreeNativePointer(argumentName));
@@ -654,7 +676,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                 }
             }
         }
-        else if (parameter.ParameterKind == ParameterKind.InOut)
+        else if (parameter.ParameterKind == ParameterKind.Ref)
         {
             if (classDecl.IsSimpleType)
             {
@@ -895,7 +917,7 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         {
             WriteLine($"{parameter.Name} = new {classDecl.FullName}[{arrayLength}];");
         }
-        else if (parameter.ParameterKind == ParameterKind.InOut)
+        else if (parameter.ParameterKind == ParameterKind.Ref)
         {
             WriteLine($"if({parameter.Name} == null)");
             WriteOpenBraceAndIndent();

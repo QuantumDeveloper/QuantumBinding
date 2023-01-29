@@ -16,7 +16,8 @@ namespace QuantumBinding.ClangGenerator
         public override void OnSetup(BindingOptions options)
         {
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
-            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
+            //string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
+            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
             string library = "libclang";
             string interopSubNamespace = "Interop";
             string mainNamespace = "QuantumBinding.Clang";
@@ -68,6 +69,7 @@ namespace QuantumBinding.ClangGenerator
             
             macroAction.SubstitutionList.Add("CINDEX_VERSION_ENCODE", ClangBindings.MacroFunctions.CIndexVersionEncode(0, 62));
             macroAction.SubstitutionList.Add("CINDEX_VERSION_STRINGIZE", ClangBindings.MacroFunctions.CIndexVersionStringize(0, 62));
+            macroAction.SubstitutionList.Add("CINDEX_VERSION_STRING", ClangBindings.MacroFunctions.CIndexVersionString());
 
             context.AddPreGeneratorPass(macroAction, ExecutionPassKind.PerTranslationUnit);
         }
@@ -217,11 +219,6 @@ namespace QuantumBinding.ClangGenerator
                 WithParameterName("Cursors").
                 InterpretAsPointerToArray(new CustomType("CXCursor"), true, "NumTokens").
                 SetParameterKind(ParameterKind.Out);
-
-            api.Function("clang_disposeTokens").
-                WithParameterName("Tokens").
-                InterpretAsPointerType(new BuiltinType(PrimitiveType.IntPtr)).
-                SetParameterKind(ParameterKind.In);
 
             api.Function("clang_executeOnThread").
                 WithParameterName("fn").

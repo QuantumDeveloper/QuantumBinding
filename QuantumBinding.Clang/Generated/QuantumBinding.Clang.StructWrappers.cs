@@ -1398,7 +1398,8 @@ namespace QuantumBinding.Clang
         ///</summary>
         public QBType getTypedefDeclUnderlyingType()
         {
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypedefDeclUnderlyingType(ToInternal());
+            var type = QuantumBinding.Clang.Interop.ClangInterop.clang_getTypedefDeclUnderlyingType(ToInternal());
+            return type;
         }
 
         ///<summary>
@@ -1545,7 +1546,8 @@ namespace QuantumBinding.Clang
         public QBType(QuantumBinding.Clang.Interop.CXType _internal)
         {
             Kind = (CXTypeKind)_internal.kind;
-            Data = new System.IntPtr[2];
+            //Data = new System.IntPtr[2];
+            Data = new nuint[2];
             for (int i = 0; i < 2; ++i)
             {
                 Data[i] = _internal.data[i];
@@ -1553,7 +1555,7 @@ namespace QuantumBinding.Clang
         }
 
         public CXTypeKind Kind { get; set; }
-        public System.IntPtr[] Data { get; set; }
+        public nuint[] Data { get; set; }
         ///<summary>
         /// Determine whether two CXTypes represent the same type.
         ///</summary>
@@ -1887,7 +1889,8 @@ namespace QuantumBinding.Clang
                 if (Data.Length > 2)
                     throw new System.ArgumentOutOfRangeException(nameof(Data), "Array is out of bounds. Size should not be more than 2");
 
-                _internal.data = new System.IntPtr[2];
+                //_internal.data = new System.IntPtr[2];
+                _internal.data = new CXType.__FixedBuffer();
                 for (int i = 0; i < 2; ++i)
                 {
                     _internal.data[i] = Data[i];
