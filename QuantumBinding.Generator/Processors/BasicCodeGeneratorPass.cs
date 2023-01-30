@@ -7,12 +7,11 @@ namespace QuantumBinding.Generator.Processors;
 
 public class BasicCodeGeneratorPass : CodeGeneratorPass
 {
-    public BasicCodeGeneratorPass()
+    public BasicCodeGeneratorPass(GeneratorSpecializations specs)
     {
-        GeneratorSpecializations =
-            GeneratorSpecializationUtils.AllExcept(GeneratorSpecializations.StructWrappers |
-                                                   GeneratorSpecializations.UnionWrappers |
-                                                   GeneratorSpecializations.Extensions);
+        GeneratorSpecializations = specs.Except(GeneratorSpecializations.StructWrappers |
+                                                GeneratorSpecializations.UnionWrappers |
+                                                GeneratorSpecializations.Extensions);
     }
     
     protected override CodeGenerator OnCreateGenerator(GeneratorCategory category, params TranslationUnit[] units)
@@ -22,13 +21,17 @@ public class BasicCodeGeneratorPass : CodeGeneratorPass
 
     protected override List<CodeGenerator> ProcessPerTypeCodeGeneration(TranslationUnit unit, GeneratorSpecializations specializations)
     {
-        
         switch (specializations)
         {
             case GeneratorSpecializations.Enums:
                 return ProcessDeclarations(unit.Enums, unit);
             case GeneratorSpecializations.Delegates:
-                return ProcessDeclarations(unit.Delegates, unit);
+                var functionPointers = ProcessDeclarations(unit.Delegates, unit);
+                return functionPointers;
+            case GeneratorSpecializations.OldFashionDelegates:
+                var delegates = OnCreateGenerator(GeneratorCategory.OldFashionDelegates, unit);
+                delegates.Run();
+                return new List<CodeGenerator>() { delegates };
             case GeneratorSpecializations.Classes:
                 return ProcessDeclarations(unit.Classes, unit);
             case GeneratorSpecializations.Structs:
@@ -54,31 +57,5 @@ public class BasicCodeGeneratorPass : CodeGeneratorPass
             default:
                 return new List<CodeGenerator>();
         }
-        
-        // var types = unit.Declarations.Where(x => x is not Macro && x is not Method && x is not Function && x.IsAllowed(specializations));
-        //
-        //
-        // var extensions = unit.ExtensionClasses.ToArray();
-        // foreach (var extension in extensions)
-        // {
-        //     var extensionCategory = GeneratorCategory.ExtensionMethods;
-        //     var generator = OnCreateGenerator(extensionCategory, unit);
-        //     generator.Run(extension);
-        //     codeGenerators.Add(generator);
-        // }
-        
-        // var macrosGenerator = OnCreateGenerator(GeneratorCategory.Constants, unit);
-        // macrosGenerator.Run();
-        // codeGenerators.Add(macrosGenerator);
-                    
-        // var functionsGenerator = OnCreateGenerator(GeneratorCategory.Functions, unit);
-        // functionsGenerator.Run();
-        // codeGenerators.Add(functionsGenerator);
-                    
-        // var methodsGenerator = OnCreateGenerator(GeneratorCategory.StaticMethods, unit);
-        // methodsGenerator.Run();
-        // codeGenerators.Add(methodsGenerator);
-        //
-        // return codeGenerators;
     }
 }

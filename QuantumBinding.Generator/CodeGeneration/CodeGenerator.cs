@@ -63,7 +63,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 GeneratorCategory.Structs or
                 GeneratorCategory.Unions or 
                 GeneratorCategory.Functions or 
-                GeneratorCategory.Delegates;
+                GeneratorCategory.Delegates or 
+                GeneratorCategory.OldFashionDelegates;
 
         public abstract void Run();
 
@@ -175,6 +176,8 @@ namespace QuantumBinding.Generator.CodeGeneration
         protected virtual void GenerateClass(Class @class) {}
 
         protected virtual void GenerateDelegate(Delegate @delegate) { }
+
+        protected virtual void GenerateOldFashionDelegate(Delegate @delegate) {}
 
         protected virtual void GenerateFunction(Function function) {}
     }

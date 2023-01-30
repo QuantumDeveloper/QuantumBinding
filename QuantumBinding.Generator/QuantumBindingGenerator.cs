@@ -188,7 +188,7 @@ namespace QuantumBinding.Generator
             var specs = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
             foreach (var module in processingCtx.Options.Modules)
             {
-                processingCtx.AddCodeGenerationPass(new BasicCodeGeneratorPass(), ExecutionPassKind.PerTranslationUnit, module);
+                processingCtx.AddCodeGenerationPass(new BasicCodeGeneratorPass(module.GeneratorSpecializations), ExecutionPassKind.PerTranslationUnit, module);
                 
                 if (module.WrapInteropObjects)
                 {
@@ -273,22 +273,6 @@ namespace QuantumBinding.Generator
                         codeGenerator.Generate());
                 }
             }
-        }
-
-        private string GetFileName(TranslationUnit unit, CodeGenerator codeGenerator)
-        {
-            if (!unit.Module.EachTypeInSeparateFile)
-            {
-                return $"{unit.FullNamespace}.{codeGenerator.Category}.{fileGenerator.FileExtension}";
-            }
-            
-            if (codeGenerator.Category is GeneratorCategory.Macros or GeneratorCategory.Functions
-                or GeneratorCategory.StaticMethods)
-            {
-                return $"{unit.FullName}.{codeGenerator.Name}.{fileGenerator.FileExtension}";
-            }
-
-            return $"{codeGenerator.Name}.{fileGenerator.FileExtension}";
         }
     }
 }

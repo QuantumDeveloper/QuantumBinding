@@ -73,7 +73,7 @@ namespace QuantumBinding.Generator
         public bool WrapInteropObjects { get; set; }
 
         public bool CharAsBoolForMethods { get; set; }
-
+        
         /// <summary>
         /// Create overloads for functions, which contains input arrays
         /// </summary>

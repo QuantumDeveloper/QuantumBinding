@@ -28,8 +28,8 @@ namespace QuantumBinding.Generator.Parser
         }
 
         private QBTranslationUnit translationUnit;
-        private CXCursorVisitor visitor;
-        private CXCursorVisitor functionPtr;
+        private Delegates.CXCursorVisitor visitor;
+        private Delegates.CXCursorVisitor functionPtr;
 
         public ParseResult Parse(QBIndex index, string filePath, List<string> arguments)
         {
@@ -65,7 +65,7 @@ namespace QuantumBinding.Generator.Parser
 
                 visitor = VisitDelegate;
 
-                translationUnit.getTranslationUnitCursor().visitChildren(Marshal.GetFunctionPointerForDelegate(visitor) , new QBClientData());
+                translationUnit.getTranslationUnitCursor().visitChildren(Marshal.GetFunctionPointerForDelegate(visitor).ToPointer() , new QBClientData());
 
                 parseResult = (ParseResult)translationUnitResult;
             }
@@ -122,7 +122,7 @@ namespace QuantumBinding.Generator.Parser
             if (string.IsNullOrEmpty(enumName))
             {
                 var forwardDeclaringVisitor = new ForwardDeclarationVisitor(cursor);
-                cursor.getCursorLexicalParent().visitChildren(forwardDeclaringVisitor.VisitorPtr, data);
+                cursor.getCursorLexicalParent().visitChildren(forwardDeclaringVisitor.VisitorPtr.ToPointer(), data);
                 enumName = forwardDeclaringVisitor.ForwardDeclarationCursor.getCursorSpelling().ToString();
 
                 if (string.IsNullOrEmpty(enumName))
@@ -153,7 +153,7 @@ namespace QuantumBinding.Generator.Parser
             functionPtr = VisitEnumItemsDelegate;
 
             // visit all the enum values
-            cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
+            cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr).ToPointer(), new QBClientData());
 
             CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
             {
@@ -233,7 +233,7 @@ namespace QuantumBinding.Generator.Parser
             {
                 var forwardDeclaringVisitor = new ForwardDeclarationVisitor(cursor);
                 cursor.getCursorSemanticParent().visitChildren(
-                    forwardDeclaringVisitor.VisitorPtr,
+                    forwardDeclaringVisitor.VisitorPtr.ToPointer(),
                     new QBClientData());
                 structName = forwardDeclaringVisitor.ForwardDeclarationCursor.getCursorSpelling().ToString();
 
@@ -265,7 +265,7 @@ namespace QuantumBinding.Generator.Parser
 
             functionPtr = VisitStructFieldsNative;
 
-            cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
+            cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr).ToPointer(), new QBClientData());
 
             CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
             {
@@ -467,7 +467,7 @@ namespace QuantumBinding.Generator.Parser
 
                     functionPtr = VisitFunctionProtoNative;
 
-                    cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
+                    cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr).ToPointer(), new QBClientData());
 
                     CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientDataImpl client_data)
                     {

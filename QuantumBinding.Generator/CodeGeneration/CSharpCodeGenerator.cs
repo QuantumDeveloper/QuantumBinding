@@ -154,6 +154,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 { GeneratorCategory.Unions, () => GenerateClasses(ClassType.Union) },
                 { GeneratorCategory.Classes, () => GenerateClasses(ClassType.Class) },
                 { GeneratorCategory.Delegates, GenerateDelegates },
+                { GeneratorCategory.OldFashionDelegates, GenerateOldFashionDelegates },
                 { GeneratorCategory.Functions, GenerateFunctions },
                 { GeneratorCategory.StaticMethods, GenerateCommonMethods }
             };
@@ -621,7 +622,63 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             PopBlock();
         }
+        
+        private void GenerateOldFashionDelegates()
+        {
+            WriteLine("public static unsafe class Delegates");
+            WriteOpenBraceAndIndent();
+            foreach (var @delegate in CurrentTranslationUnit.Delegates)
+            {
+                GenerateOldFashionDelegate(@delegate);
+            }
+            UnindentAndWriteCloseBrace();
+        }
+        
+        protected override void GenerateOldFashionDelegate(Delegate @delegate)
+        {
+            if (@delegate.IsIgnored)
+                return;
 
+            PushBlock(CodeBlockKind.Delegate, @delegate);
+
+            WriteLocation(@delegate);
+
+            GenerateCommentIfNotEmpty(@delegate.Comment);
+
+            if (@delegate.SuppressUnmanagedCodeSecurity)
+            {
+                PushBlock(CodeBlockKind.Attribute);
+                WriteLine("[SuppressUnmanagedCodeSecurity]");
+                if (!UsedUsings.Contains("System.Security"))
+                {
+                    UsingsBlock.WriteLine("using System.Security;");
+                    UsedUsings.Add("System.Security");
+                }
+
+                PopBlock();
+            }
+
+            PushBlock(CodeBlockKind.Attribute);
+            WriteLine($"[UnmanagedFunctionPointer(CallingConvention.{@delegate.CallingConvention})]");
+            PopBlock();
+
+            PushBlock(CodeBlockKind.AccessSpecifier);
+            Write($"{TypePrinter.GetAccessSpecifier(@delegate.AccessSpecifier)} unsafe delegate");
+            PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
+
+            TypePrinter.PushMarshalType(MarshalTypes.NativeReturnType);
+            var returnType = @delegate.ReturnType.Visit(TypePrinter);
+            Write($"{returnType} {@delegate.Name}(");
+            TypePrinter.PopMarshalType();
+            CheckParameters(@delegate.Parameters);
+
+            var @params = TypePrinter.VisitParameters(@delegate.Parameters, MarshalTypes.DelegateParameter);
+            Write(@params.ToString());
+            Write(");");
+            NewLine();
+
+            PopBlock();
+        }
         
         private void GenerateDelegates()
         {

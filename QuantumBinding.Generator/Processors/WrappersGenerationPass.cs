@@ -26,8 +26,6 @@ namespace QuantumBinding.Generator.Processors
 
         protected override List<CodeGenerator> ProcessPerTypeCodeGeneration(TranslationUnit unit, GeneratorSpecializations specs)
         {
-            var outputs = new List<CodeGenerator>();
-
             switch (specs)
             {
                 case GeneratorSpecializations.StructWrappers:

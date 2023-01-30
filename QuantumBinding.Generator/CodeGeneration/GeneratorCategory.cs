@@ -9,10 +9,11 @@ public enum GeneratorCategory
     Unions = 8,
     Classes = 16,
     Delegates = 32,
-    Functions = 64,
-    StructWrappers = 128,
-    UnionWrappers = 256,
-    StaticMethods = 512,
-    ExtensionMethods = 1024,
-    Extensions = 2048
+    OldFashionDelegates = 64,
+    Functions = 128,
+    StructWrappers = 256,
+    UnionWrappers = 512,
+    StaticMethods = 1024,
+    ExtensionMethods = 2048,
+    Extensions = 4096
 }
