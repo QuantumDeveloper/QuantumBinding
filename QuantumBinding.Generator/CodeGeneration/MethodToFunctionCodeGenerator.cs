@@ -40,11 +40,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     public TypePrinterResult GenerateMethodBody(Method method)
     {
         this.method = method;
-
-        if (this.method.Name.Contains("parseTranslationUnit2"))
-        {
-            int bug = 0;
-        }
         
         Clear();
 

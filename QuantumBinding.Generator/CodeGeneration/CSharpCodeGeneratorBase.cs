@@ -32,7 +32,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 
             switch (Category)
             {
-                case GeneratorCategory.Macros or GeneratorCategory.Functions
+                case GeneratorCategory.Macros 
+                    or GeneratorCategory.Functions
                     or GeneratorCategory.StaticMethods:
                     return $"{unit.FullName}.{Name}.{FileExtension}";
                 default:

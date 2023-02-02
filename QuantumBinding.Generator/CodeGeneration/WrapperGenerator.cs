@@ -502,11 +502,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected override void GenerateFields(Class @class)
         {
-            if (@class.Name == "QBCodeCompleteResults")
-            {
-                int bug = 0;
-            }
-            
             try
             {
                 TypePrinter.PushMarshalType(MarshalTypes.Property);

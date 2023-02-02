@@ -233,8 +233,6 @@ namespace QuantumBinding.Generator
         {
             foreach (var output in generatorOutputs)
             {
-                var gen = output.Outputs.FirstOrDefault(x => x is FileExtensionGenerator);
-
                 string path;
                 if (!string.IsNullOrEmpty(output.TranslationUnit.OutputPath))
                 {
