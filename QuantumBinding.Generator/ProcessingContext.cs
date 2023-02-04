@@ -96,6 +96,8 @@ namespace QuantumBinding.Generator
                 {
                     pass.Key.ProcessingContext = this;
                     var outputs = pass.Key.Generate();
+                    if (outputs.Count == 0) continue;
+                    
                     AstContext.GeneratorOutputs.AddRange(outputs);
                 }
             }

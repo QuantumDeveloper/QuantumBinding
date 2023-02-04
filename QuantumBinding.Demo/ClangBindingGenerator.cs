@@ -207,7 +207,7 @@ namespace QuantumBinding.ClangGenerator
 
             api.Function("clang_tokenize").
                 WithParameterName("Tokens").
-                InterpretAsPointerToArray(new CustomType("CXToken"), true, "NumTokens").
+                InterpretAsPointerToArray(new CustomType("CXToken"), true, "NumTokens", pointerDepth: 2).
                 SetParameterKind(ParameterKind.Out).
                 WithParameterName("NumTokens").
                 InterpretAsIs().

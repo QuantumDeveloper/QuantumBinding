@@ -2403,7 +2403,7 @@ public static unsafe partial class ClangInterop
     ///</summary>
     [SuppressUnmanagedCodeSecurity]
     [DllImport(LibraryPath, EntryPoint = "clang_tokenize", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_tokenize(CXTranslationUnitImpl TU, CXSourceRange Range, CXToken* Tokens, out uint NumTokens);
+    internal static extern void clang_tokenize(CXTranslationUnitImpl TU, CXSourceRange Range, out CXToken* Tokens, out uint NumTokens);
 
     ///<summary>
     /// Returns zero-based nesting depth of this parameter in the template parameter list.

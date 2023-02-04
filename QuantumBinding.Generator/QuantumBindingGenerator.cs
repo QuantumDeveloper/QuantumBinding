@@ -201,13 +201,6 @@ namespace QuantumBinding.Generator
             }
         }
 
-        private List<GeneratorOutput> GenerateCode(ProcessingContext processingCtx, Module module)
-        {
-            fileGenerator = new CsFilesFileGenerator(processingCtx);
-            var outputs = fileGenerator.GenerateOutputs(module);
-            return outputs;
-        }
-
         private void RemoveFilesFromPreviousGeneration(ASTContext context)
         {
             foreach (var unit in context.TranslationUnits)
@@ -233,6 +226,8 @@ namespace QuantumBinding.Generator
         {
             foreach (var output in generatorOutputs)
             {
+                if (output.Outputs.Count == 0) continue;
+                
                 string path;
                 if (!string.IsNullOrEmpty(output.TranslationUnit.OutputPath))
                 {

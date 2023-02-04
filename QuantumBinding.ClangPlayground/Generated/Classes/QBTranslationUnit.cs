@@ -382,7 +382,7 @@ public unsafe partial class QBTranslationUnit
     {
         var arg1 = ReferenceEquals(Range, null) ? new QuantumBinding.Clang.Interop.CXSourceRange() : Range.ToNative();
         QuantumBinding.Clang.Interop.CXToken* arg2 = null;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(this, arg1, arg2, out NumTokens);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(this, arg1, out arg2, out NumTokens);
         var _Tokens = NativeUtils.PointerToManagedArray(arg2, (long)NumTokens);
         Tokens = new QuantumBinding.Clang.QBToken[NumTokens];
         for (var i = 0U; i< NumTokens; ++i)

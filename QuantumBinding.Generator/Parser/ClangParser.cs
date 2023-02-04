@@ -573,7 +573,7 @@ namespace QuantumBinding.Generator.Parser
         {
             var spelling = cursor.getCursorSpelling();
             var macroName = spelling.ToString();
-            if (this.visitedMacros.Contains(spelling.ToString()))
+            if (visitedMacros.Contains(spelling.ToString()))
             {
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
