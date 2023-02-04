@@ -66,7 +66,7 @@ namespace QuantumBinding.Generator
                     throw new ArgumentNullException("InteropClassName should not be empty");
                 }
 
-                var clangIndex = clang.CreateIndex(0, 0);
+                var clangIndex = ClangNative.CreateIndex(0, 0);
                 List<string> arguments = new List<string>
                 {
                     "-std=c++14",                           // The input files should be compiled for C++ 11

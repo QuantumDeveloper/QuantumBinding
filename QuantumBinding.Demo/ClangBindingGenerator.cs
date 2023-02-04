@@ -43,7 +43,7 @@ namespace QuantumBinding.ClangGenerator
             clangModule.ForceCallingConvention = true;
             clangModule.AllowConvertStructToClass = true;
             clangModule.CallingConvention = CallingConvention.Cdecl;
-            clangModule.MethodClassName = "clang";
+            clangModule.MethodClassName = "ClangNative";
             clangModule.InteropClassName = "ClangInterop";
             clangModule.GeneratorSpecializations = GeneratorSpecializationUtils.AllExcept(GeneratorSpecializations.Macros); 
             clangModule.OutputPath = outputPath;

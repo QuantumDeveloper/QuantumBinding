@@ -13,7 +13,7 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe static class clang
+public unsafe static class ClangNative
 {
     ///<summary>
     /// Return the timestamp for use with Clang's -fbuild-session-timestamp= option.
