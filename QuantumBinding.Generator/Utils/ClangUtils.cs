@@ -12,14 +12,14 @@ namespace QuantumBinding.Generator.Utils
     {
         public static bool IsInSystemHeader(this QBCursor cursor)
         {
-            return cursor.getCursorLocation().Location_isInSystemHeader() != 0;
+            return cursor.GetCursorLocation().Location_isInSystemHeader() != 0;
         }
 
         public static bool IsPtrToConstChar(this QBType type)
         {
-            var pointee = type.getPointeeType();
+            var pointee = type.GetPointeeType();
 
-            if (pointee.isConstQualifiedType() != 0)
+            if (pointee.IsConstQualifiedType() != 0)
             {
                 switch (pointee.Kind)
                 {
@@ -34,9 +34,9 @@ namespace QuantumBinding.Generator.Utils
         public static BindingType GetBindingType(this QBType cursorType)
         {
             BindingType type = null;
-            bool isConst = cursorType.isConstQualifiedType() != 0;
-            bool isVolatile = cursorType.isVolatileQualifiedType() != 0;
-            bool isRestrict = cursorType.isRestrictQualifiedType() != 0;
+            bool isConst = cursorType.IsConstQualifiedType() != 0;
+            bool isVolatile = cursorType.IsVolatileQualifiedType() != 0;
+            bool isRestrict = cursorType.IsRestrictQualifiedType() != 0;
 
             if (cursorType.ToString().StartsWith("const"))
             {
@@ -56,7 +56,7 @@ namespace QuantumBinding.Generator.Utils
                     case CXTypeKind.CXType_Unexposed:
                         if (cursorType.Kind == CXTypeKind.CXType_Unexposed)
                         {
-                            var typeSpelling = cursorType.getTypeSpelling().ToString();
+                            var typeSpelling = cursorType.GetTypeSpelling().ToString();
                             type = new CustomType(typeSpelling);
                             break;
                         }
@@ -67,11 +67,11 @@ namespace QuantumBinding.Generator.Utils
                     case CXTypeKind.CXType_Elaborated:
                         return GetBindingType(cursorType.Type_getNamedType());
                     case CXTypeKind.CXType_Typedef:
-                        var cursor = cursorType.getTypeDeclaration();
+                        var cursor = cursorType.GetTypeDeclaration();
                         // For some reason size_t isn't considered as within a system header.
                         // We work around this by asking for the file name - if it's unknown, probably it's a system header
                         var isInSystemHeader = cursor.IsInSystemHeader();
-                        cursor.getCursorLocation().getPresumedLocation(
+                        cursor.GetCursorLocation().GetPresumedLocation(
                             out var filename,
                             out uint line,
                             out uint column
@@ -84,7 +84,7 @@ namespace QuantumBinding.Generator.Utils
                             // Getting the actual type of a typedef is painful, since platforms don't even agree on the meaning of types;
                             // 64-bit is "long long" on Windows but "long" on Linux, for historical reasons.
                             // The easiest way is to just get the size & signed-ness and write the type ourselves
-                            var primitive = cursor.getTypedefDeclUnderlyingType().GetPrimitiveType();
+                            var primitive = cursor.GetTypedefDeclUnderlyingType().GetPrimitiveType();
                             //var primitive = clang.getCursorType(cursor).GetPrimitiveType();
                             if (primitive != PrimitiveType.Unknown)
                             {
@@ -92,7 +92,7 @@ namespace QuantumBinding.Generator.Utils
                             }
                             else
                             {
-                                var canonical = cursor.getTypedefDeclUnderlyingType().getCanonicalType();
+                                var canonical = cursor.GetTypedefDeclUnderlyingType().GetCanonicalType();
                                 type = canonical.GetBindingType();
                                 if (type.IsCustomType(out var custom))
                                 {
@@ -102,18 +102,18 @@ namespace QuantumBinding.Generator.Utils
                         }
                         else
                         {
-                            var typedefSpelling = cursor.getCursorSpelling().ToString();
+                            var typedefSpelling = cursor.GetCursorSpelling().ToString();
                             type = new CustomType(typedefSpelling);
                         }
 
                         break;
                     case CXTypeKind.CXType_FunctionProto:
-                        var functionType = cursorType.getTypeSpelling().ToString();
+                        var functionType = cursorType.GetTypeSpelling().ToString();
                         type = new CustomType(functionType);
                         break;
                     case CXTypeKind.CXType_Pointer:
                         //var pointeeType = clang.getCanonicalType(clang.getPointeeType(cursorType));
-                        var pointeeType = cursorType.getPointeeType();
+                        var pointeeType = cursorType.GetPointeeType();
                         var pointer = new PointerType();
                         var isBuiltin = pointeeType.IsPrimitiveType();
                         if (isBuiltin)
@@ -129,7 +129,7 @@ namespace QuantumBinding.Generator.Utils
                         break;
                     case CXTypeKind.CXType_Record:
                     case CXTypeKind.CXType_Enum:
-                        var enumSpelling = cursorType.getTypeSpelling().ToString();
+                        var enumSpelling = cursorType.GetTypeSpelling().ToString();
                         enumSpelling = NormalizeTypeName(enumSpelling);
                         type = new CustomType(enumSpelling);
                         break;
@@ -139,17 +139,17 @@ namespace QuantumBinding.Generator.Utils
                     case CXTypeKind.CXType_IncompleteArray:
                         var arrayType = new ArrayType();
 
-                        var elementType = cursorType.getArrayElementType().getCanonicalType();
+                        var elementType = cursorType.GetArrayElementType().GetCanonicalType();
                         arrayType.SizeType = GetArraySizeType(cursorType.Kind);
-                        arrayType.Size = cursorType.getArraySize();
-                        arrayType.Sizes.Add(cursorType.getArraySize());
+                        arrayType.Size = cursorType.GetArraySize();
+                        arrayType.Sizes.Add(cursorType.GetArraySize());
                         arrayType.ElementSize = elementType.Type_getSizeOf();
 
                         while (elementType.IsArrayType())
                         {
                             arrayType.DimensionsCount++;
-                            arrayType.Sizes.Add(elementType.getArraySize());
-                            elementType = elementType.getArrayElementType().getCanonicalType();
+                            arrayType.Sizes.Add(elementType.GetArraySize());
+                            elementType = elementType.GetArrayElementType().GetCanonicalType();
                         }
 
                         if (arrayType.IsMultiDimensional)
@@ -184,7 +184,7 @@ namespace QuantumBinding.Generator.Utils
                         type = arrayType;
                         break;
                     default:
-                        var name = cursorType.getTypeSpelling().ToString();
+                        var name = cursorType.GetTypeSpelling().ToString();
                         name = NormalizeTypeName(name);
                         type = new CustomType(name);
                         break;
@@ -266,7 +266,7 @@ namespace QuantumBinding.Generator.Utils
         public static string GetEnumUnderlyingType(this QBCursor cursor)
         {
             string inheritedEnumType;
-            CXTypeKind kind = cursor.getEnumDeclIntegerType().Kind;
+            CXTypeKind kind = cursor.GetEnumDeclIntegerType().Kind;
 
             switch (kind)
             {
@@ -298,7 +298,7 @@ namespace QuantumBinding.Generator.Utils
 
         public static PrimitiveType GetPrimitiveType(this QBType type)
         {
-            var canonical = type.getCanonicalType();
+            var canonical = type.GetCanonicalType();
             switch (type.Kind)
             {
                 case CXTypeKind.CXType_Bool:
@@ -338,7 +338,7 @@ namespace QuantumBinding.Generator.Utils
                 case CXTypeKind.CXType_Void:
                     return PrimitiveType.Void;
                 case CXTypeKind.CXType_Pointer:
-                    var pointeeType = canonical.getPointeeType().getCanonicalType();
+                    var pointeeType = canonical.GetPointeeType().GetCanonicalType();
                     switch (pointeeType.Kind)
                     {
                         case CXTypeKind.CXType_Char_S:
@@ -377,9 +377,9 @@ namespace QuantumBinding.Generator.Utils
         {
             var func = new Function();
 
-            var functionType = cursor.getCursorType();
-            var functionName = cursor.getCursorSpelling().ToString();
-            var resultType = cursor.getCursorResultType();
+            var functionType = cursor.GetCursorType();
+            var functionName = cursor.GetCursorSpelling().ToString();
+            var resultType = cursor.GetCursorResultType();
 
             func.Name = functionName;
             func.EntryPoint = functionName;
@@ -387,7 +387,7 @@ namespace QuantumBinding.Generator.Utils
             func.CallingConvention = functionType.GetCallingConvention();
             func.ReturnType = resultType.GetBindingType();
 
-            int numArgTypes = functionType.getNumArgTypes();
+            int numArgTypes = functionType.GetNumArgTypes();
 
             for (uint i = 0; i < numArgTypes; ++i)
             {
@@ -401,7 +401,7 @@ namespace QuantumBinding.Generator.Utils
 
         public static CallingConvention GetCallingConvention(this QBType type)
         {
-            var callingConvention = type.getFunctionTypeCallingConv();
+            var callingConvention = type.GetFunctionTypeCallingConv();
             switch (callingConvention)
             {
                 case CXCallingConv.CXCallingConv_X86StdCall:
@@ -414,8 +414,8 @@ namespace QuantumBinding.Generator.Utils
 
         public static Parameter ArgumentHelper(QBType functionType, QBCursor paramCursor, uint index)
         {
-            var type = paramCursor.getCursorType();
-            var spelling = paramCursor.getCursorSpelling().ToString();
+            var type = paramCursor.GetCursorType();
+            var spelling = paramCursor.GetCursorSpelling().ToString();
             if (string.IsNullOrEmpty(spelling))
             {
                 spelling = "param" + index;
@@ -428,7 +428,7 @@ namespace QuantumBinding.Generator.Utils
             switch (type.Kind)
             {
                 case CXTypeKind.CXType_Pointer:
-                    var pointee = type.getPointeeType();
+                    var pointee = type.GetPointeeType();
                     var pointerType = new PointerType();
                     pointerType.Pointee = pointee.GetBindingType();
                     pointerType.Qualifiers.IsConst = pointerType.Pointee.IsConst;
@@ -448,7 +448,7 @@ namespace QuantumBinding.Generator.Utils
 
         public static FileLocation GetCurrentCursorLocation(QBCursor cursor)
         {
-            cursor.getCursorLocation().getPresumedLocation(out var filename, out uint line, out uint column);
+            cursor.GetCursorLocation().GetPresumedLocation(out var filename, out uint line, out uint column);
             var location = new FileLocation { FileName = filename.ToString(), LineNumber = line, Column = column };
 
             return location;

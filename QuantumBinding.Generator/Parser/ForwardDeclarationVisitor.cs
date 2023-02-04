@@ -36,7 +36,7 @@ namespace QuantumBinding.Generator.Parser
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            if (cursor.equalCursors(beginningCursor) != 0)
+            if (cursor.EqualCursors(beginningCursor) != 0)
             {
                 beginningCursorReached = true;
                 return CXChildVisitResult.CXChildVisit_Continue;

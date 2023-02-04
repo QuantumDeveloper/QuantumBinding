@@ -11,7 +11,6 @@ namespace QuantumBinding.Generator
 {
     public abstract class QuantumBindingGenerator
     {
-        private CodeGeneration.FileGenerator fileGenerator;
         public void Run()
         {
             var options = new BindingOptions();
@@ -67,7 +66,7 @@ namespace QuantumBinding.Generator
                     throw new ArgumentNullException("InteropClassName should not be empty");
                 }
 
-                var clangIndex = clang.createIndex(0, 0);
+                var clangIndex = clang.CreateIndex(0, 0);
                 List<string> arguments = new List<string>
                 {
                     "-std=c++14",                           // The input files should be compiled for C++ 11
@@ -161,7 +160,7 @@ namespace QuantumBinding.Generator
                 }
                 finally
                 {
-                    clangIndex.disposeIndex();
+                    clangIndex.DisposeIndex();
                 }
             }
         }

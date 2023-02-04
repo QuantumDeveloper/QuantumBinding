@@ -8,8 +8,8 @@ namespace QuantumBinding.Clang
     {
         public override string ToString()
         {
-            string retval = getCString();
-            disposeString();
+            string retval = GetCString();
+            //DisposeString();
             return retval;
         }
     }
@@ -18,7 +18,7 @@ namespace QuantumBinding.Clang
     {
         public override string ToString()
         {
-            return getTypeSpelling().ToString();
+            return GetTypeSpelling().ToString();
         }
     }
 
@@ -26,7 +26,7 @@ namespace QuantumBinding.Clang
     {
         public override string ToString()
         {
-            return getCursorSpelling().ToString();
+            return GetCursorSpelling().ToString();
         }
     }
 
@@ -34,7 +34,7 @@ namespace QuantumBinding.Clang
     {
         public override string ToString()
         {
-            return getDiagnosticSpelling().ToString();
+            return GetDiagnosticSpelling().ToString();
         }
     }
 }
