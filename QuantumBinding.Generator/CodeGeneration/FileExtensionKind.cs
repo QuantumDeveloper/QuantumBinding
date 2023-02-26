@@ -2,8 +2,7 @@
 {
     public enum FileExtensionKind
     {
-        Disposable,
-        Utils
+        Disposable
     }
 
     

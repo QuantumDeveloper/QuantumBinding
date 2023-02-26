@@ -31,15 +31,19 @@ namespace QuantumBinding.Generator.Processors
 
             if (SubstitutionList.TryGetValue(macro.Name, out var function))
             {
-                if (function.ApplyOnlyReturnType)
+                switch (function.ApplyStrategy)
                 {
-                    macro.Type = function.ReturnType;
-                }
-                else
-                {
-                    macro.Parameters = function.Parameters;
-                    macro.Value = function.FunctionBody;
-                    macro.Type = function.ReturnType;
+                    case MacroFunctionStrategy.ApplyOnlyReturnType:
+                        macro.Type = function.ReturnType;
+                        break;
+                    case MacroFunctionStrategy.ApplyOnlyFunctionBody:
+                        macro.Value = function.FunctionBody;
+                        break;
+                    default:
+                        macro.Parameters = function.Parameters;
+                        macro.Value = function.FunctionBody;
+                        macro.Type = function.ReturnType;
+                        break;
                 }
             }
 

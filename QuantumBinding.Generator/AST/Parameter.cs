@@ -19,7 +19,10 @@ namespace QuantumBinding.Generator.AST
             DefaultValue = parameter.DefaultValue;
             Id = parameter.Id;
             Parent = Parent;
+            IsOverload = parameter.IsOverload;
         }
+        
+        public bool IsOverload { get; set; }
 
         public Declaration Parent { get; set; }
 

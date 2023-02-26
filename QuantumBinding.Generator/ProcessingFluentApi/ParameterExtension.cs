@@ -13,5 +13,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public string DefaultValue { get; set; }
 
         public bool HasDefaultValue => !string.IsNullOrEmpty(DefaultValue);
+        
+        public bool ReplaceDeclaration { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace QuantumBinding.Generator
     {
         public string FileName { get; set; }
 
-        public string NamespaceExtension { get; set; }
+        public string SubNamespace { get; set; }
 
         public string OutputPath { get; set; }
 

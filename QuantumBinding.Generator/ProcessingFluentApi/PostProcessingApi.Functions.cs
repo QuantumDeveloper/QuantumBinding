@@ -140,17 +140,24 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource, uint pointerDepth)
         {
             var pointer = new PointerType();
             pointer.IsNullable = isNullable;
+            _currentParameter.Type = pointer;
+            for (int i = 1; i < pointerDepth; i++)
+            {
+                var ptr = new PointerType();
+                pointer.Pointee = ptr;
+                pointer = ptr;
+            }
+            
             var arrayType = new ArrayType();
             arrayType.ArraySizeSource = arraySizeSource;
             arrayType.SizeType = ArraySizeType.Incomplete;
             arrayType.ElementType = elementType;
             pointer.Pointee = arrayType;
-            _currentParameter.Type = pointer;
-
+            
             return this;
         }
 
@@ -179,6 +186,19 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsIs()
         {
+            return this;
+        }
+
+        public IFunctionParameterName InterpretAsBuiltinType(PrimitiveType type)
+        {
+            _currentParameter.Type = new BuiltinType(PrimitiveType.IntPtr);
+            return this;
+        }
+
+        public IFunctionParameterName ChangeType(BindingType type)
+        {
+            _currentParameter.Type = type;
+            _currentParameter.ReplaceDeclaration = true;
             return this;
         }
 

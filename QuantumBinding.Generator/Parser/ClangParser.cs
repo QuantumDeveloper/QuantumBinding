@@ -11,9 +11,9 @@ using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.Parser
 {
-    public class ClangParser : ICXCursorVisitor
+    public unsafe class ClangParser : ICXCursorVisitor
     {
-        private readonly ISet<string> printedEnums = new HashSet<string>();
+        private readonly ISet<string> visitedEnums = new HashSet<string>();
         private readonly ISet<string> visitedStructs = new HashSet<string>();
         private readonly ISet<string> visitedTypeDefs = new HashSet<string>();
         private readonly HashSet<string> visitedFunctions = new HashSet<string>();
@@ -28,8 +28,8 @@ namespace QuantumBinding.Generator.Parser
         }
 
         private QBTranslationUnit translationUnit;
-        private CXCursorVisitor visitor;
-        private CXCursorVisitor functionPtr;
+        private Delegates.CXCursorVisitor visitor;
+        private Delegates.CXCursorVisitor functionPtr;
 
         public ParseResult Parse(QBIndex index, string filePath, List<string> arguments)
         {
@@ -39,7 +39,7 @@ namespace QuantumBinding.Generator.Parser
             try
             {
                 QBUnsavedFile[] unsavedFile = Array.Empty<QBUnsavedFile>();
-                var translationUnitResult = index.parseTranslationUnit2(
+                var translationUnitResult = index.ParseTranslationUnit2(
                     filePath,
                     arguments.ToArray(),
                     arguments.Count,
@@ -51,13 +51,13 @@ namespace QuantumBinding.Generator.Parser
                 if (translationUnitResult != CXErrorCode.CXError_Success)
                 {
                     Console.WriteLine("Error: " + translationUnitResult);
-                    var numDiagnostics = translationUnit.getNumDiagnostics();
+                    var numDiagnostics = translationUnit.GetNumDiagnostics();
 
                     for (uint i = 0; i < numDiagnostics; ++i)
                     {
-                        var diagnostic = translationUnit.getDiagnostic(i);
-                        Console.WriteLine(diagnostic.getDiagnosticSpelling().ToString());
-                        diagnostic.disposeDiagnostic();
+                        var diagnostic = translationUnit.GetDiagnostic(i);
+                        Console.WriteLine(diagnostic.GetDiagnosticSpelling().ToString());
+                        diagnostic.DisposeDiagnostic();
                     }
                     parseResult = (ParseResult)translationUnitResult;
                     return parseResult;
@@ -65,7 +65,7 @@ namespace QuantumBinding.Generator.Parser
 
                 visitor = VisitDelegate;
 
-                translationUnit.getTranslationUnitCursor().visitChildren(Marshal.GetFunctionPointerForDelegate(visitor) , new QBClientData());
+                translationUnit.GetTranslationUnitCursor().VisitChildren(Marshal.GetFunctionPointerForDelegate(visitor).ToPointer() , new QBClientData());
 
                 parseResult = (ParseResult)translationUnitResult;
             }
@@ -75,7 +75,7 @@ namespace QuantumBinding.Generator.Parser
             }
             finally
             {
-                translationUnit.disposeTranslationUnit();
+                translationUnit.DisposeTranslationUnit();
             }
 
             return parseResult;
@@ -93,7 +93,7 @@ namespace QuantumBinding.Generator.Parser
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            CXCursorKind curKind = cursor.getCursorKind();
+            CXCursorKind curKind = cursor.GetCursorKind();
             switch (curKind)
             {
                 case CXCursorKind.CXCursor_EnumDecl:
@@ -114,7 +114,7 @@ namespace QuantumBinding.Generator.Parser
 
         private CXChildVisitResult VisitEnum(QBCursor cursor, QBCursor parent, QBClientData data)
         {
-            var enumName = cursor.getCursorSpelling().ToString();
+            var enumName = cursor.GetCursorSpelling().ToString();
 
             // enumName can be empty because of typedef enum { .. } enumName;
             // so we have to find the sibling, and this is the only way I've found
@@ -122,8 +122,8 @@ namespace QuantumBinding.Generator.Parser
             if (string.IsNullOrEmpty(enumName))
             {
                 var forwardDeclaringVisitor = new ForwardDeclarationVisitor(cursor);
-                cursor.getCursorLexicalParent().visitChildren(forwardDeclaringVisitor.VisitorPtr, data);
-                enumName = forwardDeclaringVisitor.ForwardDeclarationCursor.getCursorSpelling().ToString();
+                cursor.GetCursorLexicalParent().VisitChildren(forwardDeclaringVisitor.VisitorPtr.ToPointer(), data);
+                enumName = forwardDeclaringVisitor.ForwardDeclarationCursor.GetCursorSpelling().ToString();
 
                 if (string.IsNullOrEmpty(enumName))
                 {
@@ -132,7 +132,7 @@ namespace QuantumBinding.Generator.Parser
             }
 
             // if we've printed these previously, skip them
-            if (printedEnums.Contains(enumName))
+            if (visitedEnums.Contains(enumName))
             {
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
@@ -143,16 +143,17 @@ namespace QuantumBinding.Generator.Parser
             {
                 Location = ClangUtils.GetCurrentCursorLocation(cursor),
                 Name = enumName,
+                OriginalName = enumName,
                 InheritanceType = inheritedEnumType,
                 Comment = GetComment(cursor)
             };
 
-            printedEnums.Add(enumName);
+            visitedEnums.Add(enumName);
 
             functionPtr = VisitEnumItemsDelegate;
 
             // visit all the enum values
-            cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
+            cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr).ToPointer(), new QBClientData());
 
             CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
             {
@@ -163,8 +164,8 @@ namespace QuantumBinding.Generator.Parser
             {
                 var enumItemDescriptor = new EnumerationItem
                 {
-                    Name = cursor.getCursorSpelling().ToString(),
-                    Value = cursor.getEnumConstantDeclValue(),
+                    Name = cursor.GetCursorSpelling().ToString(),
+                    Value = cursor.GetEnumConstantDeclValue(),
                     Comment = GetComment(cursor)
                 };
                 @enum.Items.Add(enumItemDescriptor);
@@ -225,16 +226,16 @@ namespace QuantumBinding.Generator.Parser
         private CXChildVisitResult VisitStruct(QBCursor cursor, QBCursor parent, QBClientData data)
         {
             fieldPosition = 0;
-            var structName = cursor.getCursorSpelling().ToString();
+            var structName = cursor.GetCursorSpelling().ToString();
 
             // struct names can be empty, and so we visit its sibling to find the name
             if (string.IsNullOrEmpty(structName))
             {
                 var forwardDeclaringVisitor = new ForwardDeclarationVisitor(cursor);
-                cursor.getCursorSemanticParent().visitChildren(
-                    forwardDeclaringVisitor.VisitorPtr,
+                cursor.GetCursorSemanticParent().VisitChildren(
+                    forwardDeclaringVisitor.VisitorPtr.ToPointer(),
                     new QBClientData());
-                structName = forwardDeclaringVisitor.ForwardDeclarationCursor.getCursorSpelling().ToString();
+                structName = forwardDeclaringVisitor.ForwardDeclarationCursor.GetCursorSpelling().ToString();
 
                 if (string.IsNullOrEmpty(structName))
                 {
@@ -250,12 +251,13 @@ namespace QuantumBinding.Generator.Parser
             var @class = new Class
             {
                 Name = structName,
+                OriginalName = structName,
                 ClassType = ClassType.Struct,
                 Location = ClangUtils.GetCurrentCursorLocation(cursor),
                 Comment = GetComment(cursor)
             };
 
-            var kind = cursor.getCursorKind();
+            var kind = cursor.GetCursorKind();
             if (kind == CXCursorKind.CXCursor_UnionDecl)
             {
                 @class.ClassType = ClassType.Union;
@@ -263,7 +265,7 @@ namespace QuantumBinding.Generator.Parser
 
             functionPtr = VisitStructFieldsNative;
 
-            cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
+            cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr).ToPointer(), new QBClientData());
 
             CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
             {
@@ -272,9 +274,9 @@ namespace QuantumBinding.Generator.Parser
 
             CXChildVisitResult VisitStructFields(QBCursor cursor, QBCursor parent, QBClientData data)
             {
-                var fieldName = cursor.getCursorSpelling().ToString();
+                var fieldName = cursor.GetCursorSpelling().ToString();
                 //var cursorType0 = clang.getCanonicalType(clang.getCursorType(cxCursor));
-                var cursorType = cursor.getCursorType();
+                var cursorType = cursor.GetCursorType();
                 var fieldType = cursorType.GetBindingType();
                 if (string.IsNullOrEmpty(fieldName))
                 {
@@ -302,7 +304,7 @@ namespace QuantumBinding.Generator.Parser
 
         private CXChildVisitResult VisitTypedef(QBCursor cursor, QBCursor parent, QBClientData data)
         {
-            var spelling = cursor.getCursorSpelling().ToString();
+            var spelling = cursor.GetCursorSpelling().ToString();
 
             if (visitedTypeDefs.Contains(spelling))
             {
@@ -311,10 +313,10 @@ namespace QuantumBinding.Generator.Parser
 
             visitedTypeDefs.Add(spelling);
 
-            var type = cursor.getTypedefDeclUnderlyingType().getCanonicalType();
+            var type = cursor.GetTypedefDeclUnderlyingType().GetCanonicalType();
 
             // we handle enums and records in struct and enum visitors with forward declarations also
-            if (type.Kind == CXTypeKind.CXType_Record || type.Kind == CXTypeKind.CXType_Enum)
+            if (type.Kind is CXTypeKind.CXType_Record or CXTypeKind.CXType_Enum)
             {
                 var @class = unit.AllClasses.FirstOrDefault(x => x.Name == type.ToString());
                 if (@class != null && @class.Name != spelling)
@@ -332,7 +334,7 @@ namespace QuantumBinding.Generator.Parser
             // no idea what this is? -- template stuff?
             if (type.Kind == CXTypeKind.CXType_Unexposed)
             {
-                var canonical = type.getCanonicalType();
+                var canonical = type.GetCanonicalType();
                 if (canonical.Kind == CXTypeKind.CXType_Unexposed)
                 {
                     return CXChildVisitResult.CXChildVisit_Continue;
@@ -341,8 +343,8 @@ namespace QuantumBinding.Generator.Parser
 
             if (type.Kind == CXTypeKind.CXType_Pointer)
             {
-                var pointee = type.getPointeeType();
-                if (pointee.Kind == CXTypeKind.CXType_Record || pointee.Kind == CXTypeKind.CXType_Void)
+                var pointee = type.GetPointeeType();
+                if (pointee.Kind is CXTypeKind.CXType_Record or CXTypeKind.CXType_Void)
                 {
                     var convertToClass = unit.Module.AllowConvertStructToClass;
                     var classType = convertToClass ? ClassType.Class : ClassType.Struct;
@@ -356,6 +358,7 @@ namespace QuantumBinding.Generator.Parser
                     {
                         Location = ClangUtils.GetCurrentCursorLocation(cursor),
                         Name = spelling,
+                        OriginalName = spelling,
                         IsTypedef = true,
                         IsPointer = true,
                         ClassType = classType,
@@ -371,7 +374,7 @@ namespace QuantumBinding.Generator.Parser
                         var field1 = new Field();
                         field1.AccessSpecifier = AccessSpecifier.Public;
                         field1.Name = "pointer";
-                        field1.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                        field1.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                         @struct.AddField(field1);
                         AddDeclaration(@struct);
                         @class.InnerStruct = @struct;
@@ -385,7 +388,7 @@ namespace QuantumBinding.Generator.Parser
                     var dependentType = new DependentNameType(@class.Name, pointeeName);
                     dependentType.Declaration = @class;
                     @class.UnderlyingNativeType = dependentType;
-
+                    
                     var field = new Field();
                     if (classType == ClassType.Class)
                     {
@@ -394,11 +397,11 @@ namespace QuantumBinding.Generator.Parser
                         field.Type = new CustomType(@class.InnerStruct.Name);
                         field.Type.Declaration = @class.InnerStruct;
                     }
-                    else if (classType == ClassType.Struct)
+                    else
                     {
                         field.AccessSpecifier = AccessSpecifier.Public;
                         field.Name = "pointer";
-                        field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                        field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                     }
 
                     @class.AddField(field);
@@ -434,7 +437,7 @@ namespace QuantumBinding.Generator.Parser
                             var innerField = new Field();
                             innerField.AccessSpecifier = AccessSpecifier.Public;
                             innerField.Name = "pointer";
-                            innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                            innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                             Constructor ctr2 = new Constructor() { Class = @class.InnerStruct };
                             ctr2.InputParameters.Add(innerField);
                             @class.InnerStruct.AddConstructor(ctr2);
@@ -451,7 +454,7 @@ namespace QuantumBinding.Generator.Parser
                     var callback = new Delegate();
                     callback.Location = ClangUtils.GetCurrentCursorLocation(cursor);
                     callback.CallingConvention = pointee.GetCallingConvention();
-                    callback.ReturnType = pointee.getResultType().GetBindingType();
+                    callback.ReturnType = pointee.GetResultType().GetBindingType();
                     callback.Name = spelling;
                     callback.Comment = GetComment(cursor);
 
@@ -464,7 +467,7 @@ namespace QuantumBinding.Generator.Parser
 
                     functionPtr = VisitFunctionProtoNative;
 
-                    cursor.visitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr), new QBClientData());
+                    cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(functionPtr).ToPointer(), new QBClientData());
 
                     CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientDataImpl client_data)
                     {
@@ -490,7 +493,7 @@ namespace QuantumBinding.Generator.Parser
                 }
             }
 
-            if (type.isPODType() != 0)
+            if (type.IsPODType() != 0)
             {
                 // POD - plain old data type (C++ 3.9p10)
                 var podType = type.GetPrimitiveType();
@@ -500,6 +503,7 @@ namespace QuantumBinding.Generator.Parser
                     ClassType = ClassType.Struct,
                     Location = ClangUtils.GetCurrentCursorLocation(cursor),
                     Name = spelling,
+                    OriginalName = spelling,
                     IsTypedef = true,
                     IsSimpleType = true,
                     Comment = GetComment(cursor)
@@ -545,7 +549,7 @@ namespace QuantumBinding.Generator.Parser
 
         private CXChildVisitResult VisitFunction(QBCursor cursor, QBCursor parent, QBClientData data)
         {
-            var functionName = cursor.getCursorSpelling().ToString();
+            var functionName = cursor.GetCursorSpelling().ToString();
 
             if (this.visitedFunctions.Contains(functionName))
             {
@@ -567,9 +571,9 @@ namespace QuantumBinding.Generator.Parser
 
         private CXChildVisitResult VisitMacro(QBCursor cursor, QBCursor parent, QBClientData data)
         {
-            var spelling = cursor.getCursorSpelling();
+            var spelling = cursor.GetCursorSpelling();
             var macroName = spelling.ToString();
-            if (this.visitedMacros.Contains(spelling.ToString()))
+            if (visitedMacros.Contains(spelling.ToString()))
             {
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
@@ -583,8 +587,8 @@ namespace QuantumBinding.Generator.Parser
             macro.IsFunctionLike = cursor.Cursor_isMacroFunctionLike() != 0;
             macro.Comment = GetComment(cursor);
 
-            var extCur = cursor.getCursorExtent();
-            translationUnit.tokenize(extCur, out var tokens, out uint numTokens);
+            var extCur = cursor.GetCursorExtent();
+            translationUnit.Tokenize(extCur, out var tokens, out uint numTokens);
 
             for (var i = 0; i < tokens.Length; i++)
             {
@@ -596,8 +600,8 @@ namespace QuantumBinding.Generator.Parser
 
                 var tkn = new MacroToken
                 {
-                    Item = translationUnit.getTokenSpelling(token).ToString(),
-                    TokenKind = (MacroTokenKind)token.getTokenKind()
+                    Item = translationUnit.GetTokenSpelling(token).ToString(),
+                    TokenKind = (MacroTokenKind)token.GetTokenKind()
                 };
                 macro.Value += tkn.Item;
                 macro.Tokens.Add(tkn);

@@ -1,4 +1,5 @@
 ﻿using System;
+using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.AST
 {
@@ -11,17 +12,35 @@ namespace QuantumBinding.Generator.AST
 
         public string Name { get; set; }
 
+        public string FullName => string.IsNullOrEmpty(Namespace) ? Name : $"{Namespace}.{Name}";
+
+        public string OriginalName { get; set; }
+
         public FileLocation Location { get; set; }
 
         public TranslationUnit Owner { get; set; }
-
-        public string AlternativeNamespace { get; set; }
 
         public Comment Comment { get; set; }
 
         public bool IsIgnored { get; set; }
 
-        public string Id { get; set; }
+        public string Id { get; init; }
+        
+        public string Namespace
+        {
+            get
+            {
+                if (Owner == null)
+                {
+                    return string.Empty;
+                }
+                
+                var fullNamespace = Owner.FullNamespace;
+                return this.IsInteropType() ? $"{fullNamespace}.{Owner.Module.InteropSubNamespace}" : fullNamespace;
+            }
+        }
+
+        public string InteropNamespace => $"{Owner.FullNamespace}.{Owner.Module.InteropSubNamespace}";
 
         public abstract T Visit<T>(IDeclarationVisitor<T> visitor);
 

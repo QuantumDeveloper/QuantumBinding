@@ -27,7 +27,7 @@ namespace QuantumBinding.Generator.AST
         public ReadOnlyCollection<Macro> Macros => declarations.Where(x => x is Macro).Cast<Macro>().ToList().AsReadOnly();
 
         public ReadOnlyCollection<Enumeration> Enums => declarations.Where(x => x is Enumeration).Cast<Enumeration>().ToList().AsReadOnly();
-
+        
         public ReadOnlyCollection<Class> AllClasses => declarations.Where(x => x is Class).Cast<Class>().ToList().AsReadOnly();
 
         public ReadOnlyCollection<Class> Classes => AllClasses.Where(x => x.ClassType == ClassType.Class).ToList().AsReadOnly();
@@ -36,7 +36,7 @@ namespace QuantumBinding.Generator.AST
 
         public ReadOnlyCollection<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList().AsReadOnly();
 
-        public ReadOnlyCollection<Class> Wrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper || x.ClassType == ClassType.UnionWrapper).ToList().AsReadOnly();
+        public ReadOnlyCollection<Class> Wrappers => AllClasses.Where(x => x.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper).ToList().AsReadOnly();
 
         public ReadOnlyCollection<Class> StructWrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList().AsReadOnly();
 
@@ -102,8 +102,11 @@ namespace QuantumBinding.Generator.AST
                     case GeneratorSpecializations.Delegates:
                         isAvailable |= Delegates.Count > 0;
                         break;
-                    case GeneratorSpecializations.Constants:
+                    case GeneratorSpecializations.Macros:
                         isAvailable |= Macros.Count > 0;
+                        break;
+                    case GeneratorSpecializations.ExtensionMethods:
+                        isAvailable |= ExtensionClasses.Count > 0;
                         break;
                 }
             }
@@ -160,6 +163,8 @@ namespace QuantumBinding.Generator.AST
 
         public void AddDeclaration(Declaration declaration)
         {
+            if (declaration == null) return;
+            
             Declaration decl = null;
             switch(declaration)
             {

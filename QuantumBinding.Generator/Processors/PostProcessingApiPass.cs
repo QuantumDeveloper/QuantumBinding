@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.ProcessingFluentApi;
+using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -53,6 +54,14 @@ namespace QuantumBinding.Generator.Processors
                 {
                     var decl = param.Type.Declaration;
                     param.Type = parameter.Type;
+                    if (parameter.ReplaceDeclaration)
+                    {
+                        foreach (var unit in AstContext.TranslationUnits)
+                        {
+                            decl = unit.Declarations.FirstOrDefault(x => x.Name == parameter.Type.ToString());
+                            if (decl != null) break;
+                        }
+                    }
                     param.Type.Declaration = decl;
                 }
 
@@ -126,6 +135,14 @@ namespace QuantumBinding.Generator.Processors
                 {
                     var decl = param.Type.Declaration;
                     param.Type = parameter.Type;
+                    if (parameter.ReplaceDeclaration)
+                    {
+                        foreach (var unit in AstContext.TranslationUnits)
+                        {
+                            decl = unit.Declarations.FirstOrDefault(x => x.Name == parameter.Type.ToString());
+                            if (decl != null) break;
+                        }
+                    }
                     param.Type.Declaration = decl;
                 }
 
@@ -145,16 +162,11 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (@class.Name == "VkDeviceCreateInfo")
-            {
-
-            }
-
             if (!fixApi.TryGetClass(@class.Name, false, out ClassExtension classFix))
             {
                 return false;
             }
-
+            
             if (classFix.IsDisposable)
             {
                 @class.IsDisposable = classFix.IsDisposable;
@@ -163,7 +175,7 @@ namespace QuantumBinding.Generator.Processors
 
             if (classFix.ClassType != ClassType.Unknown)
             {
-                classFix.ClassType = classFix.ClassType;
+                @class.ClassType = classFix.ClassType;
             }
 
             if (classFix.UnderlyingNativeType != null)
@@ -193,6 +205,14 @@ namespace QuantumBinding.Generator.Processors
                 {
                     var decl = field.Type.Declaration;
                     field.Type = fieldFix.Type;
+                    if (fieldFix.ReplaceDeclaration)
+                    {
+                        foreach (var translationUnit in AstContext.TranslationUnits)
+                        {
+                            decl = translationUnit.Declarations.FirstOrDefault(x => x.Name == fieldFix.Type.ToString());
+                            if (decl != null) break;
+                        }
+                    }
                     field.Type.Declaration = decl;
                 }
             }

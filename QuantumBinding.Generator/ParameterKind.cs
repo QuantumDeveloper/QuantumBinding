@@ -5,7 +5,7 @@
         Unknown,
         In,
         Out,
-        InOut, // ref
+        Ref, // ref
         Readonly // in (analogue of const in C++) => starting from C# 7.2
     }
 }

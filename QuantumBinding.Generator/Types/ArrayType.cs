@@ -84,5 +84,10 @@ namespace QuantumBinding.Generator.Types
         {
             return !(type1 == type2);
         }
+
+        public override string ToString()
+        {
+            return ElementType.ToString();
+        }
     }
 }

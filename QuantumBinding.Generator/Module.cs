@@ -21,9 +21,10 @@ namespace QuantumBinding.Generator
             namespaceMapping = new List<NamespaceMapping>();
             TranslationUnits = new List<TranslationUnit>();
             GeneratorSpecializations = GeneratorSpecializations.All;
+            CleanPreviousGeneration = true;
         }
 
-        private List<NamespaceMapping> namespaceMapping;
+        private readonly List<NamespaceMapping> namespaceMapping;
 
         internal List<TranslationUnit> TranslationUnits { get; }
 
@@ -32,12 +33,22 @@ namespace QuantumBinding.Generator
         public List<string> Files { get; set; }
 
         public List<string> IncludeDirs { get; set; }
+        
+        public GeneratorMode GeneratorMode { get; set; }
+        
+        public bool EachTypeInSeparateFile { get; set; }
+        
+        public bool CleanPreviousGeneration { get; set; }
+        
+        public string FileHeader { get; set; }
 
         public string OutputPath { get; set; }
 
         public string OutputFileName { get; set; }
 
         public string OutputNamespace { get; set; }
+        
+        public string InteropSubNamespace { get; set; } 
 
         public string LibraryName { get; set; }
 
@@ -47,9 +58,11 @@ namespace QuantumBinding.Generator
 
         public bool ForceCallingConvention { get; set; }
 
-        public bool SkipPodTypesGeneration { get; set; }
+        public bool SkipGenerationForSimpleTypes { get; set; }
 
         public bool AllowConvertStructToClass { get; set; }
+        
+        public AccessSpecifier InteropClassAccessSpecifier { get; set; }
 
         public CallingConvention CallingConvention { get; set; }
 
@@ -60,19 +73,13 @@ namespace QuantumBinding.Generator
         public bool WrapInteropObjects { get; set; }
 
         public bool CharAsBoolForMethods { get; set; }
-
+        
         /// <summary>
         /// Create overloads for functions, which contains input arrays
         /// </summary>
         public bool GenerateOverloadsForArrayParams { get; set; }
 
-        public static string UtilsOutputPath { get; set; }
-
-        public static string UtilsOutputName { get; set; }
-
-        public static string UtilsNamespace { get; set; }
-
-        public static Module GenerateUtilsForModule { get; set; }
+        public static string UtilsNamespace => "QuantumBinding.Utils";
 
         public List<string> Defines { get; set; }
 
@@ -82,8 +89,13 @@ namespace QuantumBinding.Generator
 
         public void AddNamespaceMapping(string fileName, string subNamespace, string outputFilePath, bool replaceBaseNamespace = false)
         {
-            var @namespace = new NamespaceMapping() { FileName = fileName, NamespaceExtension = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = replaceBaseNamespace};
+            var @namespace = new NamespaceMapping() { FileName = fileName, SubNamespace = subNamespace, OutputPath = outputFilePath, ReplaceBaseNameSpace = replaceBaseNamespace};
             namespaceMapping.Add(@namespace);
+        }
+
+        public static Module Create(string libraryName)
+        {
+            return new Module(libraryName);
         }
     }
 }

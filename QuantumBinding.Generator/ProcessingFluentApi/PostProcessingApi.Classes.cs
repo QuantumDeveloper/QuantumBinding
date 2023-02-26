@@ -124,6 +124,14 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField ISetField.SetType(BindingType type)
         {
             _currentField.Type = type ?? throw new ArgumentNullException(nameof(type));
+            _currentField.ReplaceDeclaration = false;
+
+            return this;
+        }
+
+        ISetField ISetField.ChangeType()
+        {
+            _currentField.ReplaceDeclaration = true;
 
             return this;
         }
@@ -246,16 +254,40 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return false;
         }
 
-        ISetField ISetField.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource)
+        ISetField ISetField.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource, uint pointerDepth)
         {
             var pointer = new PointerType();
             pointer.IsNullable = isNullable;
+            _currentField.Type = pointer;
+            for (int i = 1; i < pointerDepth; i++)
+            {
+                var ptr = new PointerType();
+                pointer.Pointee = ptr;
+                pointer = ptr;
+            }
+            
             var arrayType = new ArrayType();
             arrayType.ArraySizeSource = arraySizeSource;
             arrayType.SizeType = ArraySizeType.Incomplete;
             arrayType.ElementType = elementType;
             pointer.Pointee = arrayType;
+            
+            return this;
+        }
+
+        public ISetField InterpretAsPointerToPrimitiveType(PrimitiveType primitiveType, uint pointerDepth = 1)
+        {
+            var pointer = new PointerType();
             _currentField.Type = pointer;
+            for (int i = 1; i < pointerDepth; i++)
+            {
+                var ptr = new PointerType();
+                pointer.Pointee = ptr;
+                pointer = ptr;
+            }
+
+            var builtin = new BuiltinType(PrimitiveType.Void);
+            pointer.Pointee = builtin;
 
             return this;
         }
@@ -279,6 +311,26 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         ISetField ISetField.InterpretAsIs()
         {
+            return this;
+        }
+
+        public ISetField InterpretAs(BindingType type)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            
+            _currentField.Type = type;
+            return this;
+        }
+
+        public ISetField InterpretAsCustomType(string typeName)
+        {
+            _currentField.Type = new CustomType(typeName);
+            return this;
+        }
+
+        public ISetField InterpretAsDelegateType(IEnumerable<Parameter> parameters, string name)
+        {
+            _currentField.Type = new DelegateType() { Name = name, Parameters = new List<Parameter>(parameters)};
             return this;
         }
 

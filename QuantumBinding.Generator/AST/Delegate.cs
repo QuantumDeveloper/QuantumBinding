@@ -46,7 +46,6 @@ namespace QuantumBinding.Generator.AST
                 Name = Name,
                 Location = Location,
                 Owner = Owner,
-                AlternativeNamespace = AlternativeNamespace,
                 Comment = (Comment)Comment.Clone(),
                 IsIgnored = IsIgnored,
                 Id = Id,

@@ -110,99 +110,46 @@ namespace QuantumBinding.Generator
             }
         }
 
-        public virtual TypePrinterResult VisitArrayType(ArrayType array)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitArrayType(ArrayType array);
 
-        public virtual TypePrinterResult VisitPointerType(PointerType pointer)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitPointerType(PointerType pointer);
 
-        public virtual TypePrinterResult VisitBuiltinType(BuiltinType builtin)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitBuiltinType(BuiltinType builtin);
 
-        public virtual TypePrinterResult VisitCustomType(CustomType customType)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitCustomType(CustomType customType);
+        public abstract TypePrinterResult VisitDelegateType(DelegateType delegateType);
 
-        public virtual TypePrinterResult VisitDependentNameType(DependentNameType dependentNameType)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitDependentNameType(DependentNameType dependentNameType);
 
-        public virtual TypePrinterResult VisitEnum(Enumeration enumeration)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitEnum(Enumeration enumeration);
 
-        public virtual TypePrinterResult VisitEnumItem(EnumerationItem item)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitEnumItem(EnumerationItem item);
 
-        public virtual TypePrinterResult VisitFunction(Function function)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitFunction(Function function);
 
-        public virtual TypePrinterResult VisitDelegate(Delegate @delegate)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitDelegate(Delegate @delegate);
 
-        public virtual TypePrinterResult VisitParameter(Parameter parameter)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitParameter(Parameter parameter);
 
-        public virtual TypePrinterResult VisitClass(Class @class)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitClass(Class @class);
 
-        public virtual TypePrinterResult VisitField(Field field)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitField(Field field);
 
-        public virtual TypePrinterResult VisitProperty(Property property)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitProperty(Property property);
 
-        public virtual TypePrinterResult VisitMethod(Method method)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract TypePrinterResult VisitMethod(Method method);
+        
+        public abstract TypePrinterResult VisitParameters(
+            IEnumerable<Parameter> @params,
+            MarshalTypes marshalType,
+            bool isExtensionMethod = false);
 
-        public virtual TypePrinterResult VisitMacro(Macro macros)
-        {
-            throw new System.NotImplementedException();
-        }
+        public virtual TypePrinterResult VisitMacro(Macro macros) => string.Empty;
 
-        public virtual TypePrinterResult VisitNamespace(Namespace @namespace)
-        {
-            throw new System.NotImplementedException();
-        }
+        public virtual TypePrinterResult VisitNamespace(Namespace @namespace) => string.Empty;
 
-        public virtual TypePrinterResult VisitTranslationUnit(TranslationUnit translationUnit)
-        {
-            throw new System.NotImplementedException();
-        }
+        public virtual TypePrinterResult VisitTranslationUnit(TranslationUnit translationUnit) => string.Empty;
 
-        public virtual TypePrinterResult VisitParameters(IEnumerable<Parameter> @params, MarshalTypes marshalType, bool isExtensionMethod = false)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public virtual TypePrinterResult VisitComment(Comment comment)
-        {
-            throw new System.NotImplementedException();
-        }
+        public virtual TypePrinterResult VisitComment(Comment comment) => string.Empty;
     }
 }

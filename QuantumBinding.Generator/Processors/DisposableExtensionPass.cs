@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.ProcessingFluentApi;
@@ -15,23 +16,28 @@ namespace QuantumBinding.Generator.Processors
             CodeGeneratorPassKind = ExecutionPassKind.PerTranslationUnit;
         }
 
-        protected override CodeGenerator OnCreateGenerator(ProcessingContext context, GeneratorSpecializations specializations, params TranslationUnit[] units)
+        protected override CodeGenerator OnCreateGenerator(GeneratorCategory category, params TranslationUnit[] units)
         {
-            foreach (var unit in units)
+            return new FileExtensionGenerator(ProcessingContext, units);
+        }
+
+        protected override List<CodeGenerator> ProcessPerTypeCodeGeneration(TranslationUnit unit, GeneratorSpecializations specs)
+        {
+            var classes = unit.Classes.Where(x => !x.IsIgnored).ToList();
+            foreach (var @class in classes)
             {
-                var classes = unit.Classes.Where(x => !x.IsIgnored).ToList();
-                foreach (var @class in classes)
+                var disposable = disposableClasses.FirstOrDefault(x => x.Name == @class.Name);
+                if (disposable != null)
                 {
-                    var disposable = disposableClasses.FirstOrDefault(x => x.Name == @class.Name);
-                    if (disposable != null)
-                    {
-                        @class.IsDisposable = true;
-                        @class.DisposeBody = disposable.DisposableContent;
-                    }
+                    @class.IsExtension = true;
+                    @class.IsDisposable = true;
+                    @class.DisposeBody = disposable.DisposableContent;
                 }
             }
 
-            return new FileExtensionGenerator(context, units, FileExtensionKind.Disposable);
+            classes = unit.Classes.Where(x => x.IsDisposable).ToList();
+            
+            return ProcessDeclarations(classes, unit);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace QuantumBinding.Generator.AST
     {
         static TranslationUnit()
         {
-            InteropNamespaceExtension = new NamespaceMapping() { FileName = "Marshal", NamespaceExtension = "Interop", OutputPath = "Interop" };
+            InteropNamespaceExtension = new NamespaceMapping() { FileName = "Interop", SubNamespace = "Interop", OutputPath = "Interop" };
         }
 
         public TranslationUnit(string filePath, Module module)

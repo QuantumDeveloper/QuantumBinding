@@ -2,7 +2,7 @@
 {
     public class SequentialRegexRenamePass : RegexRenamePass
     {
-        private RegexRenameRunItem[] regexRenameItems;
+        private readonly RegexRenameRunItem[] regexRenameItems;
 
         public SequentialRegexRenamePass(params RegexRenameRunItem[] items)
         {
