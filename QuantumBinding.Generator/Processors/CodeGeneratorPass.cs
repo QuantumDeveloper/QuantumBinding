@@ -56,7 +56,7 @@ namespace QuantumBinding.Generator.Processors
                     string name = $"{unit.FullNamespace}";
                     if (!string.IsNullOrEmpty(OutputFileName))
                     {
-                        name += $".{ OutputFileName}";
+                        name += $".{OutputFileName}";
                     }
                     var outputs = GenerateInternal(unit);
                     var tu = new TranslationUnit(OutputFileName, AstContext.Module) { Name = name, OutputPath = unit.OutputPath };
@@ -74,9 +74,9 @@ namespace QuantumBinding.Generator.Processors
             var outputs = new List<CodeGenerator>();
             if (GeneratorSpecializations == GeneratorSpecializations.None)
             {
-                var generator = OnCreateGenerator(ProcessingContext, GeneratorSpecializations,translationUnits.ToArray());
+                var generator = OnCreateGenerator(GeneratorCategory.Undefined, translationUnits.ToArray());
                 generator.Run();
-                if (!generator.IsGeneratorEmpty)
+                if (!generator.IsEmpty)
                 {
                     outputs.Add(generator);
                 }
@@ -87,25 +87,54 @@ namespace QuantumBinding.Generator.Processors
 
                 foreach (var unit in translationUnits)
                 {
+                    if (unit.IsEmpty) continue;
+                    
                     foreach (var spec in specs)
                     {
-                        if (spec == GeneratorSpecializations.All || unit.IsEmpty || !unit.IsSpecializationsAvailable(spec))
+                        if (spec == GeneratorSpecializations.All)
                             continue;
 
-                        var generator = OnCreateGenerator(ProcessingContext, spec, unit);
-                        generator.Run();
-                        if (generator.IsGeneratorEmpty)
+                        if (AstContext.Module.EachTypeInSeparateFile)
                         {
-                            continue;
+                            var generators = ProcessPerTypeCodeGeneration(unit, spec);
+                            
+                            outputs.AddRange(generators);
                         }
-                        outputs.Add(generator);
+                        else
+                        {
+                            var generator = OnCreateGenerator((GeneratorCategory)spec, unit);
+                            generator.Run();
+                            if (generator.IsEmpty) continue;
+                            
+                            outputs.Add(generator);
+                        }
                     }
                 }
             }
 
             return outputs;
         }
+        
+        protected List<CodeGenerator> ProcessDeclarations(IEnumerable<Declaration> declarations, TranslationUnit unit)
+        {
+            var codeGenerators = new List<CodeGenerator>();
+            foreach (var type in declarations)
+            {
+                var category = type.GetCategory();
 
-        protected virtual CodeGenerator OnCreateGenerator(ProcessingContext context, GeneratorSpecializations specializations, params TranslationUnit[] units) { return null; }
+                var generator = OnCreateGenerator(category, unit);
+                generator.Run(type);
+                
+                if (generator.IsEmpty) continue;
+                
+                codeGenerators.Add(generator);
+            }
+
+            return codeGenerators;
+        }
+
+        protected abstract CodeGenerator OnCreateGenerator(GeneratorCategory category, params TranslationUnit[] units);
+
+        protected abstract List<CodeGenerator> ProcessPerTypeCodeGeneration(TranslationUnit unit, GeneratorSpecializations specializations);
     }
 }

@@ -6,15 +6,19 @@ namespace QuantumBinding.Generator.CodeGeneration
     public enum GeneratorSpecializations
     {
         None = 0,
-        Constants = 1,
+        Macros = 1,
         Enums = 2,
         Structs = 4,
         Unions = 8,
         Classes = 16,
         Delegates = 32,
-        Functions = 64,
-        StructWrappers = 128,
-        UnionWrappers = 256,
-        All = Constants|Enums|Structs|Unions|Classes|Delegates|Functions|StructWrappers|UnionWrappers
+        OldFashionDelegates = 64,
+        Functions = 128,
+        StructWrappers = 256,
+        UnionWrappers = 512,
+        StaticMethods = 1024,
+        ExtensionMethods = 2048,
+        Extensions = 4096,
+        All = Macros|Enums|Structs|Unions|Classes|Delegates|OldFashionDelegates|Functions|StructWrappers|UnionWrappers|StaticMethods|ExtensionMethods|Extensions
     }
 }

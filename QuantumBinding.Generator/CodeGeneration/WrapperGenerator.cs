@@ -1,29 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
-using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.CodeGeneration
 {
     public class WrapperGenerator : CSharpCodeGenerator
     {
-        public WrapperGenerator(ProcessingContext context, TranslationUnit unit, GeneratorSpecializations specializations) : 
-            base(context, unit, specializations)
+        private string interopNamespace = TranslationUnit.InteropNamespaceExtension.SubNamespace;
+        
+        public WrapperGenerator(ProcessingContext context, TranslationUnit unit, GeneratorCategory category) : 
+            base(context, unit, category)
         {
         }
 
-        public WrapperGenerator(ProcessingContext context, IEnumerable<TranslationUnit> units, GeneratorSpecializations specializations) : 
-            base(context, units, specializations)
+        public WrapperGenerator(ProcessingContext context, IEnumerable<TranslationUnit> units, GeneratorCategory category) : 
+            base(context, units, category)
         {
         }
-
-        string interopNamespace = TranslationUnit.InteropNamespaceExtension.NamespaceExtension;
 
         public override void Run()
         {
+            if (Category == GeneratorCategory.Undefined)
+            {
+                return;
+            }
+            
+            Name = Category.ToString();
+            
             PushBlock(CodeBlockKind.Root);
 
             GenerateFileHeader();
@@ -32,19 +36,15 @@ namespace QuantumBinding.Generator.CodeGeneration
             {
                 CurrentTranslationUnit = unit;
 
-                SetAlternativeNamespace(unit);
-
                 TypePrinter.PushModule(unit.Module);
 
                 NewLine();
 
                 PushBlock(CodeBlockKind.Namespace);
+                
+                GenerateUsings();
 
                 WriteCurrentNamespace(CurrentTranslationUnit);
-
-                WriteOpenBraceAndIndent();
-
-                GenerateUsings();
 
                 UsingsBlock.WriteLine($"using {CurrentTranslationUnit.Module.OutputNamespace};");
 
@@ -52,43 +52,44 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 GenerateWrappers(CurrentTranslationUnit);
 
-                UnindentAndWriteCloseBrace();
-
                 PopBlock();
             }
 
             PopBlock();
         }
+        
+        protected override bool IsDeclarationEqualsSpec(Declaration decl, GeneratorSpecializations spec)
+        {
+            switch (spec)
+            {
+                case GeneratorSpecializations.StructWrappers when decl is Class @class && @class.ClassType == ClassType.StructWrapper:
+                case GeneratorSpecializations.UnionWrappers when decl is Class @struct && @struct.ClassType == ClassType.UnionWrapper:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        
+        protected override void GenerateDeclaration(Declaration declaration)
+        {
+            switch (declaration)
+            {
+                case Class { ClassType: ClassType.StructWrapper or ClassType.UnionWrapper } @class:
+                    GenerateStructWrapper(@class);
+                    break;
+            }
+        }
 
         private void GenerateWrappers(TranslationUnit unit)
         {
-            var dict = new Dictionary<GeneratorSpecializations, Action>
+            var dict = new Dictionary<GeneratorCategory, Action>
             {
-                { GeneratorSpecializations.StructWrappers, () => GenerateStructWrappers(unit) },
-                { GeneratorSpecializations.UnionWrappers, () => GenerateUnionWrappers(unit) }
+                { GeneratorCategory.StructWrappers, () => GenerateStructWrappers(unit) },
+                { GeneratorCategory.UnionWrappers, () => GenerateUnionWrappers(unit) }
             };
-
-            var parts = Specializations.GetFlags();
-
-            if (Specializations == GeneratorSpecializations.None)
-            {
-                foreach (var action in dict)
-                {
-                    action.Value.Invoke();
-                    NewLine();
-                }
-            }
-            else
-            {
-                foreach (var part in parts)
-                {
-                    if (part == GeneratorSpecializations.All || !dict.ContainsKey(part))
-                        continue;
-
-                    dict[part].Invoke();
-                    NewLine();
-                }
-            }
+            
+            dict[Category].Invoke();
+            NewLine();
         }
 
         private void GenerateUnionWrappers(TranslationUnit unit)
@@ -111,25 +112,25 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             PushBlock(CodeBlockKind.Usings);
             WriteLine("using System.Runtime.InteropServices;");
-            // TODO: fix this place not to hardcode utils
-            if (!string.IsNullOrEmpty(Module.UtilsNamespace))
-            {
-                WriteLine($"using {Module.UtilsNamespace};");
-            }
+            WriteLine($"using {Module.UtilsNamespace};");
+            var fullInteropNamespace =  $"{@CurrentTranslationUnit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.SubNamespace}";
+            WriteLine($"using {fullInteropNamespace};");
+            UsedUsings.Add(fullInteropNamespace);
 
             UsingsBlock = PopBlock();
         }
 
-        protected override void WriteCurrentNamespace(Namespace @namespace)
-        {
-            CurrentNamespace = @namespace.FullNamespace;
-            WriteLine($"namespace {CurrentNamespace}");
-        }
-
         private void GenerateStructWrapper(Class @class)
         {
-            if (@class.IsSimpleType && CurrentTranslationUnit.Module.SkipPodTypesGeneration)
+            if (@class.Owner != CurrentTranslationUnit)
             {
+                IsEmpty = true;
+                return;
+            }
+            
+            if (@class.IsSimpleType && CurrentTranslationUnit.Module.SkipGenerationForSimpleTypes)
+            {
+                IsEmpty = true;
                 return;
             }
 
@@ -168,6 +169,8 @@ namespace QuantumBinding.Generator.CodeGeneration
             NewLine();
 
             PopBlock();
+
+            IsEmpty = false;
         }
 
         public override bool IsInteropGenerator => false;
@@ -199,9 +202,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                 {
                     index++;
                     var visitResult = TypePrinter.VisitField(param);
-                    if (param.Type.Declaration is Class decl && !string.IsNullOrEmpty(decl.AlternativeNamespace))
+                    if (param.Type.Declaration is Class decl && !string.IsNullOrEmpty(decl.Namespace))
                     {
-                        visitResult.Type = $"{decl.AlternativeNamespace}.{visitResult.Type}";
+                        visitResult.Type = $"{decl.Namespace}.{visitResult.Type}";
                     }
 
                     Write($"{visitResult}");
@@ -246,13 +249,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                                 {
                                     WriteStringArrayGetter(property, @class, isUnicode);
                                 }
-                                else if (property.Type.IsAnsiString())
+                                else if (property.Type.IsAnsiString() || property.Type.IsUnicodeString())
                                 {
-                                    WriteLine($"{property.Name} = Marshal.PtrToStringAnsi({param.Name}.{property.Field.Name});");
-                                }
-                                else if (property.Type.IsUnicodeString())
-                                {
-                                    WriteLine($"{property.Name} = Marshal.PtrToStringUni({param.Name}.{property.Field.Name});");
+                                    WriteLine($"{property.Name} = new string({param.Name}.{property.Field.Name});");
                                 }
                                 else if (property.Type.IsPointerToEnum() || property.Type.IsEnum())
                                 {
@@ -262,9 +261,10 @@ namespace QuantumBinding.Generator.CodeGeneration
                                 {
                                     WritePointerToArrayGetter(property, @class, constArrayIndex++);
                                 }
-                                else if (property.Type.IsPointerToPointer() || 
+                                else if (property.Type.IsDoublePointer() || 
                                          property.Type.IsPointerToVoid() ||
-                                         property.Type.IsPointerToIntPtr())
+                                         property.Type.IsPointerToIntPtr() ||
+                                         property.Type.IsPointerToSystemType(out var systemType))
                                 {
                                     WriteLine($"{property.Name} = {param.Name}.{property.Field.Name};");
                                 }
@@ -275,15 +275,15 @@ namespace QuantumBinding.Generator.CodeGeneration
                             }
                             else if (property.Type.IsConstArray(out var size))
                             {
-                                ConstArrayConversionGetter(property, @class, decl, propertyTypeName, constArrayIndex++);
+                                ConstArrayConversionGetter(property, @class, decl, propertyTypeName);
                             }
                             else if (decl != null && !decl.IsSimpleType)
                             {
                                 WriteLine($"{property.Name} = new {propertyTypeName}({param.Name}.{property.Field.Name});");
                             }
-                            else if (property.Type.Declaration is Enumeration enumDecl)
+                            else if (property.Type.Declaration is Enumeration)
                             {
-                                WriteLine($"{property.Name} = ({enumDecl.Name}){param.Name}.{property.Field.Name};");
+                                WriteLine($"{property.Name} = {param.Name}.{property.Field.Name};");
                             }
                             else
                             {
@@ -341,9 +341,9 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             PushBlock(CodeBlockKind.Method);
             NewLine();
-            WriteLine($"{TypePrinter.GetAccessSpecifier(@class.WrapperMethodAccessSpecifier)} {@class.WrappedStruct.AlternativeNamespace}.{@class.WrappedStruct.Name} {ConversionMethodName}");
+            WriteLine($"{TypePrinter.GetAccessSpecifier(@class.WrapperMethodAccessSpecifier)} {@class.WrappedStruct.Namespace}.{@class.WrappedStruct.Name} {ConversionMethodName}");
             WriteOpenBraceAndIndent();
-            WriteLine($"var {@class.WrappedStructFieldName} = new {@class.WrappedStruct.AlternativeNamespace}.{@class.WrappedStruct.Name}();");
+            WriteLine($"var {@class.WrappedStructFieldName} = new {@class.WrappedStruct.Namespace}.{@class.WrappedStruct.Name}();");
             foreach (var property in @class.Properties)
             {
                 if (property.Setter == null) continue;
@@ -366,22 +366,45 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 if (property.Type.IsPointer())
                 {
-                    if (property.Type.IsPointerToVoid() || property.Type.IsPointerToIntPtr())
+                    if (property.Type.IsPointerToVoid() || property.Type.IsPointerToIntPtr() || property.Type.IsPointerToSystemType(out var systemType))
                     {
                         WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                     }
+                    else if (property.Type.IsPointerToArrayOfEnums() || property.Type.IsPointerToEnum())
+                    {
+                        WritePointerToEnumSetter(property, @class);
+                    }
                     else
                     {
-                        WriteLine($"{property.PairedField.Name}?.Dispose();");
-                        WriteLine($"if ({property.Name} != null)");
-
-                        WriteOpenBraceAndIndent();
-                        if (property.Type.IsAnsiString() ||
-                            property.Type.IsUnicodeString() ||
-                            property.Type.IsStringArray())
+                        WriteLine($"{property.PairedField.Name}.Dispose();");
+                        if ((property.Type.IsPointerToSimpleType() ||
+                            property.Type.IsPointerToBuiltInType(out var type) ||
+                            property.Type.IsPointerToEnum()) &&
+                            !property.Type.IsPointerToArray())
                         {
-                            WriteLine(
-                                $"{property.PairedField.Name} = new {pairedFieldType.Type}({property.Name}, {property.Type.IsUnicodeString().ToString().ToLower()});");
+                            WriteLine($"if ({property.Name}.HasValue)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} != null)");
+                        }
+                        
+                        WriteOpenBraceAndIndent();
+                        
+                        if (property.Type.IsPointerToString())
+                        {
+                            WriteLine($"{property.PairedField.Name} = new {pairedFieldType.Type}({property.Name}, {property.Type.IsUnicodeString().ToString().ToLower()});");
+                            var conversionType = property.Type.IsUnicodeString() ? "char" : "sbyte";
+
+                            if (property.Type.IsStringArray())
+                            {
+                                WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = ({conversionType}**){TextGenerator.NativeUtilsGetPointerToStringArray}((uint){property.Name}.Length, {property.Type.IsUnicodeString().ToString().ToLower()});");
+                                WriteLine($"{property.PairedField.Name}.Fill({@class.WrappedStructFieldName}.{property.Field.Name});");
+                            }
+                            else
+                            {
+                                WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = ({conversionType}*){property.PairedField.Name};");
+                            }
                         }
                         else if (property.Type.IsPointerToArray())
                         {
@@ -392,7 +415,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         {
                             WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                         }
-                        else if (property.Type.IsPointerToPointer() || property.Type.IsPointerToVoid())
+                        else if (property.Type.IsDoublePointer() || property.Type.IsPointerToVoid())
                         {
                             WriteLine($"{property.PairedField.Name} = new {pairedFieldType.Type}({property.Name});");
                         }
@@ -401,8 +424,12 @@ namespace QuantumBinding.Generator.CodeGeneration
                             WritePointerToStructSetter(property, pairedFieldType.Type, structIndex++);
                         }
 
-                        WriteLine(
-                            $"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.PairedField.Name}.Handle;");
+                        if (!property.Type.IsPointerToString())
+                        {
+                            WriteLine(
+                                $"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.PairedField.Name}.Handle;");
+                        }
+                        
                         UnindentAndWriteCloseBrace();
                     }
                 }
@@ -420,7 +447,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     {
                         WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                     }
-                    else if (decl != null && (decl.ClassType == ClassType.StructWrapper || decl.ClassType == ClassType.UnionWrapper))
+                    else if (decl != null && decl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
                     {
                         WriteLine($"if ({property.Name} != null)");
                         WriteOpenBraceAndIndent();
@@ -429,7 +456,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     }
                     else if (property.Type.Declaration is Enumeration @enum)
                     {
-                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = ({@enum.InheritanceType}){property.Name};");
+                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                     }
                     else
                     {
@@ -475,38 +502,46 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         protected override void GenerateFields(Class @class)
         {
-            TypePrinter.PushMarshalType(MarshalTypes.Property);
-            foreach (var field in @class.Fields)
+            try
             {
-                PushBlock(CodeBlockKind.Field, field);
-
-                GenerateCommentIfNotEmpty(field.Comment);
-
-                var fieldStr = TypePrinter.VisitField(field);
-
-                var typeResult = field.Type.Visit(TypePrinter);
-
-                if (typeResult.Type == @class.Name)
+                TypePrinter.PushMarshalType(MarshalTypes.Property);
+                foreach (var field in @class.Fields)
                 {
-                    var splittedStr = fieldStr.Type.Split(' ');
-                    splittedStr[1] =
-                        $"{field.Type.Declaration.Owner.FullNamespace}.{interopNamespace}.{splittedStr[1]}";
-                    fieldStr.Type = string.Join(' ', splittedStr);
+                    PushBlock(CodeBlockKind.Field, field);
+
+                    GenerateCommentIfNotEmpty(field.Comment);
+
+                    //field.Name = $"_{field.Name[0].ToString().ToLower()}{field.Name.Substring(1)}";
+                    var fieldStr = TypePrinter.VisitField(field);
+                    
+                    var typeResult = field.Type.Visit(TypePrinter);
+
+                    if (typeResult.Type == @class.Name)
+                    {
+                        var splittedStr = fieldStr.Type.Split(' ');
+                        splittedStr[1] =
+                            $"{field.Type.Declaration.Owner.FullNamespace}.{interopNamespace}.{splittedStr[1]}";
+                        fieldStr.Type = string.Join(' ', splittedStr);
+                    }
+
+                    AddUsingIfNeeded(field.Type);
+
+                    PushBlock(CodeBlockKind.FieldDefinition, field);
+                    WriteLine($"{fieldStr.Type};");
+
+                    PopBlock();
+
+                    NewLine();
+
+                    PopBlock();
                 }
 
-                AddUsingIfNeeded(field.Type);
-
-                PushBlock(CodeBlockKind.FieldDefinition, field);
-                WriteLine($"{fieldStr.Type};");
-
-                PopBlock();
-
-                NewLine();
-
-                PopBlock();
+                TypePrinter.PopMarshalType();
             }
-
-            TypePrinter.PopMarshalType();
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         protected override void OperatorOverloadOverride(Operator @operator, string variableName)
@@ -620,8 +655,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         private void WritePointerToEnumGetter(Property property, Class parentClass)
         {
-            var decl = property.Type.Declaration as Enumeration;
-            var enumFullName = $"{decl.Owner.FullNamespace}.{decl.Name}";
             var internalFieldName = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
             if (property.Type.IsPointerToArrayOfEnums())
             {
@@ -630,24 +663,46 @@ namespace QuantumBinding.Generator.CodeGeneration
                 var arrayType = pointerType.Pointee as ArrayType;
                 if (string.IsNullOrEmpty(arrayType.ArraySizeSource))
                     return;
-
-                var arraySizeFieldName = $"{parentClass.WrappedStructFieldName}.{arrayType.ArraySizeSource}";
-
-                var tmpArrayName = $"tmp{property.Field.Name}";
-                WriteLine($"var {tmpArrayName} = new {decl.InheritanceType}[{arraySizeFieldName}];");
-                WriteLine($"MarshalUtils.IntPtrToManagedArray<{decl.InheritanceType}>({internalFieldName}, {tmpArrayName});");
-                WriteLine($"Marshal.FreeHGlobal({internalFieldName});");
-
-                WriteLine($"{property.Name} = new {enumFullName}[{arraySizeFieldName}];");
-                WriteLine($"for (int i = 0; i < {tmpArrayName}.Length; ++i)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"{property.Name}[i] = ({enumFullName}){tmpArrayName}[i];");
-                UnindentAndWriteCloseBrace();
+                
+                WriteLine($"{property.Name} = {TextGenerator.NativeUtilsPointerToArray}({internalFieldName}, {parentClass.WrappedStructFieldName}.{arrayType.ArraySizeSource});");
             }
             else
             {
-                WriteLine($"{property.Name} = ({enumFullName})Marshal.PtrToStructure<{decl.InheritanceType}>({internalFieldName});");
+                WriteLine($"{property.Name} = *{internalFieldName};");
             }
+        }
+        
+        private void WritePointerToEnumSetter(Property property, Class parentClass)
+        {
+            TypePrinter.PushMarshalType(MarshalTypes.Property);
+            TypePrinterResult pairedFieldType = "";
+            if (property.PairedField != null && property.PairedField.Type != null)
+            {
+                pairedFieldType = property.PairedField.Type.Visit(TypePrinter);
+            }
+            TypePrinter.PopMarshalType();
+            var isPointerToArray = property.Type.IsPointerToArrayOfEnums();
+            WriteLine($"{property.PairedField.Name}.Dispose();");
+            if (isPointerToArray)
+            {
+                WriteLine($"if ({property.Name} != null)");
+            }
+            else
+            {
+                WriteLine($"if ({property.Name}.HasValue)");
+            }
+            WriteOpenBraceAndIndent();
+            if (isPointerToArray)
+            {
+                WriteLine($"{property.PairedField.Name} = new {pairedFieldType.Type}({property.Name});");
+            }
+            else
+            {
+                WriteLine($"{property.PairedField.Name} = new {pairedFieldType.Type}({property.Name}.Value);");
+            }
+            
+            WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = {property.PairedField.Name}.Handle;");
+            UnindentAndWriteCloseBrace();
         }
 
         private void WritePointerToArrayGetter(Property property, Class parentClass, int index)
@@ -661,39 +716,28 @@ namespace QuantumBinding.Generator.CodeGeneration
             var arrayPtr = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
             var arraySizeFieldName = $"{parentClass.WrappedStructFieldName}.{arrayType.ArraySizeSource}";
             TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
+            arrayType.ElementType.Declaration = property.Type.Declaration;
             var arrayElementType = arrayType.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             TypePrinter.PushMarshalType(MarshalTypes.NativeField);
-            var nativeArrayElementType = arrayType.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             WriteLine($"{property.Name} = new {arrayElementType}[{arraySizeFieldName}];");
 
             if (pointerType.Declaration is Class classDecl && !classDecl.IsSimpleType)
             {
                 var arrayName = $"nativeTmpArray{index}";
-                string nativeElementType = classDecl.Name;
-                if (classDecl.ClassType == ClassType.Class)
-                {
-                    nativeElementType = classDecl.InnerStruct.Name;
-                }
-                else if (classDecl.ClassType == ClassType.StructWrapper || classDecl.ClassType == ClassType.UnionWrapper)
-                {
-                    nativeElementType = classDecl.WrappedStruct.Name;
-                }
 
-                WriteLine($"var {arrayName} = new {nativeElementType}[{arraySizeFieldName}];");
-                WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeElementType}>({arrayPtr}, {arrayName});");
+                WriteLine($"var {arrayName} = {TextGenerator.NativeUtilsPointerToArray}({arrayPtr}, {arraySizeFieldName});");
                 WriteLine($"for (int i = 0; i < {arrayName}.Length; ++i)");
                 WriteOpenBraceAndIndent();
                 WriteLine($"{property.Name}[i] = new {classDecl.Name}({arrayName}[i]);");
                 UnindentAndWriteCloseBrace();
             }
             else if (arrayType.ElementType.IsPrimitiveType(out var primitive) && 
-                     (primitive == PrimitiveType.Bool32 || primitive == PrimitiveType.Bool))
+                     primitive is PrimitiveType.Bool32 or PrimitiveType.Bool)
             {
                 var arrayName = $"nativeTmpArray{index}";
-                WriteLine($"var {arrayName} = new {nativeArrayElementType}[{arraySizeFieldName}];");
-                WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeArrayElementType}>({arrayPtr}, {arrayName});");
+                WriteLine($"var {arrayName} = {TextGenerator.NativeUtilsPointerToArray}({arrayPtr}, {arraySizeFieldName});");
                 WriteLine($"for (int i = 0; i < {arrayName}.Length; ++i)");
                 WriteOpenBraceAndIndent();
                 WriteLine($"{property.Name}[i] = System.Convert.ToBoolean({arrayName}[i]);");
@@ -701,86 +745,53 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
             else
             {
-                WriteLine($"MarshalUtils.IntPtrToManagedArray<{nativeArrayElementType}>({arrayPtr}, {property.Name});");
+                WriteLine($"{property.Name} = {TextGenerator.NativeUtilsPointerToArray}({arrayPtr}, (long){arraySizeFieldName});");
             }
-            WriteLine($"Marshal.FreeHGlobal({arrayPtr});");
+
+            WriteFreeMemory(arrayPtr);
+        }
+
+        private void WriteFreeMemory(string pointer)
+        {
+            WriteLine($"NativeUtils.Free({pointer});");
         }
 
         private void WriteStringArrayGetter(Property property, Class parentClass, bool isUnicode)
         {
-            var array = property.Type as ArrayType;
+            var pointer = property.Type as PointerType;
+            var array = pointer.Pointee as ArrayType;
             if (array != null && !string.IsNullOrEmpty(array.ArraySizeSource))
             {
                 var arrayName = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
                 var arraySizeFieldName = $"{parentClass.WrappedStructFieldName}.{array.ArraySizeSource}";
-                WriteLine($"{property.Name} = MarshalUtils.IntPtrToStringArray({arrayName}, (uint){arraySizeFieldName}, {isUnicode});");
+                WriteLine($"{property.Name} = {TextGenerator.NativeUtilsPointerToStringArray}({arrayName}, (uint){arraySizeFieldName});");
             }
         }
 
-        private void ConstArrayConversionGetter(Property property, Class parentClass, Class decl, TypePrinterResult propertyTypeName, int index)
+        private void ConstArrayConversionGetter(Property property, Class parentClass, Class decl, TypePrinterResult propertyTypeName)
         {
             var arrayType = property.Type as ArrayType;
             var size = arrayType.Size;
-            
+            // TODO: fix generation of fixed statements and simplify them
             if (arrayType.ElementType.CanConvertToFixedArray())
             {
-                var tempField = $"tmpArr{index}";
                 var arrayName = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
-                TypePrinter.PushMarshalType(MarshalTypes.NativeField);
-                var nativeArrayElementType = arrayType.ElementType.Visit(TypePrinter);
-                TypePrinter.PopMarshalType();
-                bool castToByte = false;
-                if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar) && propertyTypeName.Type == "string")
-                {
-                    nativeArrayElementType = "byte";
-                    castToByte = true;
-                }
-
-                WriteLine($"var {tempField} = new {nativeArrayElementType}[{size}];");
-                WriteLine("unsafe");
-                WriteOpenBraceAndIndent();
 
                 if (propertyTypeName.Type == "string")
                 {
-                    var indexVar = "index";
-                    var counterVar = "counter";
-                    WriteLine($"int {indexVar} = 0;");
-                    WriteLine($"byte* ptr = (byte*){parentClass.WrappedStructFieldName}.{property.Field.Name};");
-                    WriteLine($"for (byte* {counterVar} = ptr; *{counterVar} != 0; {counterVar}++)");
-                    WriteOpenBraceAndIndent();
-                    WriteLine($"{tempField}[{indexVar}++] = *{counterVar};");
-                    UnindentAndWriteCloseBrace();
+                    if (property.Type.IsAnsiString()
+                        || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar))
+                    {
+                        WriteLine($"{property.Name} = new string((sbyte*){arrayName});");
+                    }
+                    else if (property.Type.IsUnicodeString() || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
+                    {
+                        WriteLine($"{property.Name} = new string((char*){arrayName});");
+                    }
                 }
                 else
                 {
-                    WriteLine($"for (int i = 0; i < {size}; ++i)");
-                    WriteOpenBraceAndIndent();
-                    if (castToByte)
-                    {
-                        WriteLine($"{tempField}[i] = (byte){arrayName}[i];");
-                    }
-                    else
-                    {
-                        WriteLine($"{tempField}[i] = {arrayName}[i];");
-                    }
-                    UnindentAndWriteCloseBrace();
-                }
-                
-                UnindentAndWriteCloseBrace();
-
-                if (property.Type.IsAnsiString()
-                    || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar)
-                    || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.UChar))
-                {
-                    WriteLine($"{property.Name} = System.Text.Encoding.ASCII.GetString({tempField}).Replace(\"\\{0}\", string.Empty);");
-                }
-                else if (property.Type.IsUnicodeString() || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
-                {
-                    WriteLine($"{property.Name} = System.Text.Encoding.Unicode.GetString({tempField}).Replace(\"\\{0}\", string.Empty);");
-                }
-                else
-                {
-                    WriteLine($"{property.Name} = {tempField};");
+                    WriteLine($"{property.Name} = {TextGenerator.NativeUtilsPointerToArray}({arrayName}, {size});");
                 }
             }
             else if (arrayType.ElementType.IsPurePointer())
@@ -832,22 +843,24 @@ namespace QuantumBinding.Generator.CodeGeneration
             var fieldTypeName = property.Field.Type.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
             var fullTypeName = fieldTypeName;
-            if (decl != null && !decl.IsSimpleType && !string.IsNullOrEmpty(decl.AlternativeNamespace)
+            if (decl != null && 
+                !decl.IsSimpleType && 
+                !string.IsNullOrEmpty(decl.Namespace)
                 && decl.Name == propertyTypeName)
             {
-                fullTypeName = $"{decl.AlternativeNamespace}.{fieldTypeName}";
+                fullTypeName = $"{decl.Namespace}.{fieldTypeName}";
             }
 
             if (propertyTypeName == CSharpTypePrinter.ObjectType)
             {
                 WriteLine($"{property.Name} = {structFieldPath};");
             }
-            else if ((property.Type.IsPointerToBuiltInType(out var primitive) || decl is { IsSimpleType: true }) && Options.PodTypesAsSimpleTypes)
+            else if ((property.Type.IsPointerToBuiltInType(out var primitive) || (decl is { IsSimpleType: true }) ))
             {
-                WriteLine($"if({structFieldPath} != System.IntPtr.Zero)");
+                WriteLine($"if ({structFieldPath} != null)");
                 WriteOpenBraceAndIndent();
-                WriteLine($"{property.Name} = ({fullTypeName}){structFieldPath};");
-                WriteLine($"Marshal.FreeHGlobal({structFieldPath});");
+                WriteLine($"{property.Name} = *{structFieldPath};");
+                WriteFreeMemory(structFieldPath);
                 UnindentAndWriteCloseBrace();
             }
             else
@@ -856,8 +869,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 {
                     fullTypeName.Type = fullTypeName.Type.Replace("?", "");
                 }
-                WriteLine($"{property.Name} = new {propertyTypeName}(Marshal.PtrToStructure<{fullTypeName}>({structFieldPath}));");
-                WriteLine($"Marshal.FreeHGlobal({structFieldPath});");
+                WriteLine($"{property.Name} = new {propertyTypeName}(*{structFieldPath});");
+                WriteFreeMemory(structFieldPath);
             }
         }
 
@@ -883,7 +896,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 var structName = decl.Name;
                 if (decl.InnerStruct != null)
                 {
-                    interop = decl.InnerStruct.AlternativeNamespace;
+                    interop = decl.InnerStruct.Namespace;
                     structName = decl.InnerStruct.Name;
                 }
                 WriteLine($"var {tmpArrayName} = new {interop}.{structName}[{size}];");
@@ -945,53 +958,31 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             var size = arrayType.Size;
             arrayType.ElementType.Declaration = arrayType.Declaration;
-
+            
             WriteLine($"if ({property.Name}.Length > {size})");
             PushIndent();
             WriteLine($"throw new System.ArgumentOutOfRangeException(nameof({property.Name}), \"Array is out of bounds. Size should not be more than {size}\");");
             PopIndent();
             NewLine();
+            
+            var fieldName = $"{parentClass.WrappedStructFieldName}.{property.Field.Name}";
             if (arrayType.ElementType.CanConvertToFixedArray())
             {
-                var inputArray = $"inputArray{index}";
-                if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar)
-                    || arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.UChar))
+                if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar) ||
+                    arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
                 {
-                    WriteLine($"var {inputArray} = System.Text.Encoding.ASCII.GetBytes({property.Name});");
-                }
-                else if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
-                {
-                    WriteLine($"var {inputArray} = System.Text.Encoding.Unicode.GetBytes({property.Name});");
+                    var isUnicode = arrayType.ElementType.IsUnicodeString().ToString().ToLower();
+                    WriteLine(
+                        $"{TextGenerator.NativeUtilsStringToFixedArray}({fieldName}, {size}, {property.Name}, {isUnicode});");
                 }
                 else
                 {
-                    WriteLine($"var {inputArray} = {property.Name};");
+                    WriteLine(
+                        $"{TextGenerator.NativeUtilsPrimitiveToFixedArray}({fieldName}, {size}, {property.Name});");
                 }
-
-                bool castToSByte = arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar);
-
-                WriteLine("unsafe");
-                WriteOpenBraceAndIndent();
-                WriteLine($"if ({inputArray} != null)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"for (int i = 0; i < {inputArray}.Length; ++i)");
-                WriteOpenBraceAndIndent();
-                if (castToSByte)
-                {
-                    WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = (sbyte){inputArray}[i];");
-                }
-                else
-                {
-                    WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = {inputArray}[i];");
-                }
-                UnindentAndWriteCloseBrace();
-                UnindentAndWriteCloseBrace();
-                UnindentAndWriteCloseBrace();
             }
             else if (arrayType.ElementType.IsPurePointer())
             {
-                var propertyArrayElementType = arrayType.ElementType.Visit(TypePrinter);
-                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = new {propertyArrayElementType}[{size}];");
                 WriteLine($"for (int i = 0; i < {size}; ++i)");
                 WriteOpenBraceAndIndent();
                 WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = {property.Name}[i];");
@@ -999,10 +990,9 @@ namespace QuantumBinding.Generator.CodeGeneration
             }
             else if (arrayType.Declaration is Enumeration @enum)
             {
-                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = new {@enum.InheritanceType}[{size}];");
                 WriteLine($"for (int i = 0; i < {property.Name}.Length; ++i)");
                 WriteOpenBraceAndIndent();
-                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = ({@enum.InheritanceType}){property.Name}[i];");
+                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = {property.Name}[i];");
                 UnindentAndWriteCloseBrace();
             }
             else
@@ -1014,18 +1004,16 @@ namespace QuantumBinding.Generator.CodeGeneration
                 var propType = arrayType.ElementType.Visit(TypePrinter);
                 TypePrinter.PopMarshalType();
 
-                if (decl != null && !string.IsNullOrEmpty(decl.AlternativeNamespace) && 
-                    result.Type != CSharpTypePrinter.IntPtrType &&
+                if (decl != null && !string.IsNullOrEmpty(decl.Namespace) &&
                     decl.Name == propType.Type)
                 {
                     result = $"{InteropNamespace}.{propType}";
                 }
 
-                WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name} = new {result}[{size}];");
                 WriteLine($"for (int i = 0; i < {property.Name}.Length; ++i)");
                 WriteOpenBraceAndIndent();
-                if ((result.Type == CSharpTypePrinter.IntPtrType && propType.Type == CSharpTypePrinter.ObjectType)
-                    || (decl != null && (decl.ClassType == ClassType.Class || decl.ConnectedTo != null && decl.ConnectedTo.ClassType == ClassType.Class)))
+                if ((propType.Type == CSharpTypePrinter.ObjectType)
+                    || (decl != null && (decl.ClassType == ClassType.Class || decl.ConnectedTo is { ClassType: ClassType.Class })))
                 {
                     WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = ({result}){property.Name}[i];");
                 }
@@ -1041,14 +1029,14 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             var decl = property.Field.Type.Declaration as Class;
             var propDecl = property.Type.Declaration as Class;
-            if (decl == null || decl.IsSimpleType)
+            if (decl == null || decl.IsSimpleType || property.Type.IsPointerToBuiltInType(out var type))
             {
-                WriteLine($"{property.PairedField.Name} = new {pairedFieldType}({property.Name});");
+                WriteLine($"{property.PairedField.Name} = new {pairedFieldType}({property.Name}.Value);");
             }
             else if (!decl.IsSimpleType)
             {
                 var varName = $"struct{index}";
-                if (decl.ClassType == ClassType.Struct || decl.ClassType == ClassType.Union)
+                if (decl.ClassType is ClassType.Struct or ClassType.Union)
                 {
                     WriteLine($"var {varName} = {property.Name}.{ConversionMethodName};");
                 }

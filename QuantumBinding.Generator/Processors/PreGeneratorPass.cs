@@ -66,52 +66,55 @@ namespace QuantumBinding.Generator.Processors
                     ParentDeclaration = @enum;
                     @enum.Visit(this);
                 }
+
                 ParentDeclaration = null;
             }
 
-            if (Options.VisitClasses)
+
+            var classes = @namespace.AllClasses.ToArray();
+            foreach (var @class in classes)
             {
-                var classes = @namespace.AllClasses.ToArray();
-                foreach (var @class in classes)
+                ParentDeclaration = @class;
+                if (Options.VisitClasses)
                 {
-                    ParentDeclaration = @class;
                     @class.Visit(this);
+                }
 
-                    if (Options.VisitFields)
+                if (Options.VisitFields)
+                {
+                    foreach (var field in @class.Fields)
                     {
-                        foreach (var field in @class.Fields)
-                        {
-                            field.Visit(this);
-                        }
+                        field.Visit(this);
                     }
+                }
 
-                    if (Options.VisitProperties)
+                if (Options.VisitProperties)
+                {
+                    foreach (var property in @class.Properties)
                     {
-                        foreach (var property in @class.Properties)
-                        {
-                            property.Visit(this);
-                        }
+                        property.Visit(this);
                     }
+                }
 
+                foreach (var method in @class.AllMethods)
+                {
+                    ParentDeclaration = method;
                     if (Options.VisitMethods)
                     {
-                        foreach (var method in @class.AllMethods)
-                        {
-                            ParentDeclaration = method;
-                            method.Visit(this);
+                        method.Visit(this);
+                    }
 
-                            if (Options.VisitParameters)
-                            {
-                                foreach (var argument in method.Parameters)
-                                {
-                                    argument.Visit(this);
-                                }
-                            }
+                    if (Options.VisitParameters)
+                    {
+                        foreach (var argument in method.Parameters)
+                        {
+                            argument.Visit(this);
                         }
                     }
                 }
-                ParentDeclaration = null;
             }
+
+            ParentDeclaration = null;
 
             if (Options.VisitDelegates)
             {
@@ -128,42 +131,47 @@ namespace QuantumBinding.Generator.Processors
                         }
                     }
                 }
+
                 ParentDeclaration = null;
             }
 
-            if (Options.VisitFunctions)
+
+            foreach (var function in @namespace.Functions)
             {
-                foreach (var function in @namespace.Functions)
+                ParentDeclaration = function;
+                if (Options.VisitFunctions)
                 {
-                    ParentDeclaration = function;
                     function.Visit(this);
+                }
 
-                    if (Options.VisitParameters)
+                if (Options.VisitParameters)
+                {
+                    foreach (var argument in function.Parameters)
                     {
-                        foreach (var argument in function.Parameters)
-                        {
-                            argument.Visit(this);
-                        }
+                        argument.Visit(this);
                     }
                 }
+
                 ParentDeclaration = null;
             }
 
-            if (Options.VisitMethods)
-            {
-                foreach (var method in @namespace.Methods)
-                {
-                    ParentDeclaration = method;
-                    method.Visit(this);
 
-                    if (Options.VisitParameters)
+            foreach (var method in @namespace.Methods)
+            {
+                ParentDeclaration = method;
+                if (Options.VisitMethods)
+                {
+                    method.Visit(this);
+                }
+
+                if (Options.VisitParameters)
+                {
+                    foreach (var argument in method.Parameters)
                     {
-                        foreach (var argument in method.Parameters)
-                        {
-                            argument.Visit(this);
-                        }
+                        argument.Visit(this);
                     }
                 }
+                
                 ParentDeclaration = null;
             }
 
@@ -174,6 +182,7 @@ namespace QuantumBinding.Generator.Processors
                     ParentDeclaration = macro;
                     macro.Visit(this);
                 }
+
                 ParentDeclaration = null;
             }
 
@@ -252,7 +261,6 @@ namespace QuantumBinding.Generator.Processors
 
         public virtual void OnTranslationUnitPassCompleted()
         {
-
         }
 
         public virtual void OnComplete()

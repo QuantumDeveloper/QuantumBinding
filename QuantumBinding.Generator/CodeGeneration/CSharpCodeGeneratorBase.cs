@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
 
@@ -9,154 +6,130 @@ namespace QuantumBinding.Generator.CodeGeneration
 {
     public abstract class CSharpCodeGeneratorBase : CodeGenerator
     {
-        protected CSharpCodeGeneratorBase(ProcessingContext context, TranslationUnit unit, GeneratorSpecializations specializations) :
-            this(context, new List<TranslationUnit>() { unit }, specializations)
+        protected CSharpCodeGeneratorBase(ProcessingContext context, TranslationUnit unit, GeneratorCategory category) :
+            this(context, new List<TranslationUnit>() { unit }, category)
         {
             CurrentTranslationUnit = unit;
         }
 
-        protected CSharpCodeGeneratorBase(ProcessingContext context, IEnumerable<TranslationUnit> units, GeneratorSpecializations specializations) :
-            base(context, units, specializations)
+        protected CSharpCodeGeneratorBase(ProcessingContext context, IEnumerable<TranslationUnit> units, GeneratorCategory category) :
+            base(context, units, category)
         {
             TypePrinter = new CSharpTypePrinter(context.Options);
             UsedUsings = new List<string>();
         }
 
-        protected string IntPtrZero => "System.IntPtr.Zero";
+        protected string NullPointer => "null";
+
+        public string FileExtension => "cs";
+        
+        public override string GetFileName(TranslationUnit unit)
+        {
+            if (!unit.Module.EachTypeInSeparateFile)
+            {
+                return $"{unit.FullNamespace}.{Category}.{FileExtension}";
+            }
+                
+            switch (Category)
+            {
+                case GeneratorCategory.Macros 
+                    or GeneratorCategory.Functions
+                    or GeneratorCategory.StaticMethods:
+                    return $"{unit.FullName}.{Name}.{FileExtension}";
+                default:
+                    return $"{Name}.{FileExtension}";
+            }
+        }
 
         protected TranslationUnit CurrentTranslationUnit { get; set; }
         protected CSharpTypePrinter TypePrinter { get; set; }
         protected CodeBlock UsingsBlock { get; set; }
         protected List<string> UsedUsings { get; }
         protected string CurrentNamespace { get; set; }
-        protected string InteropNamespace => $"{CurrentTranslationUnit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.NamespaceExtension}";
-        protected string InteropNamespaceExtension => TranslationUnit.InteropNamespaceExtension.NamespaceExtension;
-        protected string ConversionMethodName => "ToInternal()";
+        protected string InteropNamespace => $"{CurrentTranslationUnit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.SubNamespace}";
+        protected string InteropNamespaceExtension => TranslationUnit.InteropNamespaceExtension.SubNamespace;
+        protected string ConversionMethodName => "ToNative()";
 
+        protected readonly Queue<FixedStructInfo> FixedStructInfos = new Queue<FixedStructInfo>();
+        protected readonly Dictionary<string, FixedStructInfo> FixedTypesHash = new Dictionary<string, FixedStructInfo>();
 
         protected virtual void WriteCurrentNamespace(Namespace @namespace)
         {
             if (IsInteropGenerator)
             {
-                CurrentNamespace = $"{@namespace.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.NamespaceExtension}";
-                WriteLine($"namespace {CurrentNamespace}");
+                CurrentNamespace = $"{@namespace.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.SubNamespace}";
             }
             else
             {
                 CurrentNamespace = @namespace.FullNamespace;
-                WriteLine($"namespace {CurrentNamespace}");
             }
+            
+            WriteLine($"namespace {CurrentNamespace};");
         }
 
         protected virtual void GenerateUsings()
         {
             PushBlock(CodeBlockKind.Usings);
-            if (Specializations.HasFlag(GeneratorSpecializations.Functions) ||
-                Specializations.HasFlag(GeneratorSpecializations.Delegates))
+            if (Category is GeneratorCategory.Functions or GeneratorCategory.Delegates)
             {
                 WriteLine("using System.Security;");
             }
             WriteLine("using System;");
+            WriteLine("using System.Runtime.CompilerServices;");
             WriteLine("using System.Runtime.InteropServices;");
 
-            if (Specializations.HasFlag(GeneratorSpecializations.Classes) ||
-                Specializations.HasFlag(GeneratorSpecializations.Functions) ||
-                Specializations.HasFlag(GeneratorSpecializations.Delegates) ||
-                Specializations.HasFlag(GeneratorSpecializations.StructWrappers) ||
-                Specializations.HasFlag(GeneratorSpecializations.UnionWrappers))
+            if (Category is 
+                GeneratorCategory.StaticMethods or
+                GeneratorCategory.Classes or 
+                GeneratorCategory.Functions or 
+                GeneratorCategory.Delegates or 
+                GeneratorCategory.StructWrappers or 
+                GeneratorCategory.UnionWrappers or 
+                GeneratorCategory.ExtensionMethods or
+                GeneratorCategory.Extensions)
             {
-                // TODO: find better way to add utils namespace here
-                if (!string.IsNullOrEmpty(Module.UtilsNamespace))
-                {
-                    WriteLine($"using {Module.UtilsNamespace};");
-                }
+                WriteLine($"using {Module.UtilsNamespace};");
             }
 
             UsingsBlock = PopBlock();
         }
 
-        protected void SetAlternativeNamespace(TranslationUnit unit)
-        {
-            var classes = unit.AllClasses.Where(
-                    x => 
-                        x.ClassType == ClassType.Struct || 
-                        x.ClassType == ClassType.Union ||
-                        x.ClassType == ClassType.StructWrapper || 
-                        x.ClassType == ClassType.UnionWrapper).
-                ToList();
-            foreach (var @class in classes)
-            {
-                if (!string.IsNullOrEmpty(@class.AlternativeNamespace))
-                {
-                    continue;
-                }
-
-                @class.AlternativeNamespace = GetAlternativeNamespace(@class);
-            }
-
-            foreach (var @class in classes)
-            {
-                if (@class.InnerStruct != null)
-                {
-                    if (!string.IsNullOrEmpty(@class.InnerStruct.AlternativeNamespace))
-                    {
-                        continue;
-                    }
-
-                    @class.AlternativeNamespace = GetAlternativeNamespace(@class.InnerStruct);
-                }
-            }
-
-            foreach (var function in unit.Functions)
-            {
-                if (!string.IsNullOrEmpty(function.AlternativeNamespace))
-                {
-                    continue;
-                }
-
-                function.AlternativeNamespace = GetAlternativeNamespace(function);
-            }
-
-            foreach (var function in unit.Delegates)
-            {
-                if (!string.IsNullOrEmpty(function.AlternativeNamespace))
-                {
-                    continue;
-                }
-
-                function.AlternativeNamespace = GetAlternativeNamespace(function);
-            }
-        }
-
-        private string GetAlternativeNamespace(DeclarationUnit decl)
-        {
-            return $"{decl.Owner.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.NamespaceExtension}";
-        }
-
         protected virtual void AddUsingIfNeeded(BindingType type)
         {
-            if (CurrentNamespace == type.Declaration?.AlternativeNamespace)
+            if (type.Declaration?.Owner == null) return;
+            
+            var @namespace = type.Declaration.Namespace;
+            if (TypePrinter.MarshalType is MarshalTypes.NativeReturnType or
+                MarshalTypes.NativeParameter or
+                MarshalTypes.NativeField or 
+                MarshalTypes.MethodParameter)
+            {
+                if (type.Declaration is Class classDecl)
+                {
+                    if (!UsedUsings.Contains(@namespace) && CurrentNamespace != @namespace)
+                    {
+                        UsingsBlock.WriteLine($"using {@namespace};");
+                        UsedUsings.Add(@namespace);
+                    }
+
+                    if (classDecl.ClassType == ClassType.Class && classDecl.InnerStruct != null)
+                    {
+                        @namespace = classDecl.InnerStruct.Namespace;
+                    }
+                    else if (classDecl.IsWrapper && classDecl.WrappedStruct != null)
+                    {
+                        @namespace = classDecl.WrappedStruct.Namespace;
+                    }
+                }
+            }
+
+            if (UsedUsings.Contains(@namespace) || CurrentNamespace == @namespace)
             {
                 return;
             }
 
-            if (type.Declaration != null && type.Declaration.Owner != null && 
-                (type.Declaration.Owner != CurrentTranslationUnit || CurrentNamespace != type.Declaration.AlternativeNamespace))
-            {
-                var @namespace = type.Declaration.AlternativeNamespace;
-                if (string.IsNullOrEmpty(@namespace))
-                {
-                    @namespace = type.Declaration.Owner.FullNamespace;
-                }
-
-                if (UsedUsings.Contains(@namespace) || CurrentNamespace == @namespace)
-                {
-                    return;
-                }
-
-                UsingsBlock.WriteLine($"using {@namespace};");
-                UsedUsings.Add(@namespace);
-            }
+            UsingsBlock.WriteLine($"using {@namespace};");
+            UsedUsings.Add(@namespace);
         }
 
         private void AddUsingIfNeeded(string type)
@@ -191,14 +164,109 @@ namespace QuantumBinding.Generator.CodeGeneration
                 AddUsingIfNeeded(field.Type);
 
                 PushBlock(CodeBlockKind.FieldDefinition, field);
-                WriteLine($"{fieldStr.Type};");
-                PopBlock();
+                if (field.Type.IsConstArrayOfCustomTypes(out var size) || field.Type.IsConstArrayOfEnums(out size))
+                {
+                    // To workaround limitation of current .Net (version 6/7) regarding marshaling of const arrays
+                    // we need to create struct wrapper which will contain {size} fields and place it instead this field
+                    // to correctly pass struct by raw pointer.
+                    TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+                    var fieldType = field.Type.Visit(TypePrinter);
+                    TypePrinter.PopMarshalType();
+                    string fieldTypeName = string.Empty;
+                    int index = 0;
 
-                NewLine();
+                    if (field.Type.IsPointerToVoidArray())
+                    {
+                        fieldType.Type = "Void";
+                    }
+                    
+                    fieldTypeName = $"{fieldType.Type}{index}__FixedBuffer";
+                    
+                    if (FixedTypesHash.ContainsKey(fieldTypeName))
+                    {
+                        var item = FixedTypesHash[fieldTypeName];
+                        if (item.Size != size)
+                        {
+                            index = ++item.Index;
+                            fieldTypeName = $"{fieldType.Type}{index}__FixedBuffer";
+                        }
+                    }
+                    else
+                    {
+                        var fixedBufferInfo = new FixedStructInfo(fieldTypeName, @class, field, size, index);
+                        FixedTypesHash.Add(fieldTypeName, fixedBufferInfo);
+                        FixedStructInfos.Enqueue(fixedBufferInfo);
+                    }
+                    
+                    WriteLine($"public {fieldTypeName} {field.Name};");
+                    
+                }
+                else
+                {
+                    WriteLine($"{fieldStr.Type};");
+                }
+                
+                PopBlock();
 
                 PopBlock();
             }
             TypePrinter.PopMarshalType();
+        }
+
+        protected void GenerateConstArrayFixedWrapper(FixedStructInfo fixedStructInfo)
+        {
+            TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+            var fieldType = fixedStructInfo.Field.Type.Visit(TypePrinter);
+            TypePrinter.PopMarshalType();
+            WriteLine("[StructLayout(LayoutKind.Sequential)]");
+            WriteLine($"public partial struct {fixedStructInfo.Name}");
+            WriteOpenBraceAndIndent();
+            
+            if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
+            {
+                fieldType.Type = "nuint";
+            }
+            
+            for (int i = 0; i < fixedStructInfo.Size; i++)
+            {
+                WriteLine($"public {fieldType.Type} item{i};");
+            }
+            
+            if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
+            {
+                fieldType.Type = "void*";
+            }
+            
+            NewLine();
+            // ====== Get only version of implementing Fixed buffers
+            
+            /*
+            WriteLine($"public ref {fieldType.Type} this[int index]");
+            WriteOpenBraceAndIndent();
+            WriteLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            WriteLine($"get => MemoryMarshal.CreateSpan(ref item{0}, {fixedStructInfo.Size})[index];");
+            UnindentAndWriteCloseBrace();
+            NewLine();
+            WriteLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
+            WriteLine($"public Span<{fieldType.Type}> AsSpan() => MemoryMarshal.CreateSpan(ref item{0}, {fixedStructInfo.Size});");
+            */
+            
+            WriteLine($"public {fieldType.Type} this[int index]");
+            WriteOpenBraceAndIndent();
+            if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
+            {
+                WriteLine($"get => (void*)Unsafe.Add(ref item0, index);");
+                WriteLine($"set => Unsafe.Add(ref item0, index) = (nuint)value;");
+            }
+            else
+            {
+                WriteLine($"get => Unsafe.Add(ref item0, index);");
+                WriteLine($"set => Unsafe.Add(ref item0, index) = value;");
+            }
+            
+            UnindentAndWriteCloseBrace();
+            
+            UnindentAndWriteCloseBrace();
         }
 
         protected virtual void GenerateConstructors(Class @class)
@@ -228,9 +296,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                 {
                     index++;
                     var visitResult = TypePrinter.VisitField(param);
-                    if (param.Type.Declaration is Class decl && !string.IsNullOrEmpty(decl.AlternativeNamespace))
+                    if (param.Type.Declaration is Class decl && !string.IsNullOrEmpty(decl.Namespace))
                     {
-                        visitResult.Type = $"{decl.AlternativeNamespace}.{visitResult.Type}";
+                        visitResult.Type = $"{decl.Namespace}.{visitResult.Type}";
                     }
                     Write($"{visitResult}");
                     if (index < ctor.InputParameters.Count)
@@ -281,7 +349,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             PushBlock(CodeBlockKind.Operator, @operator);
             var variableName = @operator.Class.Name[0].ToString().ToLower();
-            string @namespace = @operator.Type.Declaration?.AlternativeNamespace;
+            string @namespace = @operator.Type.Declaration?.Namespace;
             if (string.IsNullOrEmpty(@namespace) && !@operator.Type.IsSimpleType())
             {
                 @namespace = $"{@operator.Type.Declaration?.Owner.FullNamespace}";
@@ -319,7 +387,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 {
                     TypePrinter.PushMarshalType(MarshalTypes.Property);
                 }
-                else if (@operator.Class.ClassType == ClassType.StructWrapper || @operator.Class.ClassType == ClassType.UnionWrapper)
+                else if (@operator.Class.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
                 {
                     TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
                 }
@@ -333,7 +401,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     WriteLine($"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Class.Name}({@operator.Type.Visit(TypePrinter)} {variableName})");
                 }
 
-                if (@operator.Class.ClassType == ClassType.Class || @operator.Class.ClassType == ClassType.StructWrapper || @operator.Class.ClassType == ClassType.UnionWrapper)
+                if (@operator.Class.ClassType is ClassType.Class or ClassType.StructWrapper or ClassType.UnionWrapper)
                 {
                     TypePrinter.PopMarshalType();
                 }

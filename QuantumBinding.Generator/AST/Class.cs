@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using QuantumBinding.Generator.Types;
 
@@ -22,6 +21,8 @@ namespace QuantumBinding.Generator.AST
         private List<Field> fields;
         private List<Method> methods;
         private List<Property> properties;
+
+        public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && WrappedStruct != null;
         
         public ClassType ClassType { get; set; }
 
@@ -119,7 +120,14 @@ namespace QuantumBinding.Generator.AST
 
         public void AddMethod(Method method)
         {
+            if (method == null) return;
             methods.Add(method);
+        }
+        
+        public void AddMethods(IEnumerable<Method> methodsList)
+        {
+            if (methodsList == null) return;
+            methods.AddRange(methodsList);
         }
 
         public void RemoveMethod(Method method)
@@ -142,6 +150,7 @@ namespace QuantumBinding.Generator.AST
                 AccessSpecifier = AccessSpecifier,
                 ClassType = ClassType,
                 Name = Name,
+                OriginalName = OriginalName,
                 IsPointer = IsPointer,
                 InnerStruct = InnerStruct,
                 IsTypedef = IsTypedef,
@@ -153,7 +162,6 @@ namespace QuantumBinding.Generator.AST
                 WrappedStruct = WrappedStruct,
                 WrappedStructFieldName = WrappedStructFieldName,
                 ExtendedFrom = ExtendedFrom,
-                AlternativeNamespace = AlternativeNamespace,
             };
         }
 

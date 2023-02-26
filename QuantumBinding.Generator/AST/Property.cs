@@ -44,5 +44,7 @@ namespace QuantumBinding.Generator.AST
                 PairedField = (Field)PairedField.Clone()
             };
         }
+
+        public bool HasSimpleGetterOnly => Setter == null && Getter.AccessSpecifier == AccessSpecifier.Public;
     }
 }

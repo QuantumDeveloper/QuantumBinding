@@ -1,6 +1,7 @@
 ﻿using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
 using System;
+using System.Linq;
 using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.Processors
@@ -97,6 +98,20 @@ namespace QuantumBinding.Generator.Processors
             }
 
             @class.Name = SplitAndRename(@class.Name);
+            if (@class.UnderlyingNativeType != null)
+            {
+                foreach (var unit in AstContext.TranslationUnits)
+                {
+                    var @struct = unit.Declarations.FirstOrDefault(x =>
+                        x.OriginalName == @class.UnderlyingNativeType.Declaration.OriginalName);
+
+                    if (@struct != null)
+                    {
+                        @class.UnderlyingNativeType.Declaration = @struct;
+                        break;
+                    }
+                }
+            }
 
             return true;
         }
@@ -214,7 +229,7 @@ namespace QuantumBinding.Generator.Processors
 
             for (int i = 0; i < splittted.Length; i++)
             {
-                string part = (string)splittted[i];
+                string part = splittted[i];
                 if (i == 0)
                 {
                     if (casePattern == CasePattern.CamelCase)

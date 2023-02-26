@@ -6,20 +6,20 @@ using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Parser
 {
-    internal sealed class ForwardDeclarationVisitor : ICXCursorVisitor
+    internal sealed unsafe class ForwardDeclarationVisitor : ICXCursorVisitor
     {
         private readonly QBCursor beginningCursor;
 
         private bool beginningCursorReached;
-        private CXCursorVisitor nativeVisitor;
-
+        private Delegates.CXCursorVisitor nativeVisitor;
+        
         public ForwardDeclarationVisitor(QBCursor beginningCursor)
         {
             this.beginningCursor = beginningCursor;
             nativeVisitor = VisitDelegate;
             VisitorPtr = Marshal.GetFunctionPointerForDelegate(nativeVisitor);
         }
-
+        
         public QBCursor ForwardDeclarationCursor { get; private set; }
 
         public IntPtr VisitorPtr { get; }
@@ -36,15 +36,15 @@ namespace QuantumBinding.Generator.Parser
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            if (cursor.equalCursors(this.beginningCursor) != 0)
+            if (cursor.EqualCursors(beginningCursor) != 0)
             {
-                this.beginningCursorReached = true;
+                beginningCursorReached = true;
                 return CXChildVisitResult.CXChildVisit_Continue;
             }
 
-            if (this.beginningCursorReached)
+            if (beginningCursorReached)
             {
-                this.ForwardDeclarationCursor = cursor;
+                ForwardDeclarationCursor = cursor;
                 return CXChildVisitResult.CXChildVisit_Break;
             }
 

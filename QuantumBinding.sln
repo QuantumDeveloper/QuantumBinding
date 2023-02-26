@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33209.295
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Generator", "QuantumBinding.Generator\QuantumBinding.Generator.csproj", "{B95CDA41-B72D-4E22-B439-097E49EBEE82}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Clang", "QuantumBinding.Clang\QuantumBinding.Clang.csproj", "{7E8412B8-C462-4B54-A699-17A49AFEB6E1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangPlayground", "QuantumBinding.ClangPlayground\QuantumBinding.ClangPlayground.csproj", "{F17A117C-F270-4570-BC2F-ACDBDC5F8095}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Utils", "QuantumBinding.Utils\QuantumBinding.Utils.csproj", "{2AC570AD-CEF8-4CD1-9040-B1D876EA12BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,9 @@ Global
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.ActiveCfg = Debug|x64
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|x64.ActiveCfg = Release|x64
 		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Release|x64.Build.0 = Release|x64
+		{F17A117C-F270-4570-BC2F-ACDBDC5F8095}.Debug|x64.Build.0 = Debug|x64
+		{2AC570AD-CEF8-4CD1-9040-B1D876EA12BB}.Debug|x64.ActiveCfg = Debug|x64
+		{2AC570AD-CEF8-4CD1-9040-B1D876EA12BB}.Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -74,7 +74,7 @@ namespace QuantumBinding.Generator.Processors
                 var field = new Field("pointer");
                 field.AccessSpecifier = AccessSpecifier.Public;
                 field.Name = "pointer";
-                field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.IntPtr) };
+                field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                 @class.InnerStruct.AddField(field);
             }
 
@@ -86,11 +86,6 @@ namespace QuantumBinding.Generator.Processors
             if (IsVisited(field))
             {
                 return false;
-            }
-
-            if (field.Class.Name == "spvc_msl_sampler_ycbcr_conversion" && field.Name == "swizzle")
-            {
-
             }
 
             if (field.Type.IsCustomType(out CustomType customType))
@@ -106,7 +101,15 @@ namespace QuantumBinding.Generator.Processors
                     decl = unit.Declarations.FirstOrDefault(x => x.Name == customType.Name);
                     if (decl != null) break;
                 }
-                field.Type.Declaration = decl;
+
+                if (decl is Delegate @delegate)
+                {
+                    field.Type = new DelegateType() { Name = customType.Name, Declaration = decl };
+                }
+                else
+                {
+                    field.Type.Declaration = decl;
+                }
             }
 
             if (field.Type.IsPointer()) // if parameter is pointer to any type, then make it nullable for future possible manipulations
@@ -163,9 +166,9 @@ namespace QuantumBinding.Generator.Processors
                     parameter.ParameterKind = ParameterKind.Readonly;
                     break;
                 case PointerType pointer when !pointer.CanConvertToString() && pointer.Pointee.IsPrimitiveType || classDecl?.IsSimpleType == true || decl is Enumeration:
-                    parameter.ParameterKind = ParameterKind.InOut;
+                    parameter.ParameterKind = ParameterKind.Ref;
                     break;
-                case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStruct():
+                case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStructOrUnion():
                     {
                         parameter.ParameterKind = ParameterKind.Out;
                         break;

@@ -8,14 +8,11 @@ namespace QuantumBinding.Generator.AST
         {
             TranslationUnits = new List<TranslationUnit>(units);
             GeneratorOutputs = new List<GeneratorOutput>();
-            CodeGeneratorPathOutputs = new List<GeneratorOutput>();
         }
 
         public List<TranslationUnit> TranslationUnits { get; }
 
         public List<GeneratorOutput> GeneratorOutputs { get; }
-
-        public List<GeneratorOutput> CodeGeneratorPathOutputs { get; }
 
         public Module Module { get; set; }
     }

@@ -14,7 +14,6 @@ namespace QuantumBinding.Generator.Types
             Declaration = type.Declaration;
             Pointee = type.Pointee;
             IsNullable = type.IsNullable;
-            Pointee = Pointee.Clone() as BindingType;
         }
 
         public BindingType Pointee { get; set; }
@@ -26,6 +25,19 @@ namespace QuantumBinding.Generator.Types
         public override T Visit<T>(ITypeVisitor<T> typeVisitor)
         {
             return typeVisitor.VisitPointerType(this);
+        }
+
+        public uint GetDepth()
+        {
+            uint depth = 1;
+            var pointee = Pointee;
+            while (pointee is PointerType pointer)
+            {
+                pointee = pointer.Pointee;
+                depth++;
+            }
+
+            return depth;
         }
 
         public override object Clone()
@@ -61,6 +73,11 @@ namespace QuantumBinding.Generator.Types
         public static bool operator !=(PointerType type1, PointerType type2)
         {
             return !(type1 == type2);
+        }
+
+        public override string ToString()
+        {
+            return Pointee.ToString();
         }
     }
 }
