@@ -14,9 +14,9 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXIdxObjCInterfaceDeclInfo
 {
-    public CXIdxObjCContainerDeclInfo* containerInfo;
-    public CXIdxBaseClassInfo* superInfo;
-    public CXIdxObjCProtocolRefListInfo* protocols;
+    public QuantumBinding.Clang.Interop.CXIdxObjCContainerDeclInfo* containerInfo;
+    public QuantumBinding.Clang.Interop.CXIdxBaseClassInfo* superInfo;
+    public QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo* protocols;
 }
 
 

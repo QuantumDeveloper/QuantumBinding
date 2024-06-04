@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXEvalResultImpl
 {
     public void* pointer;
-    public CXEvalResultImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

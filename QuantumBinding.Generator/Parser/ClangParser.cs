@@ -382,12 +382,17 @@ namespace QuantumBinding.Generator.Parser
 
                     if (@class.InnerStruct != null)
                     {
-                        @class.InnerStruct.ConnectedTo = @class;
+                        @class.InnerStruct.LinkedTo = @class;
                     }
 
                     var dependentType = new DependentNameType(@class.Name, pointeeName);
                     dependentType.Declaration = @class;
                     @class.UnderlyingNativeType = dependentType;
+
+                    if (@class.Name == "spv_binary_t")
+                    {
+                        int x = 0;
+                    }
                     
                     var field = new Field();
                     if (classType == ClassType.Class)
@@ -432,16 +437,16 @@ namespace QuantumBinding.Generator.Parser
                         ctr.InputParameters.Add(field);
                         @class.Constructors.Add(ctr);
 
-                        if (@class.InnerStruct.Constructors.Count == 0)
-                        {
-                            var innerField = new Field();
-                            innerField.AccessSpecifier = AccessSpecifier.Public;
-                            innerField.Name = "pointer";
-                            innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
-                            Constructor ctr2 = new Constructor() { Class = @class.InnerStruct };
-                            ctr2.InputParameters.Add(innerField);
-                            @class.InnerStruct.AddConstructor(ctr2);
-                        }
+                        // if (@class.InnerStruct.Constructors.Count == 0)
+                        // {
+                        //     var innerField = new Field();
+                        //     innerField.AccessSpecifier = AccessSpecifier.Public;
+                        //     innerField.Name = "pointer";
+                        //     innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
+                        //     Constructor ctr2 = new Constructor() { Class = @class.InnerStruct };
+                        //     ctr2.InputParameters.Add(innerField);
+                        //     @class.InnerStruct.AddConstructor(ctr2);
+                        // }
                     }
 
                     AddDeclaration(@class);

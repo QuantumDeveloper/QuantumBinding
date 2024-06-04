@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXRemappingImpl
 {
     public void* pointer;
-    public CXRemappingImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

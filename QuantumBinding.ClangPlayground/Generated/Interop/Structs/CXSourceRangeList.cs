@@ -24,7 +24,7 @@ public unsafe partial struct CXSourceRangeList
     ///<summary>
     /// An array of CXSourceRanges.
     ///</summary>
-    public CXSourceRange* ranges;
+    public QuantumBinding.Clang.Interop.CXSourceRange* ranges;
 }
 
 

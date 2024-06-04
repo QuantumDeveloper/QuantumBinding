@@ -1,4 +1,6 @@
-﻿using QuantumBinding.Generator.AST;
+﻿using System;
+using QuantumBinding.Generator.AST;
+using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.Types
 {
@@ -161,12 +163,17 @@ namespace QuantumBinding.Generator.Types
             var array = pointer?.Pointee as ArrayType;
             return array != null;
         }
-        
+
         public static bool IsPointerToArray(this BindingType type, out ArrayType arrayType, out uint depth)
         {
             depth = 1;
             arrayType = null;
             var pointer = type as PointerType;
+            if (pointer == null)
+            {
+                return false;
+            }
+
             do
             {
                 if (pointer.Pointee is PointerType pointee)
@@ -174,13 +181,13 @@ namespace QuantumBinding.Generator.Types
                     depth++;
                     pointer = pointee;
                 }
-                
+
                 if (pointer.Pointee is ArrayType array)
                 {
                     arrayType = array;
                 }
             } while (pointer.Pointee is PointerType);
-            
+
             return arrayType != null;
         }
 

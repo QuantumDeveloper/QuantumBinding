@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXCursorSetImpl
 {
     public void* pointer;
-    public CXCursorSetImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

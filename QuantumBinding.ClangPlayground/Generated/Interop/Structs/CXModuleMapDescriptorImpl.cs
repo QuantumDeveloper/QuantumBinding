@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXModuleMapDescriptorImpl
 {
     public void* pointer;
-    public CXModuleMapDescriptorImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

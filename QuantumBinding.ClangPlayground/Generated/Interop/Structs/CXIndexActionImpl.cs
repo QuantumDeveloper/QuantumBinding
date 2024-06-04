@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXIndexActionImpl
 {
     public void* pointer;
-    public CXIndexActionImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

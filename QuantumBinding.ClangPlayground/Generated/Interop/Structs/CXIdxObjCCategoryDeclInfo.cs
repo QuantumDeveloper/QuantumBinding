@@ -14,11 +14,11 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXIdxObjCCategoryDeclInfo
 {
-    public CXIdxObjCContainerDeclInfo* containerInfo;
-    public CXIdxEntityInfo* objcClass;
+    public QuantumBinding.Clang.Interop.CXIdxObjCContainerDeclInfo* containerInfo;
+    public QuantumBinding.Clang.Interop.CXIdxEntityInfo* objcClass;
     public CXCursor classCursor;
     public CXIdxLoc classLoc;
-    public CXIdxObjCProtocolRefListInfo* protocols;
+    public QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo* protocols;
 }
 
 

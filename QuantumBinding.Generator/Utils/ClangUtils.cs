@@ -115,7 +115,14 @@ namespace QuantumBinding.Generator.Utils
                         //var pointeeType = clang.getCanonicalType(clang.getPointeeType(cursorType));
                         var pointeeType = cursorType.GetPointeeType();
                         var pointer = new PointerType();
+
+                        if (pointeeType.Kind == CXTypeKind.CXType_FunctionProto)
+                        {
+                            pointeeType = pointeeType.GetResultType();
+                        }
+                        
                         var isBuiltin = pointeeType.IsPrimitiveType();
+                        
                         if (isBuiltin)
                         {
                             pointer.Pointee = new BuiltinType(pointeeType.GetPrimitiveType());

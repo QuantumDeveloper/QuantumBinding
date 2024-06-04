@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXTargetInfoImpl
 {
     public void* pointer;
-    public CXTargetInfoImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

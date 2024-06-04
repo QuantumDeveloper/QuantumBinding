@@ -28,7 +28,7 @@ public unsafe partial struct CXTUResourceUsage
     ///<summary>
     /// An array of key-value pairs, representing the breakdown of memory usage.
     ///</summary>
-    public CXTUResourceUsageEntry* entries;
+    public QuantumBinding.Clang.Interop.CXTUResourceUsageEntry* entries;
 }
 
 

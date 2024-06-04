@@ -27,15 +27,15 @@ public unsafe partial struct CXIdxEntityRefInfo
     ///<summary>
     /// The entity that gets referenced.
     ///</summary>
-    public CXIdxEntityInfo* referencedEntity;
+    public QuantumBinding.Clang.Interop.CXIdxEntityInfo* referencedEntity;
     ///<summary>
     /// Immediate "parent" of the reference. For example:
     ///</summary>
-    public CXIdxEntityInfo* parentEntity;
+    public QuantumBinding.Clang.Interop.CXIdxEntityInfo* parentEntity;
     ///<summary>
     /// Lexical container context of the reference.
     ///</summary>
-    public CXIdxContainerInfo* container;
+    public QuantumBinding.Clang.Interop.CXIdxContainerInfo* container;
     ///<summary>
     /// Sets of symbol roles of the reference.
     ///</summary>

@@ -7,6 +7,10 @@ namespace QuantumBinding.Generator.AST
 {
     public class Class: DeclarationUnit
     {
+        private List<Field> fields;
+        private List<Method> methods;
+        private List<Property> properties;
+        
         public Class()
         {
             AccessSpecifier = AccessSpecifier.Public;
@@ -16,12 +20,7 @@ namespace QuantumBinding.Generator.AST
             Constructors = new List<Constructor>();
             Operators = new List<Operator>();
         }
-
-
-        private List<Field> fields;
-        private List<Method> methods;
-        private List<Property> properties;
-
+        
         public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && WrappedStruct != null;
         
         public ClassType ClassType { get; set; }
@@ -32,7 +31,7 @@ namespace QuantumBinding.Generator.AST
 
         public AccessSpecifier WrapperMethodAccessSpecifier { get; set; }
 
-        public Class ConnectedTo { get; set; }
+        public Class LinkedTo { get; set; }
 
         // True if the record is a POD (Plain Old Data) type.
         public bool IsSimpleType { get; set; }
@@ -116,6 +115,31 @@ namespace QuantumBinding.Generator.AST
             {
                 properties.Remove(property);
             }
+        }
+        
+        public void ClearConstructors()
+        {
+            Constructors.Clear();
+        }
+
+        public void ClearProperties()
+        {
+            properties.Clear();
+        }
+        
+        public void ClearOperators()
+        {
+            Operators.Clear();
+        }
+
+        public void ClearMethods()
+        {
+            Methods.Clear();
+        }
+        
+        public void ClearFields()
+        {
+            fields.Clear();
         }
 
         public void AddMethod(Method method)

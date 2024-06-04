@@ -15,11 +15,6 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXIdxClientASTFileImpl
 {
     public void* pointer;
-    public CXIdxClientASTFileImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
 }
 
 

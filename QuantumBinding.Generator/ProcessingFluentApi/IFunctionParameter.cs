@@ -61,7 +61,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         IFunctionParameterName InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
 
-        IFunctionParameterName InterpretAsPointerType(BindingType pointeeType);
+        IFunctionParameterName InterpretAsPointerType(BindingType pointeeType, uint pointerDepth = 1);
 
         IFunctionParameterName InterpretAsIs();
         
