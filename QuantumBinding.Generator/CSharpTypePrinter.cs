@@ -48,9 +48,9 @@ namespace QuantumBinding.Generator
                     {
                         var decl = array.Declaration as Class;
                         if (MarshalType is MarshalTypes.Property or MarshalTypes.WrappedProperty &&
-                            decl?.ConnectedTo != null)
+                            decl?.LinkedTo != null)
                         {
-                            return Result($"{decl.ConnectedTo.Name}", "[]", attribute);
+                            return Result($"{decl.LinkedTo.Name}", "[]", attribute);
                         }
 
                         return Result($"{custom.Name}", "[]", attribute);
@@ -239,7 +239,14 @@ namespace QuantumBinding.Generator
 
                             if (Parameter is { ParameterKind: ParameterKind.Out })
                             {
-                                result = Result(printedResult.Type, PointerOperator);
+                                if (pointee.IsPointerToStructOrUnion())
+                                {
+                                    result = Result(printedResult.Type);
+                                }
+                                else
+                                {
+                                    result = Result(printedResult.Type, PointerOperator);
+                                }
                             }
                             else
                             {
@@ -370,9 +377,9 @@ namespace QuantumBinding.Generator
 
                 if (MarshalType is MarshalTypes.WrappedProperty)
                 {
-                    if (@class.ConnectedTo != null)
+                    if (@class.LinkedTo != null)
                     {
-                        return Result(@class.ConnectedTo.Name);
+                        return Result(@class.LinkedTo.Name);
                     }
                 }
 
@@ -619,6 +626,10 @@ namespace QuantumBinding.Generator
             StringBuilder builder = new StringBuilder();
             PushField(field);
             var fieldResult = field.Type.Visit(this);
+            if (field.Type.IsPointerToStructOrUnion())
+            {
+                fieldResult = $"{field.Type.Declaration.InteropNamespace}.{fieldResult}";
+            }
             PopField();
             if (MarshalType != MarshalTypes.MethodParameter)
             {

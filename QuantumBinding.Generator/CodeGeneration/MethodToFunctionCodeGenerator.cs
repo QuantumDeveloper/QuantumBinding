@@ -43,6 +43,11 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         
         Clear();
 
+        if (method.Name == "SpvBinaryToText")
+        {
+            int x = 0;
+        }
+        
         nativeParams = new List<Parameter>();
 
         bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
@@ -69,6 +74,11 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                         classDecl = p.Type.Declaration as Class;
                     }
                 }
+            }
+
+            if (parameter.Name == "text")
+            {
+                int x = 0;
             }
 
             if (parameter.Type.IsPointerToBuiltInType(out var primType))
@@ -104,6 +114,11 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                     {
                         Name = $"{argumentName}", ParameterKind = parameter.ParameterKind, Type = parameter.Type
                     });
+                }
+                else if (parameter.Type.Declaration is not Enumeration && 
+                         parameter.Type.IsPointerToArray(out var arrayType, out var depth))
+                {
+                    WritePointerToArrayForBuiltInType(parameter, argumentName, arrayType, depth);
                 }
                 else if (parameter.Type.IsPointerToBuiltInType(out var prim) && !parameter.Type.IsPurePointer())
                 {
@@ -629,6 +644,45 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         WriteLine($"{parameter.Name} = *{argumentName};");
     }
+    
+    void WritePointerToArrayForBuiltInType(Parameter parameter, string argumentName, ArrayType arrayType, uint pointerDepth)
+    {
+        var arraySizeSource = arrayType.ArraySizeSource;
+        var arrayLength = $"{parameter.Name}.Length";
+        if (!string.IsNullOrEmpty(arraySizeSource))
+        {
+            arrayLength = arraySizeSource;
+        }
+
+        TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+        TypePrinter.PushParameter(parameter);
+        var typeStrResult = parameter.Type.Visit(TypePrinter);
+        
+        TypePrinter.PopParameter();
+        TypePrinter.PopMarshalType();
+        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly)
+        {
+            WriteLine(
+                $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : {NativeUtilsArrayToPointer}({parameter.Name});");
+            
+            postActions.Add(() => FreeNativePointer(argumentName));
+        }
+        else if (parameter.ParameterKind == ParameterKind.Ref)
+        {
+            WriteLine(
+                $"var {argumentName} = ReferenceEquals({parameter.Name}, null) ? null : {NativeUtilsGetPointerToArray}<{typeStrResult.Type}>({arrayLength});");
+
+            postActions.Add(() => ConvertPointerToArrayOfNativeType(parameter, argumentName, typeStrResult.Type, arrayLength));
+            postActions.Add(() => FreeNativePointer(argumentName));
+        }
+        else if (parameter.ParameterKind == ParameterKind.Out)
+        {
+            WriteLine($"var {argumentName} = {NativeUtilsGetPointerToArray}<{typeStrResult.Type}>({arrayLength});");
+            postActions.Add(() => ConvertPointerToArrayOfNativeType(parameter, argumentName, typeStrResult.Type, arrayLength));
+        }
+        
+        CreateNativeParameter(parameter, argumentName, null);
+    }
 
     void WritePointerToArray(Parameter parameter, string argumentName, Class classDecl, ArrayType arrayType, uint pointerDepth)
     {
@@ -722,7 +776,16 @@ public class MethodToFunctionCodeGenerator : TextGenerator
     {
         WriteLine($"{NativeUtilsWritePointerToManagedArray}({argumentName}, {parameter.Name});");
     }
+    
+    void ConvertPointerToArrayOfNativeType(Parameter parameter, string argumentName, string typeStrResult, string arrayLength)
+    {
+        if (parameter.ParameterKind == ParameterKind.Out)
+        {
+            WriteLine($"{parameter.Name} = new {typeStrResult}[{arrayLength}];");
+        }
 
+        WriteLine($"{NativeUtilsPrimitiveToFixedArray}({argumentName}, {arrayLength}, {parameter.Name});");
+    }
 
     void ConvertPointerToArray(Parameter parameter, string argumentName, Class classDecl, ArrayType arrayType)
     {
@@ -746,7 +809,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
             }
             type = $"{classDecl.FullName}";
         }
-        
 
         WriteLine($"{parameter.Name} = new {type}[{arrayType.ArraySizeSource}];");
         
@@ -879,7 +941,24 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         if (WrapInteropObjects)
         {
             var wrapperType = classDecl.Name;
-            WriteLine($"{parameter.Name} = new {wrapperType}({argumentName});");
+            
+            var pointer = parameter.Type as PointerType;
+            var depth = pointer.GetDepth();
+            if (depth > 1)
+            {
+                WriteLine($"if ({argumentName} is not null)");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{parameter.Name} = new {wrapperType}(*{argumentName});");
+                UnindentAndWriteCloseBrace();
+                WriteLine($"else");
+                WriteOpenBraceAndIndent();
+                WriteLine($"{parameter.Name} = (default);");
+                UnindentAndWriteCloseBrace();
+            }
+            else
+            {
+                WriteLine($"{parameter.Name} = new {wrapperType}({argumentName});");
+            }
         }
         else
         {

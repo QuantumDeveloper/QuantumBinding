@@ -23,7 +23,7 @@ public unsafe struct MarshaledStringArray
             }
         }
     }
-    #else
+#else
     public MarshaledStringArray(string[] strings, bool isUnicode)
     {
         IsUnicode = isUnicode;

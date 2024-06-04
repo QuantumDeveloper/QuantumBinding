@@ -14,7 +14,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXStringSet
 {
-    public CXString* strings;
+    public QuantumBinding.Clang.Interop.CXString* strings;
     public uint count;
 }
 

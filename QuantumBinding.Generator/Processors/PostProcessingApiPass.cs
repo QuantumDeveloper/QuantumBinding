@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.ProcessingFluentApi;
-using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.Processors
 {
@@ -181,6 +180,30 @@ namespace QuantumBinding.Generator.Processors
             if (classFix.UnderlyingNativeType != null)
             {
                 @class.UnderlyingNativeType = classFix.UnderlyingNativeType;
+            }
+
+            @class.IsIgnored = classFix.IsIgnored;
+
+            if (@class.Name == "spv_text")
+            {
+                int x = 0;
+            }
+            
+            if (classFix.CleanObject)
+            {
+                @class.ClearConstructors();
+                @class.ClearProperties();
+                @class.ClearOperators();
+                @class.ClearMethods();
+                @class.ClearFields();
+            }
+
+            if (classFix.CopyFieldsFromLinkedObject && @class.InnerStruct != null)
+            {
+                foreach (var field in @class.InnerStruct.Fields)
+                {
+                    @class.AddField(field);
+                }
             }
 
             foreach (var fieldFix in classFix.Fields)

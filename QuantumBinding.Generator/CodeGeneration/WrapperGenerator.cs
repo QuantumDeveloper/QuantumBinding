@@ -137,6 +137,11 @@ namespace QuantumBinding.Generator.CodeGeneration
             PushBlock(CodeBlockKind.Class);
 
             GenerateCommentIfNotEmpty(@class.Comment);
+            
+            if (@class.Name == "spv_parsed_operand_t")
+            {
+                int x = 0;
+            }
 
             var classVisitResult = TypePrinter.VisitClass(@class).ToString();
             if (@class.IsDisposable && !string.IsNullOrEmpty(@class.DisposableBaseClass))
@@ -1013,7 +1018,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 WriteLine($"for (int i = 0; i < {property.Name}.Length; ++i)");
                 WriteOpenBraceAndIndent();
                 if ((propType.Type == CSharpTypePrinter.ObjectType)
-                    || (decl != null && (decl.ClassType == ClassType.Class || decl.ConnectedTo is { ClassType: ClassType.Class })))
+                    || (decl != null && (decl.ClassType == ClassType.Class || decl.LinkedTo is { ClassType: ClassType.Class })))
                 {
                     WriteLine($"{parentClass.WrappedStructFieldName}.{property.Field.Name}[i] = ({result}){property.Name}[i];");
                 }

@@ -32,5 +32,11 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public bool IsDisposable { get; set; }
 
         public string DisposeBody { get; set; }
+        
+        public bool IsIgnored { get; set; }
+        
+        public bool CopyFieldsFromLinkedObject { get; set; }
+
+        public bool CleanObject { get; set; }
     }
 }

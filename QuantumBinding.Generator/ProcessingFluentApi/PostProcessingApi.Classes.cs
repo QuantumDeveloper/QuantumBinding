@@ -237,6 +237,24 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             }
         }
 
+        public IClassParameters Ignore()
+        {
+            _currentClass.IsIgnored = true;
+            return this;
+        }
+
+        public IClassParameters CleanObject()
+        {
+            _currentClass.CleanObject = true;
+            return this;
+        }
+
+        public IClassParameters CopyFieldsFromLinkedObject()
+        {
+            _currentClass.CopyFieldsFromLinkedObject = true;
+            return this;
+        }
+
         public bool TryGetClass(string className, bool matchCase, out ClassExtension @class)
         {
             if (matchCase)

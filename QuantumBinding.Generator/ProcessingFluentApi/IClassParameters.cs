@@ -14,5 +14,11 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField SetClassType(ClassType classType);
 
         void SetUnderlyingType(BindingType type);
+
+        IClassParameters Ignore();
+
+        IClassParameters CleanObject();
+
+        IClassParameters CopyFieldsFromLinkedObject();
     }
 }

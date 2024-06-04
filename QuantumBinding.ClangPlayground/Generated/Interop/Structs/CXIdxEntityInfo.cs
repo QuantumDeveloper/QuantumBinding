@@ -21,7 +21,7 @@ public unsafe partial struct CXIdxEntityInfo
     public sbyte* name;
     public sbyte* uSR;
     public CXCursor cursor;
-    public CXIdxAttrInfo* attributes;
+    public QuantumBinding.Clang.Interop.CXIdxAttrInfo* attributes;
     public uint numAttributes;
 }
 

@@ -24,10 +24,15 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
+            if (@class.Name == "spv_text_t")
+            {
+                int x = 0;
+            }
+
             // Create wrappers only for structs and unions
             if ((@class.ClassType != ClassType.Struct && @class.ClassType != ClassType.Union)
                 || @class.IsSimpleType 
-                || @class.ConnectedTo != null)
+                || @class.LinkedTo is { IsIgnored: false })
             {
                 return false;
             }
@@ -102,7 +107,7 @@ namespace QuantumBinding.Generator.Processors
                 
                 if (field.Type.Declaration is Class declaration && !declaration.IsSimpleType)
                 {
-                    if ((declaration.ClassType == ClassType.Struct && declaration.ConnectedTo == null) || declaration.ClassType == ClassType.Union)
+                    if ((declaration.ClassType == ClassType.Struct && declaration.LinkedTo == null) || declaration.ClassType == ClassType.Union)
                     {
                         if (CurrentNamespace.IsWrapperPresent(declaration.Name, out wrapperDecl))
                         {
@@ -111,6 +116,7 @@ namespace QuantumBinding.Generator.Processors
                         else
                         {
                             var declarationCopy = (Class)declaration.Clone();
+                            declarationCopy.Name = declaration.Name[0].ToString().ToUpper() + declaration.Name.Substring(1);
                             declarationCopy.ClassType = ClassType.StructWrapper;
                             if (declaration.ClassType == ClassType.Union)
                             {

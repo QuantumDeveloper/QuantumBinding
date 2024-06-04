@@ -178,9 +178,19 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerType(BindingType pointeeType)
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerType(BindingType pointeeType, uint pointerDepth = 1)
         {
-            _currentParameter.Type = new PointerType(){Pointee = pointeeType};
+            var pointer = new PointerType();
+            _currentParameter.Type = pointer;
+            for (int i = 1; i < pointerDepth; i++)
+            {
+                var ptr = new PointerType();
+                pointer.Pointee = ptr;
+                pointer = ptr;
+            }
+            
+            pointer.Pointee = pointeeType;
+            
             return this;
         }
 
