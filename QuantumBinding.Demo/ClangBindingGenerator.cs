@@ -62,7 +62,7 @@ namespace QuantumBinding.ClangGenerator
             AddFunctionsToFix(context);
             context.AddPreGeneratorPass(new FunctionToInstanceMethodPass(), ExecutionPassKind.PerTranslationUnit);
             context.AddPreGeneratorPass(new ForceCallingConventionPass(CallingConvention.Cdecl), ExecutionPassKind.PerTranslationUnit);
-            context.AddPreGeneratorPass(new CheckFlagEnumsPass(), ExecutionPassKind.PerTranslationUnit);
+            context.AddPreGeneratorPass(new CheckFlagsEnumsPass(), ExecutionPassKind.PerTranslationUnit);
             
             var macroAction = new MacroFunctionsToCSharpFunctionsPass();
             macroAction.IgnoreList.Add("LLVM_CLANG_C_STRICT_PROTOTYPES_BEGIN");
