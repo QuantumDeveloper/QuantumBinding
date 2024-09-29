@@ -558,8 +558,9 @@ namespace QuantumBinding.Generator
                 {
                     hasModifier = false;
                 }
-                else if(parameter.Type.IsPointerToArray() ||
-                        parameter.Type.Declaration is Class {IsWrapper: true} /*or Class { IsSimpleType: true }*/)
+                else if(parameter.Type.IsPointerToArray())
+                // else if(parameter.Type.IsPointerToArray() ||
+                //         parameter.Type.Declaration is Class {IsWrapper: true} /*or Class { IsSimpleType: true }*/)
                 {
                     hasModifier = false;
                 }

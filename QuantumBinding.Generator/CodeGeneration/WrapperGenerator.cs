@@ -391,7 +391,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         }
                         else
                         {
-                            WriteLine($"if ({property.Name} != null)");
+                            WriteLine($"if ({property.Name} != default)");
                         }
                         
                         WriteOpenBraceAndIndent();
@@ -442,26 +442,32 @@ namespace QuantumBinding.Generator.CodeGeneration
                 {
                     if (property.Type.IsConstArray(out var size))
                     {
-                        WriteLine($"if({property.Name} != null)");
-                        WriteOpenBraceAndIndent();
-                        ConstArrayConversionSetter(property, @class, decl, constArrayIndex);
-                        UnindentAndWriteCloseBrace();
-                        constArrayIndex++;
+                        WriteDefaultCondition(() =>
+                        {
+                            ConstArrayConversionSetter(property, @class, decl, constArrayIndex);
+                            constArrayIndex++;
+                        });
                     }
-                    else if (decl != null && (decl.ClassType == ClassType.Class && !decl.IsSimpleType))
+                    else if (decl is { ClassType: ClassType.Class, IsSimpleType: false })
                     {
-                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                        WriteDefaultCondition(() =>
+                        {
+                            WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                        });
                     }
-                    else if (decl != null && decl.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
+                    else if (decl is { ClassType: ClassType.StructWrapper or ClassType.UnionWrapper })
                     {
-                        WriteLine($"if ({property.Name} != null)");
-                        WriteOpenBraceAndIndent();
-                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name}.{ConversionMethodName};");
-                        UnindentAndWriteCloseBrace();
+                        WriteDefaultCondition(() =>
+                        {
+                            WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name}.{ConversionMethodName};");
+                        });
                     }
                     else if (property.Type.Declaration is Enumeration @enum)
                     {
-                        WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                        WriteDefaultCondition(() =>
+                        {
+                            WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                        });
                     }
                     else
                     {
@@ -469,7 +475,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         {
                             FromWrappedToNative(builtinType);
                         }
-                        else if (decl != null && decl.IsSimpleType && Options.PodTypesAsSimpleTypes)
+                        else if (decl is { IsSimpleType: true } && Options.PodTypesAsSimpleTypes)
                         {
                             if (decl.UnderlyingNativeType is BuiltinType primitiveType)
                             {
@@ -478,11 +484,29 @@ namespace QuantumBinding.Generator.CodeGeneration
                         }
                         else
                         {
+                            // We will convert all Simple types to their native underlying types because 
+                            // for some types we could have impicit casting operators 
+                            // and this will prevent compiler for correctly using 'default' keyword.
+                            // To fix this, we are casting to concrete type
+                            if (decl is { IsSimpleType: true } && !Options.PodTypesAsSimpleTypes)
+                            {
+                                var nativeTypeName = decl.UnderlyingNativeType.Visit(TypePrinter);
+                                WriteLine($"if ({property.Name} != ({nativeTypeName})default)");
+                            }
+                            else
+                            {
+                                WriteLine($"if ({property.Name} != default)");
+                            }
+                            
+                            WriteOpenBraceAndIndent();
                             WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
+                            UnindentAndWriteCloseBrace();
                         }
 
                         void FromWrappedToNative(BuiltinType builtin)
                         {
+                            WriteLine($"if ({property.Name} != default)");
+                            WriteOpenBraceAndIndent();
                             switch (builtin.Type)
                             {
                                 case PrimitiveType.Bool:
@@ -495,8 +519,16 @@ namespace QuantumBinding.Generator.CodeGeneration
                                     WriteLine($"{@class.WrappedStructFieldName}.{property.Field.Name} = {property.Name};");
                                     break;
                             }
+                            UnindentAndWriteCloseBrace();
                         }
                     }
+                }
+                void WriteDefaultCondition(Action action)
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    action?.Invoke();
+                    UnindentAndWriteCloseBrace();
                 }
             }
             WriteLine($"return {@class.WrappedStructFieldName};");

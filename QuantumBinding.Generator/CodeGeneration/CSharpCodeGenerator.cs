@@ -906,7 +906,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             AddUsingIfNeeded(method.ReturnType);
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
 
-            if (method.Name == "SpvBinaryToText")
+            if (method.Name == "GetPhysicalDeviceProperties2")
             {
                 int x = 0;
             }

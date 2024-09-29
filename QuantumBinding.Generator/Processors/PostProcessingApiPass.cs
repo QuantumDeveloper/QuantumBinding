@@ -15,6 +15,7 @@ namespace QuantumBinding.Generator.Processors
             Options.VisitParameters = true;
             Options.VisitDelegates = true;
             Options.VisitClasses = true;
+            Options.VisitEnums = true;
         }
 
         public override bool VisitFunction(Function function)
@@ -278,6 +279,23 @@ namespace QuantumBinding.Generator.Processors
                 @class.AddProperty(property);
             }
 
+            return true;
+        }
+
+        public override bool VisitEnum(Enumeration enumeration)
+        {
+            if (IsVisited(enumeration))
+            {
+                return false;
+            }
+
+            if (!fixApi.TryGetEnum(enumeration.Name, false, out EnumExtension enumExtension))
+            {
+                return false;
+            }
+
+            enumeration.IsFlagEnum = enumExtension.IsFlagsEnum;
+            
             return true;
         }
     }

@@ -11,6 +11,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         private enum LastOperation
         {
             AddClass,
+            AddEnum,
             AddClasses,
             AddFunction,
             AddFunctions

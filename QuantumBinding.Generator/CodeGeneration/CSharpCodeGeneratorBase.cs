@@ -329,8 +329,8 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
             }
 
-            // Temporary disable Char to Bool convertion during generating an overloads to keep in sync with fields 
-            // in case we really want use byte values
+            // Temporary disable Char to Bool conversion during generating an overloads to keep in sync with fields 
+            // in case we really want to use byte values
             var prev = CurrentTranslationUnit.Module.CharAsBoolForMethods;
             CurrentTranslationUnit.Module.CharAsBoolForMethods = false;
 
