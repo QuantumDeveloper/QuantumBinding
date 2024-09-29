@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
@@ -281,17 +282,43 @@ namespace QuantumBinding.Generator.Processors
                 wrapper.AddProperty(property);
             }
 
-            if (pointersCount > 0)
-            {
-                wrapper.IsDisposable = true;
-            }
+            wrapper.IsDisposable = true;
             wrapper.DisposableBaseClass = FileExtensionGenerator.DisposableClassName;
             StringBuilder disposeBody = new StringBuilder();
+            var usedFields = new List<string>();
             foreach (var field in wrapper.Fields)
             {
                 if (field.ShouldDispose)
                 {
+                    usedFields.Add(field.Name);
                     disposeBody.AppendLine($"{field.Name}.Dispose();");
+                }
+            }
+
+            if (@class.Name == "VkAccelerationStructureGeometryDataKHR")
+            {
+                int x = 0;
+            }
+
+            foreach (var property in wrapper.Properties)
+            {
+                if (property.Type.IsClass() && !usedFields.Contains($"_{property.Field.Name}"))
+                {
+                    var @class1 = (Class)property.Type.Declaration;
+                    if (@class1.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
+                    {
+                        if (property.Type.IsArray())
+                        {
+                            disposeBody.AppendLine($"foreach(var item in {property.Name})");
+                            disposeBody.AppendLine("{");
+                            disposeBody.AppendLine($"\titem.Dispose();");
+                            disposeBody.AppendLine("}");
+                        }
+                        else
+                        {
+                            disposeBody.AppendLine($"{property.Name}?.Dispose();");
+                        }
+                    }
                 }
             }
             wrapper.DisposeBody = disposeBody.ToString();

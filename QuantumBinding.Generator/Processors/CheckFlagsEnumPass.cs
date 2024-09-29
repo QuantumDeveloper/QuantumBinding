@@ -4,9 +4,9 @@ using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors
 {
-    public class CheckFlagEnumsPass : PreGeneratorPass
+    public class CheckFlagsEnumsPass : PreGeneratorPass
     {
-        public CheckFlagEnumsPass()
+        public CheckFlagsEnumsPass()
         {
             Options.VisitEnums = true;
         }

@@ -12,6 +12,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             functions = new Dictionary<string, FunctionExtension>();
             delegates = new Dictionary<string, DelegateExtension>();
             classes = new Dictionary<string, ClassExtension>();
+            enums = new Dictionary<string, EnumExtension>();
             commonParameters = new List<ParameterExtension>();
         }
 
