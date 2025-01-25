@@ -10,7 +10,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public PostProcessingApi()
         {
             functions = new Dictionary<string, FunctionExtension>();
-            delegates = new Dictionary<string, DelegateExtension>();
+            delegates = new Dictionary<string, FunctionExtension>();
             classes = new Dictionary<string, ClassExtension>();
             enums = new Dictionary<string, EnumExtension>();
             commonParameters = new List<ParameterExtension>();
@@ -100,8 +100,10 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                 var parameter = _currentFunction.Parameters.FirstOrDefault(x => x.Name == paramName);
                 if (parameter != null)
                 {
-                    throw new ArgumentException(
-                        $"Parameter with name {paramName} already added for {_currentFunction.DecoratedName}");
+                    _currentParameter = parameter;
+                    return;
+                    // throw new ArgumentException(
+                    //     $"Parameter with name {paramName} already added for {_currentFunction.DecoratedName}");
                 }
 
                 var param = new ParameterExtension();

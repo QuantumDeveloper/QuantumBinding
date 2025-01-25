@@ -6,7 +6,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 {
     public partial class PostProcessingApi
     {
-        private readonly Dictionary<string, DelegateExtension> delegates;
+        private readonly Dictionary<string, FunctionExtension> delegates;
 
         public IFunctionParameter Delegate(string delegateName)
         {
@@ -15,9 +15,9 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                 throw new ArgumentNullException(nameof(delegateName));
             }
 
-            if (!functions.TryGetValue(delegateName, out _currentFunction))
+            if (!delegates.TryGetValue(delegateName, out _currentFunction))
             {
-                var @delegate = new DelegateExtension();
+                var @delegate = new FunctionExtension();
                 @delegate.DecoratedName = delegateName;
                 _currentFunction = @delegate;
                 delegates.Add(delegateName, @delegate);
@@ -26,7 +26,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        public bool TryGetDelegate(string delegateName, bool matchCase, out DelegateExtension @delegate)
+        public bool TryGetDelegate(string delegateName, bool matchCase, out FunctionExtension @delegate)
         {
             if (matchCase)
             {
