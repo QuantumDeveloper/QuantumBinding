@@ -113,7 +113,7 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (!fixApi.TryGetDelegate(@delegate.Name, false, out DelegateExtension delegateFix))
+            if (!fixApi.TryGetDelegate(@delegate.Name, false, out var delegateFix))
             {
                 return false;
             }
