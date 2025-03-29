@@ -136,6 +136,14 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
             return this;
         }
+        
+        ISetField ISetField.ChangeType<T>()
+        {
+            _currentField.ReplaceDeclaration = true;
+            _currentField.DeclarationType = typeof(T);
+
+            return this;
+        }
 
         ISetField ISetField.AddAttribute(string attribute)
         {

@@ -20,7 +20,7 @@ namespace QuantumBinding.Generator.Processors
             {
                 try
                 {
-                    var value = Convert.ToInt32(item.Value);
+                    var value = Convert.ToInt64(item.Value);
 
                     if (value < 0)
                     {
