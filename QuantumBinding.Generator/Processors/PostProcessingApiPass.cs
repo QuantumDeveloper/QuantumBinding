@@ -220,11 +220,6 @@ namespace QuantumBinding.Generator.Processors
                     field.AddAttribute(attribute);
                 }
 
-                if (@class.Name == "VkImageMemoryBarrier2")
-                {
-                    int x = 0;
-                }
-
                 if (field.Type != null)
                 {
                     var decl = field.Type.Declaration;

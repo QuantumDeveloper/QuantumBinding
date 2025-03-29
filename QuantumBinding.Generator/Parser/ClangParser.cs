@@ -430,11 +430,6 @@ namespace QuantumBinding.Generator.Parser
                     var dependentType = new DependentNameType(@class.Name, pointeeName);
                     dependentType.Declaration = @class;
                     @class.UnderlyingNativeType = dependentType;
-
-                    if (@class.Name == "spv_binary_t")
-                    {
-                        int x = 0;
-                    }
                     
                     var field = new Field();
                     if (classType == ClassType.Class)
