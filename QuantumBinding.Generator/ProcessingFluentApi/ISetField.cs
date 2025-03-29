@@ -9,6 +9,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField WithField(string fieldName);
         ISetField SetType(BindingType type);
         ISetField ChangeType();
+        ISetField ChangeType<T>() where T : Declaration;
         ISetField AddAttribute(string attribute);
         ISetField RemoveExistingAttributes();
         ISetField InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1);

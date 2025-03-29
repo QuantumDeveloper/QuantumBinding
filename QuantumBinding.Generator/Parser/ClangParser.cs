@@ -103,6 +103,8 @@ namespace QuantumBinding.Generator.Parser
                     return VisitStruct(cursor, parent, data);
                 case CXCursorKind.CXCursor_TypedefDecl:
                     return VisitTypedef(cursor, parent, data);
+                case CXCursorKind.CXCursor_VarDecl:
+                    return VisitVarDecl(cursor, parent, data);
                 case CXCursorKind.CXCursor_FunctionDecl:
                     return VisitFunction(cursor, parent, data);
                 case CXCursorKind.CXCursor_MacroDefinition:
@@ -302,6 +304,46 @@ namespace QuantumBinding.Generator.Parser
             return CXChildVisitResult.CXChildVisit_Continue;
         }
 
+        private Dictionary<string, Enumeration> enums = new Dictionary<string, Enumeration>();
+
+        private CXChildVisitResult VisitVarDecl(QBCursor cursor, QBCursor parent, QBClientData data)
+        {
+            var cursorType = cursor.GetCursorType();
+            if (cursorType.IsConstQualifiedType() == 1)
+            {
+                var decl = cursorType.GetTypeDeclaration();
+                if (decl.Kind == CXCursorKind.CXCursor_NoDeclFound)
+                    return CXChildVisitResult.CXChildVisit_Continue;
+                    
+                var enumName = decl.ToString();
+
+                if (!enums.TryGetValue(enumName, out var @enum))
+                {
+                    @enum = new Enumeration
+                    {
+                        InheritanceType = "ulong",
+                        Name = enumName,
+                        OriginalName = enumName,
+                        Location = ClangUtils.GetCurrentCursorLocation(cursor)
+                    };
+
+                    enums.Add(@enumName, @enum);
+                    AddDeclaration(@enum);
+                }
+                var spelling = cursor.GetCursorSpelling().ToString();
+                var result = cursor.Cursor_Evaluate();
+                var enumValue = result.EvalResult_getAsLongLong();
+                var enumItem = new EnumerationItem
+                {
+                    Name = spelling,
+                    Value = enumValue
+                };
+                @enum.Items.Add(enumItem);
+            }
+            
+            return CXChildVisitResult.CXChildVisit_Continue;
+        }
+
         private CXChildVisitResult VisitTypedef(QBCursor cursor, QBCursor parent, QBClientData data)
         {
             var spelling = cursor.GetCursorSpelling().ToString();
@@ -436,17 +478,6 @@ namespace QuantumBinding.Generator.Parser
                         Constructor ctr = new Constructor() { Class = @class };
                         ctr.InputParameters.Add(field);
                         @class.Constructors.Add(ctr);
-
-                        // if (@class.InnerStruct.Constructors.Count == 0)
-                        // {
-                        //     var innerField = new Field();
-                        //     innerField.AccessSpecifier = AccessSpecifier.Public;
-                        //     innerField.Name = "pointer";
-                        //     innerField.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
-                        //     Constructor ctr2 = new Constructor() { Class = @class.InnerStruct };
-                        //     ctr2.InputParameters.Add(innerField);
-                        //     @class.InnerStruct.AddConstructor(ctr2);
-                        // }
                     }
 
                     AddDeclaration(@class);

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.ProcessingFluentApi
@@ -24,5 +26,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public bool RemoveExistingAttributes { get; set; }
         
         public bool ReplaceDeclaration { get; set; }
+        
+        public Type DeclarationType { get; set; }
     }
 }
