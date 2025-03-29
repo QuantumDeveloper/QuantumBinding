@@ -36,6 +36,8 @@ namespace QuantumBinding.Generator
         {
             foreach (var module in processingCtx.Options.Modules)
             {
+                if (module == null) continue;
+                
                 if (string.IsNullOrEmpty(module.LibraryName))
                 {
                     throw new ArgumentNullException("LibraryName should not be empty");
@@ -187,6 +189,8 @@ namespace QuantumBinding.Generator
             var specs = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
             foreach (var module in processingCtx.Options.Modules)
             {
+                if (module == null) continue;
+                
                 processingCtx.AddCodeGenerationPass(new BasicCodeGeneratorPass(module.GeneratorSpecializations), ExecutionPassKind.PerTranslationUnit, module);
                 
                 if (module.WrapInteropObjects)

@@ -25,11 +25,6 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (@class.Name == "spv_text_t")
-            {
-                int x = 0;
-            }
-
             // Create wrappers only for structs and unions
             if ((@class.ClassType != ClassType.Struct && @class.ClassType != ClassType.Union)
                 || @class.IsSimpleType 
@@ -293,11 +288,6 @@ namespace QuantumBinding.Generator.Processors
                     usedFields.Add(field.Name);
                     disposeBody.AppendLine($"{field.Name}.Dispose();");
                 }
-            }
-
-            if (@class.Name == "VkAccelerationStructureGeometryDataKHR")
-            {
-                int x = 0;
             }
 
             foreach (var property in wrapper.Properties)

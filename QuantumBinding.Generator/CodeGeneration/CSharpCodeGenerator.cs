@@ -382,11 +382,6 @@ namespace QuantumBinding.Generator.CodeGeneration
                 PopBlock();
             }
 
-            if (@class.Name == "spv_text")
-            {
-                int x = 0;
-            }
-
             WriteLine(TypePrinter.VisitClass(@class).ToString());
             
             WriteOpenBraceAndIndent();
@@ -613,10 +608,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLine(dllImportString);
             PopBlock();
 
-            if (function.Name == "spvBinaryToText")
-            {
-                int x = 0;
-            }
             PushBlock(CodeBlockKind.AccessSpecifier);
             Write($"{TypePrinter.GetAccessSpecifier(function.AccessSpecifier)} static extern");
             PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
@@ -905,11 +896,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             CheckParameters(method.Parameters);
             AddUsingIfNeeded(method.ReturnType);
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-
-            if (method.Name == "GetPhysicalDeviceProperties2")
-            {
-                int x = 0;
-            }
 
             var methodResult = TypePrinter.VisitMethod(method);
             TypePrinter.PopMarshalType();

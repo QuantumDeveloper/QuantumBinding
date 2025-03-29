@@ -43,11 +43,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
         
         Clear();
 
-        if (method.Name == "SpvBinaryToText")
-        {
-            int x = 0;
-        }
-        
         nativeParams = new List<Parameter>();
 
         bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
@@ -74,11 +69,6 @@ public class MethodToFunctionCodeGenerator : TextGenerator
                         classDecl = p.Type.Declaration as Class;
                     }
                 }
-            }
-
-            if (parameter.Name == "text")
-            {
-                int x = 0;
             }
 
             if (parameter.Type.IsPointerToBuiltInType(out var primType))

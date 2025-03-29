@@ -185,11 +185,6 @@ namespace QuantumBinding.Generator.Processors
 
             @class.IsIgnored = classFix.IsIgnored;
 
-            if (@class.Name == "spv_text")
-            {
-                int x = 0;
-            }
-            
             if (classFix.CleanObject)
             {
                 @class.ClearConstructors();
@@ -233,7 +228,12 @@ namespace QuantumBinding.Generator.Processors
                     {
                         foreach (var translationUnit in AstContext.TranslationUnits)
                         {
-                            decl = translationUnit.Declarations.FirstOrDefault(x => x.Name == fieldFix.Type.ToString());
+                            var decls = translationUnit.Declarations.Where(x =>
+                                x.Name == fieldFix.Type.ToString()).ToList();
+                            decl = decls.Count > 1
+                                ? decls.FirstOrDefault(x => x.GetType() == fieldFix.DeclarationType)
+                                : decls.FirstOrDefault();
+                            
                             if (decl != null) break;
                         }
                     }

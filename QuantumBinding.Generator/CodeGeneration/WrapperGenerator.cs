@@ -138,11 +138,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             GenerateCommentIfNotEmpty(@class.Comment);
             
-            if (@class.Name == "spv_parsed_operand_t")
-            {
-                int x = 0;
-            }
-
             var classVisitResult = TypePrinter.VisitClass(@class).ToString();
             if (@class.IsDisposable && !string.IsNullOrEmpty(@class.DisposableBaseClass))
             {
