@@ -23,6 +23,8 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         public string FileExtension => "cs";
         
+        public TargetRuntime TargetRuntime => CurrentTranslationUnit.Module.TargetRuntime;
+        
         public override string GetFileName(TranslationUnit unit)
         {
             if (!unit.Module.EachTypeInSeparateFile)
@@ -48,7 +50,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         protected string CurrentNamespace { get; set; }
         protected string InteropNamespace => $"{CurrentTranslationUnit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.SubNamespace}";
         protected string InteropNamespaceExtension => TranslationUnit.InteropNamespaceExtension.SubNamespace;
-        protected string ConversionMethodName => "ToNative()";
+        protected string MarshalToMethodName => "MarshalTo";
 
         protected readonly Queue<FixedStructInfo> FixedStructInfos = new Queue<FixedStructInfo>();
         protected readonly Dictionary<string, FixedStructInfo> FixedTypesHash = new Dictionary<string, FixedStructInfo>();
@@ -112,13 +114,9 @@ namespace QuantumBinding.Generator.CodeGeneration
                         UsedUsings.Add(@namespace);
                     }
 
-                    if (classDecl.ClassType == ClassType.Class && classDecl.InnerStruct != null)
+                    if ((classDecl.ClassType == ClassType.Class || classDecl.IsWrapper) && classDecl.NativeStruct != null)
                     {
-                        @namespace = classDecl.InnerStruct.Namespace;
-                    }
-                    else if (classDecl.IsWrapper && classDecl.WrappedStruct != null)
-                    {
-                        @namespace = classDecl.WrappedStruct.Namespace;
+                        @namespace = classDecl.NativeStruct.Namespace;
                     }
                 }
             }
@@ -295,17 +293,14 @@ namespace QuantumBinding.Generator.CodeGeneration
                 foreach (var param in ctor.InputParameters)
                 {
                     index++;
-                    var visitResult = TypePrinter.VisitField(param);
-                    if (param.Type.Declaration is Class decl && !string.IsNullOrEmpty(decl.Namespace))
-                    {
-                        visitResult.Type = $"{decl.Namespace}.{visitResult.Type}";
-                    }
+                    var visitResult = TypePrinter.VisitParameter(param);
                     Write($"{visitResult}");
                     if (index < ctor.InputParameters.Count)
                     {
                         Write(",");
                     }
                 }
+                
                 TypePrinter.PopMarshalType();
                 Write(")");
                 NewLine();
@@ -329,7 +324,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 NewLine();
             }
 
-            // Temporary disable Char to Bool conversion during generating an overloads to keep in sync with fields 
+            // Temporarily disable Char to Bool conversion during generating an overload to keep in sync with fields 
             // in case we really want to use byte values
             var prev = CurrentTranslationUnit.Module.CharAsBoolForMethods;
             CurrentTranslationUnit.Module.CharAsBoolForMethods = false;
@@ -358,7 +353,7 @@ namespace QuantumBinding.Generator.CodeGeneration
             var decl = @operator.Type.Declaration as Class;
             if (@operator.TransformationKind == TransformationKind.FromClassToValue)
             {
-                if (decl != null && !decl.IsSimpleType)
+                if (decl is { IsSimpleType: false })
                 {
                     WriteLine(
                         $"public static {@operator.OperatorKind.ToString().ToLower()} operator {@namespace}.{@operator.Type.Visit(TypePrinter)}({@operator.Class.Name} {variableName})");
@@ -392,7 +387,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                     TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
                 }
 
-                if (decl != null && !decl.IsSimpleType)
+                if (decl is { IsSimpleType: false })
                 {
                     WriteLine($"public static {@operator.OperatorKind.ToString().ToLower()} operator {@operator.Class.Name}({@namespace}.{@operator.Type.Visit(TypePrinter)} {variableName})");
                 }
@@ -412,7 +407,7 @@ namespace QuantumBinding.Generator.CodeGeneration
 
                 if (@operator.PassValueToConstructor)
                 {
-                    WriteLine($"return new {@operator.Class.Name}({variableName});");
+                    WriteLine($"return new {@operator.Class.Name}(in {variableName});");
                 }
                 else
                 {
@@ -428,6 +423,5 @@ namespace QuantumBinding.Generator.CodeGeneration
         protected virtual void OperatorOverloadOverride(Operator @operator, string variableName)
         {
         }
-
     }
 }

@@ -404,11 +404,11 @@ namespace QuantumBinding.Generator.Parser
                         IsTypedef = true,
                         IsPointer = true,
                         ClassType = classType,
-                        InnerStruct = unit.AllClasses.FirstOrDefault(x => x.Name == pointeeName),
+                        NativeStruct = unit.AllClasses.FirstOrDefault(x => x.Name == pointeeName),
                         Comment = GetComment(cursor)
                     };
 
-                    if (convertToClass && classType == ClassType.Class && @class.InnerStruct == null)
+                    if (convertToClass && classType == ClassType.Class && @class.NativeStruct == null)
                     {
                         var @struct = (Class)@class.Clone();
                         @struct.ClassType = ClassType.Struct;
@@ -419,12 +419,12 @@ namespace QuantumBinding.Generator.Parser
                         field1.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
                         @struct.AddField(field1);
                         AddDeclaration(@struct);
-                        @class.InnerStruct = @struct;
+                        @class.NativeStruct = @struct;
                     }
 
-                    if (@class.InnerStruct != null)
+                    if (@class.NativeStruct != null)
                     {
-                        @class.InnerStruct.LinkedTo = @class;
+                        @class.NativeStruct.LinkedTo = @class;
                     }
 
                     var dependentType = new DependentNameType(@class.Name, pointeeName);
@@ -436,8 +436,8 @@ namespace QuantumBinding.Generator.Parser
                     {
                         field.AccessSpecifier = AccessSpecifier.Internal;
                         field.Name = "__Instance";
-                        field.Type = new CustomType(@class.InnerStruct.Name);
-                        field.Type.Declaration = @class.InnerStruct;
+                        field.Type = new CustomType(@class.NativeStruct.Name);
+                        field.Type.Declaration = @class.NativeStruct;
                     }
                     else
                     {
@@ -447,6 +447,10 @@ namespace QuantumBinding.Generator.Parser
                     }
 
                     @class.AddField(field);
+                    var inputParameter = new Parameter(field.Name);
+                    inputParameter.Type = field.Type;
+                    inputParameter.Parent = @class;
+                    inputParameter.ParameterKind = ParameterKind.Readonly;
 
                     var op = new Operator();
                     op.Class = @class;
@@ -467,11 +471,11 @@ namespace QuantumBinding.Generator.Parser
 
                     if (convertToClass)
                     {
-                        Constructor defaultCtr = new Constructor() { Class = @class, IsDefault = true };
+                        var defaultCtr = new Constructor() { Class = @class, IsDefault = true };
                         @class.Constructors.Add(defaultCtr);
 
-                        Constructor ctr = new Constructor() { Class = @class };
-                        ctr.InputParameters.Add(field);
+                        var ctr = new Constructor() { Class = @class };
+                        ctr.InputParameters.Add(inputParameter);
                         @class.Constructors.Add(ctr);
                     }
 
@@ -488,11 +492,6 @@ namespace QuantumBinding.Generator.Parser
                     callback.ReturnType = pointee.GetResultType().GetBindingType();
                     callback.Name = spelling;
                     callback.Comment = GetComment(cursor);
-
-                    if (unit.Module.SuppressUnmanagedCodeSecurity)
-                    {
-                        callback.SuppressUnmanagedCodeSecurity = true;
-                    }
 
                     uint argumentCounter = 0;
 
@@ -589,10 +588,6 @@ namespace QuantumBinding.Generator.Parser
 
             this.visitedFunctions.Add(functionName);
             var function = ClangUtils.GetFunctionInfo(cursor);
-            if (unit.Module.SuppressUnmanagedCodeSecurity)
-            {
-                function.SuppressUnmanagedCodeSecurity = true;
-            }
             function.Comment = GetComment(cursor);
             function.Location = ClangUtils.GetCurrentCursorLocation(cursor);
             AddDeclaration(function);

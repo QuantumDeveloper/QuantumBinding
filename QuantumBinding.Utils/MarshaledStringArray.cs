@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Generic;
 
 namespace QuantumBinding.Utils;
 public unsafe struct MarshaledStringArray
 {
     private MarshaledString[] values;
-
-#if NET6_0_OR_GREATER
+    
     public MarshaledStringArray(ReadOnlySpan<string> strings, bool isUnicode)
     {
         IsUnicode = isUnicode;
@@ -23,25 +23,23 @@ public unsafe struct MarshaledStringArray
             }
         }
     }
-#else
-    public MarshaledStringArray(string[] strings, bool isUnicode)
+    public MarshaledStringArray(IReadOnlyList<string> strings, bool isUnicode)
     {
         IsUnicode = isUnicode;
-        if (strings.Length == 0)
+        if (strings.Count == 0)
         {
             values = null;
         }
         else
         {
-            values = new MarshaledString[strings.Length];
+            values = new MarshaledString[strings.Count];
 
-            for (var i = 0; i < strings.Length; i++)
+            for (var i = 0; i < strings.Count; i++)
             {
                 values[i] = new MarshaledString(strings[i], isUnicode);
             }
         }
     }
-#endif
 
     public bool IsUnicode { get; }
 

@@ -7,18 +7,44 @@ namespace QuantumBinding.Generator.CodeGeneration
 {
     public class TextGenerator: ITextGenerator
     {
-        public const string NullPointer = "null";
-        public const string NativeUtilsStructOrEnumToPointer = "NativeUtils.StructOrEnumToPointer";
-        public const string NativeUtilsArrayToPointer = "NativeUtils.ManagedArrayToPointer";
-        public const string NativeUtilsPointerToArray = "NativeUtils.PointerToManagedArray";
-        public const string NativeUtilsGetPointerToArray = "NativeUtils.GetPointerToManagedArray";
-        public const string NativeUtilsWritePointerToManagedArray = "NativeUtils.WritePointerToManagedArray";
-        public const string NativeUtilsStringToPointer = "NativeUtils.StringToPointer";
-        public const string NativeUtilsGetPointerToStringArray = "NativeUtils.GetPointerToStringArray";
-        public const string NativeUtilsStringToFixedArray = "NativeUtils.StringToFixedArray";
-        public const string NativeUtilsPrimitiveToFixedArray = "NativeUtils.PrimitiveToFixedArray";
-        public const string NativeUtilsPointerToStringArray = "NativeUtils.PointerToStringArray";
-        public const string NativeUtilsStringArrayToPointer = "NativeUtils.StringArrayToPointer";
+        public static string NullPointer => "null";
+        
+        public static string StackAlloc => "stackalloc";
+        
+        public static string StackAllocThresholdPropertyName => "QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold";
+        
+        public static string MarshalContextUtilsStructToPointer => "QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer";
+        public static string MarshalContextUtilsStructToNative => "QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative";
+        public static string MarshalContextUtilsStructToDoublePointer => "QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointerArray";
+        public static string MarshalContextUtilsWrapperArrayToPointer => "QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers";
+        public static string MarshalContextUtilsArrayOfHandleWrappers => "QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfHandleWrappers";
+        public static string MarshalContextUtilsBlittableArray => "QuantumBinding.Utils.MarshalContextUtils.MarshalBlittableArray";
+        public static string MarshalContextUtilsUnmarshalBlittableArray => "QuantumBinding.Utils.MarshalContextUtils.UnmarshalBlittableArray";
+        public static string MarshalContextUtilsAllocatePointerForArray => "QuantumBinding.Utils.MarshalContextUtils.AllocatePointerArray";
+        public static string MarshalContextCalculateSizeForStringArray => "QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray";
+        public static string MarshalContextStringToPointer => "QuantumBinding.Utils.MarshalContextUtils.MarshalString";
+        public static string MarshalContextStringArrayToDoublePointer => "QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray";
+        
+        public static string SpanClassName => "System.Span";
+        public static string ReadonlySpanClassName => "System.ReadOnlySpan";
+        public static string UnsafeClassName => "System.Runtime.CompilerServices.Unsafe";
+        public static string MemoryMarshalClassName => "System.Runtime.InteropServices.MemoryMarshal";
+        
+        public static string MarshalingUtilsClassName => "QuantumBinding.Utils.MarshallingUtils";
+        public static string MarshalFixedArrayToPointer => "QuantumBinding.Utils.MarshalingUtils.MarshalFixedArrayToPointer";
+        public static string MarshalArrayOfWrappersToFixedBuffer => "QuantumBinding.Utils.MarshalingUtils.MarshalArrayOfWrappersToFixedBuffer";
+        public static string MarshalArrayOfHandleWrappersToFixedBuffer => "QuantumBinding.Utils.MarshalingUtils.MarshalArrayOfHandleWrappersToFixedBuffer";
+        
+        public static string MarshalStringToFixedUtf8Buffer => "QuantumBinding.Utils.MarshalingUtils.MarshalStringToFixedUtf8Buffer";
+        public static string MarshalStringArrayToUtf8Buffer => "QuantumBinding.Utils.MarshalingUtils.MarshalStringArrayToUtf8Pointer";
+        public static string MarshalArrayToPointer => "QuantumBinding.Utils.MarshalingUtils.MarshalArrayToPointer";
+        public static string MarshalBlittableArrayToPointer => "QuantumBinding.Utils.MarshalingUtils.MarshalBlittableArrayToPointer";
+        public static string MarshalPointerToStringArray => "QuantumBinding.Utils.MarshalingUtils.MarshalPointerToStringArray";
+        public static string MarshalFromPointerToArray => "QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray";
+        public static string MarshalFixedByteArrayToString => "QuantumBinding.Utils.MarshalingUtils.MarshalFixedByteArrayToString";
+        public static string MarshalFixedCharArrayToString => "QuantumBinding.Utils.MarshalingUtils.MarshalFixedCharArrayToString";
+        public static string MarshalStructToPointer => "QuantumBinding.Utils.MarshalingUtils.MarshalStructToPointer";
+        public static string MarshalFromPointerToArrayOfStructs => "QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArrayOfStructs";
         
         public TextGenerator()
         {

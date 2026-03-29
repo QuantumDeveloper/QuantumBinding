@@ -6,6 +6,11 @@ public class QBDisposableObject : IDisposable
 {
     public bool IsDisposed { get; private set; }
 
+    protected void ResetDisposed()
+    {
+        IsDisposed = false;
+    }
+
     protected virtual void Dispose(bool disposeManaged)
     {
         if (IsDisposed)

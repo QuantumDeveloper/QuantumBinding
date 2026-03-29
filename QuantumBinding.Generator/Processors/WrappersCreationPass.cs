@@ -61,13 +61,12 @@ namespace QuantumBinding.Generator.Processors
                 wrapper = (Class)wrapperDecl;
             }
 
-            var innerWrapperField = new Field("_internal");
-            innerWrapperField.AccessSpecifier = AccessSpecifier.Private;
+            var innerWrapperField = new Parameter("native");
+            innerWrapperField.ParameterKind = ParameterKind.Readonly;
             innerWrapperField.Type = new CustomType(@class.Name);
             innerWrapperField.Type.Declaration = @class;
-            innerWrapperField.Class = @class;
-            wrapper.WrappedStruct = @class;
-            wrapper.WrappedStructFieldName = innerWrapperField.Name;
+            wrapper.NativeStruct = @class;
+            wrapper.NativeStructFieldName = innerWrapperField.Name;
             wrapper.WrapperMethodAccessSpecifier = AccessSpecifier.Public;
 
             var ctor = new Constructor() { Class = wrapper, IsDefault = true };
@@ -98,8 +97,16 @@ namespace QuantumBinding.Generator.Processors
                 {
                     property.Name = name[0].ToString().ToUpper() + name.Substring(1);
                 }
-                
-                property.Type = (BindingType)field.Type.Clone();
+
+                try
+                {
+                    property.Type = (BindingType)field.Type.Clone();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 
                 if (field.Type.Declaration is Class declaration && !declaration.IsSimpleType)
                 {
@@ -119,7 +126,7 @@ namespace QuantumBinding.Generator.Processors
                                 declarationCopy.ClassType = ClassType.UnionWrapper;
                             }
 
-                            declarationCopy.WrappedStruct = declaration;
+                            declarationCopy.NativeStruct = declaration;
                             property.Type.Declaration = declarationCopy;
                             CurrentNamespace.AddDeclaration(declarationCopy);
                         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
+using QuantumBinding.Generator.Utils;
 using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.CodeGeneration
@@ -11,6 +12,8 @@ namespace QuantumBinding.Generator.CodeGeneration
     {
         protected const string DelegateInvokeFuncName = "InvokeFunc";
         protected const string DelegateNativePointerName = "NativePointer";
+        protected string CounterProperty => "Length";
+        protected const string UnmanagedWrapperInterfaceName = "IUnmanagedWrapper";
         
         public CSharpCodeGenerator(
             ProcessingContext context,
@@ -163,7 +166,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                 { GeneratorCategory.Delegates, GenerateDelegates },
                 { GeneratorCategory.OldFashionDelegates, GenerateOldFashionDelegates },
                 { GeneratorCategory.Functions, GenerateFunctions },
-                { GeneratorCategory.StaticMethods, GenerateCommonMethods }
+                { GeneratorCategory.StaticMethods, GenerateStaticMethods }
             };
             
             GenerateUsings();
@@ -238,7 +241,7 @@ namespace QuantumBinding.Generator.CodeGeneration
                         GenerateClassExtension(ext);
                     }
 
-                    if (classes.Length == 0 && CurrentTranslationUnit.Methods.Count == 0 && classExtensions.Length == 0 && Category == GeneratorCategory.Classes)
+                    if (classes.Length == 0 && CurrentTranslationUnit.StaticMethods.Count == 0 && classExtensions.Length == 0 && Category == GeneratorCategory.Classes)
                     {
                         IsEmpty = true;
                     }
@@ -326,9 +329,9 @@ namespace QuantumBinding.Generator.CodeGeneration
             PopBlock();
         }
 
-        private void GenerateCommonMethods()
+        private void GenerateStaticMethods()
         {
-            if (CurrentTranslationUnit.Module.EachTypeInSeparateFile && CurrentTranslationUnit.Methods.Count == 0)
+            if (CurrentTranslationUnit.Module.EachTypeInSeparateFile && CurrentTranslationUnit.StaticMethods.Count == 0)
             {
                 IsEmpty = true;
                 return;
@@ -339,14 +342,14 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteOpenBraceAndIndent();
 
             TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
-            foreach (var method in CurrentTranslationUnit.Methods)
+            foreach (var method in CurrentTranslationUnit.StaticMethods)
             {
                 GenerateMethod(method);
             }
             TypePrinter.PopMarshalType();
-
+            
             UnindentAndWriteCloseBrace();
-
+            
             PopBlock();
         }
 
@@ -382,8 +385,16 @@ namespace QuantumBinding.Generator.CodeGeneration
                 PopBlock();
             }
 
-            WriteLine(TypePrinter.VisitClass(@class).ToString());
-            
+            var classIdentifier = TypePrinter.VisitClass(@class).ToString();
+            if (@class.ClassType == ClassType.Class)
+            {
+                WriteLine($"{classIdentifier} : {UnmanagedWrapperInterfaceName}<{@class.NativeStruct.FullName}>");
+            }
+            else
+            {
+                WriteLine($"{classIdentifier}");
+            }
+
             WriteOpenBraceAndIndent();
 
             GenerateFields(@class);
@@ -397,6 +408,8 @@ namespace QuantumBinding.Generator.CodeGeneration
             FixedTypesHash.Clear();
 
             GenerateConstructors(@class);
+            
+            GenerateUnmanagedWrapperInterface(@class);
 
             GenerateProperties(@class);
 
@@ -405,6 +418,8 @@ namespace QuantumBinding.Generator.CodeGeneration
             GeneratePinnableReference(@class);
 
             GenerateOverloads(@class);
+            
+            // GenerateMethodMarshalContexts(@class);
 
             UnindentAndWriteCloseBrace();
 
@@ -440,6 +455,15 @@ namespace QuantumBinding.Generator.CodeGeneration
             NewLine();
 
             PopBlock();
+        }
+
+        private void GenerateUnmanagedWrapperInterface(Class @class)
+        {
+            if (@class.ClassType != ClassType.Class) 
+                return;
+            
+            // We are assuming that the first field is always the native pointer to the inner struct
+            WriteLine($"public {@class.NativeStruct.FullName} GetNativeValue() => {@class.Fields[0].Name};");
         }
 
         private void GenerateProperties(Class @class)
@@ -535,7 +559,7 @@ namespace QuantumBinding.Generator.CodeGeneration
         {
             foreach (var method in @class.ExtensionMethods)
             {
-                //If Current translation unit is not the same file as extension method, skip method generation
+                // If the current translation unit is not the same file as the extension method, skip method generation
                 if (CurrentTranslationUnit.FileName != method.Owner.FileName) continue;
                 GenerateMethod(method);
             }
@@ -589,13 +613,6 @@ namespace QuantumBinding.Generator.CodeGeneration
 
             GenerateCommentIfNotEmpty(function.Comment);
 
-            if (function.SuppressUnmanagedCodeSecurity)
-            {
-                PushBlock(CodeBlockKind.Attribute);
-                WriteLine("[SuppressUnmanagedCodeSecurity]");
-                PopBlock();
-            }
-
             PushBlock(CodeBlockKind.Attribute);
             var dllImportString =
                 $"[DllImport({function.DllName}, EntryPoint = \"{function.EntryPoint}\", ExactSpelling = true";
@@ -646,19 +663,6 @@ namespace QuantumBinding.Generator.CodeGeneration
             WriteLocation(@delegate);
 
             GenerateCommentIfNotEmpty(@delegate.Comment);
-
-            if (@delegate.SuppressUnmanagedCodeSecurity)
-            {
-                PushBlock(CodeBlockKind.Attribute);
-                WriteLine("[SuppressUnmanagedCodeSecurity]");
-                if (!UsedUsings.Contains("System.Security"))
-                {
-                    UsingsBlock.WriteLine("using System.Security;");
-                    UsedUsings.Add("System.Security");
-                }
-
-                PopBlock();
-            }
 
             PushBlock(CodeBlockKind.Attribute);
             WriteLine($"[UnmanagedFunctionPointer(CallingConvention.{@delegate.CallingConvention})]");
@@ -914,8 +918,9 @@ namespace QuantumBinding.Generator.CodeGeneration
 
         public TypePrinterResult VisitNativeFunctionCall(Method method)
         {
-            var methodToFunction = new MethodToFunctionCodeGenerator(Options, CurrentTranslationUnit, ConversionMethodName);
-            return methodToFunction.GenerateMethodBody(method);
+            var methodToRefStruct =
+                new MethodToRefStructCodeGenerator(Options, CurrentTranslationUnit, MarshalToMethodName);
+            return methodToRefStruct.GenerateMarshalContext(method);
         }
 
         private void CheckParameters(IEnumerable<Parameter> parameters)
@@ -933,6 +938,118 @@ namespace QuantumBinding.Generator.CodeGeneration
             PushBlock(CodeBlockKind.DebugInfo);
             WriteLine($"// {declaration.Location}");
             PopBlock();
+        }
+        
+        protected virtual void GenerateMethodMarshalContexts(Class @class)
+        {
+            if (@class.ClassType != ClassType.Class || @class.Methods.Count == 0) 
+                return;
+            
+            var contextsToGenerate = @class.Methods.Where(x=>x.GenerateMarshalContext).ToList();
+
+            foreach (var method in contextsToGenerate)
+            {
+                GenerateMethodContext(method);
+            }
+        }
+        
+        private void GenerateMethodContext(Method method)
+        {
+            WriteLine($"private unsafe ref struct {method.MarshalContextName}");
+            WriteOpenBraceAndIndent();
+            
+            GenerateCalculateSizeMethod(method);
+            
+            NewLine();
+            
+            GenerateInvokeMethod(method);
+            
+            UnindentAndWriteCloseBrace();
+        }
+
+        void GenerateCalculateSizeMethod(Method method)
+        {
+            var parameters = method.Parameters
+                .Where(x => x.IsAvailableForContextGeneration())
+                .ToList();
+            var parametersResult =
+                TypePrinter.VisitParameters(parameters, MarshalTypes.SkipParamModifiers, method.IsExtensionMethod);
+
+            string totalSizeName = "totalSize";
+            WriteLine($"public static int CalculateSize({parametersResult})");
+            WriteOpenBraceAndIndent();
+            WriteLine($"int {totalSizeName} = 0;");
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Type.IsConstArray(out var size))
+                {
+                    if (parameter.Type.IsConstArrayOfCustomTypes(out _) || parameter.Type.IsConstArrayOfEnums(out _))
+                    {
+                        WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({parameter.Type.Declaration.Name});");
+                    }
+                    else if (parameter.Type.IsConstArrayOfPrimitiveTypes(out _))
+                    {
+                        var primitiveType = ((ArrayType)parameter.Type).ElementType as BuiltinType; 
+                        WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({primitiveType.Type.GetDisplayName()});");
+                    }
+                }
+                else if (parameter.Type.IsPointerToString())
+                {
+                    if (parameter.Type.IsStringArray())
+                    {
+                        WriteLine(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name}.Span);"
+                            : $"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name});");
+                    }
+                    else
+                    {
+                        WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof(byte) + 1;");
+                    }
+                }
+                else if (parameter.Type.IsPointerToArrayOfSimpleTypes(out var type))
+                {
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({type.Name});");
+                }
+                else if (parameter.Type.IsPointerToArrayOfPrimitiveTypes(out var elementType))
+                {
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({elementType.Type});");
+                }
+                else if (parameter.Type.IsPointerToArrayOfEnums())
+                {
+                    var @enum = parameter.Type.Declaration as Enumeration; 
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({@enum.InheritanceType});");
+                }
+                else if (parameter.Type.IsPointerToArray() || parameter.Type.IsArrayOfCustomTypes())
+                {
+                    WriteForLoop($"{parameter.Name}.Length",
+                        () => { WriteLine($"{totalSizeName} += {parameter.Name}[(int)i].GetSize();"); });
+                }
+                else if (parameter.Type.IsWrapper())
+                {
+                    WriteLine($"if ({parameter.Name} != null);");
+                    PushIndent();
+                    WriteLine($"{totalSizeName} += {parameter.Name}.GetSize();");
+                    PopIndent();
+                }
+            }
+
+            WriteLine($"return {totalSizeName};");
+            UnindentAndWriteCloseBrace();
+        }
+
+        void WriteForLoop(string size, Action action)
+        {
+            WriteLine($"for (var i = 0U; i < {size}; i++)");
+            WriteOpenBraceAndIndent();
+            action();
+            UnindentAndWriteCloseBrace();
+        }
+
+        void GenerateInvokeMethod(Method method)
+        {
+            var contextMarshaler = new MarshalContextToFunctionCodeGenerator(Options, CurrentTranslationUnit, MarshalToMethodName);
+            var result = contextMarshaler.GenerateMarshalBody(method);
+            WriteLine(result.ToString());
         }
     }
 }

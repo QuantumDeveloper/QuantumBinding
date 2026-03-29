@@ -31,6 +31,7 @@ namespace QuantumBinding.Generator.Processors
 
             foreach (var unit in AstContext.TranslationUnits)
             {
+                OnBeforeUnitRun(unit);
                 CurrentNamespace = unit;
                 VisitTranslationUnit(unit);
                 OnTranslationUnitPassCompleted();
@@ -156,7 +157,7 @@ namespace QuantumBinding.Generator.Processors
             }
 
 
-            foreach (var method in @namespace.Methods)
+            foreach (var method in @namespace.StaticMethods)
             {
                 ParentDeclaration = method;
                 if (Options.VisitMethods)
@@ -235,6 +236,11 @@ namespace QuantumBinding.Generator.Processors
             return true;
         }
 
+        public bool VisitInterface(Interface @interface)
+        {
+            return true;
+        }
+
         public virtual bool VisitField(Field field)
         {
             return true;
@@ -257,6 +263,11 @@ namespace QuantumBinding.Generator.Processors
 
         public virtual void OnInitialize()
         {
+        }
+
+        public virtual void OnBeforeUnitRun(TranslationUnit translationUnit)
+        {
+            
         }
 
         public virtual void OnTranslationUnitPassCompleted()

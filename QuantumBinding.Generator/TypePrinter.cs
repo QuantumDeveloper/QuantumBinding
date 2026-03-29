@@ -132,6 +132,7 @@ namespace QuantumBinding.Generator
         public abstract TypePrinterResult VisitParameter(Parameter parameter);
 
         public abstract TypePrinterResult VisitClass(Class @class);
+        public abstract TypePrinterResult VisitInterface(Interface @interface);
 
         public abstract TypePrinterResult VisitField(Field field);
 

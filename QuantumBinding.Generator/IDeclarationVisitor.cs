@@ -11,6 +11,7 @@ namespace QuantumBinding.Generator
         T VisitParameter(Parameter parameter);
         T VisitComment(Comment comment);
         T VisitClass(Class @class);
+        T VisitInterface(Interface @interface);
         T VisitField(Field field);
         T VisitProperty(Property property);
         T VisitMethod(Method method);

@@ -73,9 +73,9 @@ namespace QuantumBinding.Generator
                 {
                     "-std=c++14",                           // The input files should be compiled for C++ 11
                     "-xc++",                                // The input files are C++
-                    "-Wno-pragma-once-outside-header",       // We are processing files which may be header files
+                    "-Wno-pragma-once-outside-header",      // We are processing files which may be header files
                     "-v",
-                    "-fparse-all-comments" //To make clang parse comments
+                    "-fparse-all-comments"                  //To make clang parse comments
                 };
 
                 foreach (var define in module.Defines)
@@ -94,7 +94,7 @@ namespace QuantumBinding.Generator
                 {
                     foreach (var file in module.Files)
                     {
-                        TranslationUnit unit = new TranslationUnit(file, module);
+                        var unit = new TranslationUnit(file, module);
                         unit.Parse(clangIndex, arguments);
                         if (unit.IsValid)
                         {
@@ -127,10 +127,10 @@ namespace QuantumBinding.Generator
 
                             foreach (var unit in translationUnits)
                             {
-                                var units = unit.FindDeclarationsBySourceLocation(mapping.FileName, true);
-                                tu.AddDeclarations(units);
+                                var declarations = unit.FindDeclarationsBySourceLocation(mapping.FileName, true);
+                                tu.AddDeclarations(declarations);
                             }
-                            tu.SetOwner(); // Update owner inside each declaration because now declarations belong to new TranslationUnit
+                            tu.SetOwner(); // Update an owner inside each declaration because now declarations belong to the new Translation Unit
 
                             tuList.Add(tu);
                         }
@@ -140,7 +140,7 @@ namespace QuantumBinding.Generator
 
                     DeclarationUnit.TranslationUnitsPool = translationUnits;
 
-                    ASTContext context = new ASTContext(translationUnits);
+                    var context = new ASTContext(translationUnits);
                     processingCtx.AstContext = context;
                     context.Module = module;
 
@@ -198,6 +198,7 @@ namespace QuantumBinding.Generator
                     processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
                     processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
                     processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
+                    processingCtx.AddPreGeneratorPass(new ContextGenerationAnalyzerPass(), ExecutionPassKind.PerTranslationUnit, module);
 
                     processingCtx.AddCodeGenerationPass(new WrappersGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
                 }
