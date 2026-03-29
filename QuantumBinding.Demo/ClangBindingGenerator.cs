@@ -50,7 +50,6 @@ namespace QuantumBinding.ClangGenerator
             clangModule.OutputFileName = mainNamespace;
             clangModule.OutputNamespace = mainNamespace;
             clangModule.InteropSubNamespace = interopSubNamespace;
-            clangModule.SuppressUnmanagedCodeSecurity = true;
             clangModule.WrapInteropObjects = true;
             clangModule.EachTypeInSeparateFile = true;
             clangModule.FileHeader = header;
