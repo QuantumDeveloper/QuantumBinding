@@ -1,14 +1,12 @@
-﻿using QuantumBinding.ClangGenerator;
-using QuantumBinding.Generator;
+﻿using QuantumBinding.Generator;
 
-namespace QuantumBinding.Demo
+namespace QuantumBinding.ClangGenerator;
+
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            QuantumBindingGenerator generator = new ClangBindingGenerator();
-            generator.Run();
-        }
+        QuantumBindingGenerator generator = new ClangBindingGenerator();
+        generator.Run();
     }
 }

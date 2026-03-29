@@ -69,7 +69,7 @@ namespace QuantumBinding.Generator
                 }
 
                 var clangIndex = ClangNative.CreateIndex(0, 0);
-                List<string> arguments = new List<string>
+                var arguments = new List<string>
                 {
                     "-std=c++14",                           // The input files should be compiled for C++ 11
                     "-xc++",                                // The input files are C++
@@ -88,7 +88,7 @@ namespace QuantumBinding.Generator
                     arguments.Add($"-I{include}");
                 }
 
-                List<TranslationUnit> translationUnits = new List<TranslationUnit>();
+                var translationUnits = new List<TranslationUnit>();
 
                 try
                 {
