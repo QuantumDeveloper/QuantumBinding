@@ -8,6 +8,10 @@
         }
 
         public Function Function { get; set; }
+        
+        public bool GenerateMarshalContext { get; set; }
+        
+        public string MarshalContextName { get; set; }
 
         public bool IsVirtual { get; set; }
 
@@ -24,6 +28,10 @@
         public bool IsOverload { get; set; }
 
         public bool IsInstanceMethod => Class != null;
+        
+        public bool IsGeneric { get; set; }
+        
+        public string GenericType { get; set; }
 
         public static bool ContainsOutParameters(Method method)
         {
@@ -61,7 +69,11 @@
                 ReturnType = ReturnType,
                 Location = Location,
                 IsIgnored = IsIgnored,
-                IsOverload = IsOverload
+                IsOverload = IsOverload,
+                IsGeneric = IsGeneric,
+                GenericType = GenericType,
+                GenerateMarshalContext = GenerateMarshalContext,
+                MarshalContextName = MarshalContextName
             };
             method.Parameters.AddRange(Parameters);
             if (Comment != null)

@@ -857,7 +857,7 @@ public unsafe partial class QBCursor
         QuantumBinding.Clang.Interop.ClangInterop.clang_getOverriddenCursors(ToNative(), arg1, out num_overridden);
         var _overridden = NativeUtils.PointerToManagedArray(arg1, (long)num_overridden);
         overridden = new QuantumBinding.Clang.QBCursor[num_overridden];
-        for (var i = 0U; i< num_overridden; ++i)
+        for (var i = 0; i< num_overridden; ++i)
         {
             overridden[i] = new QuantumBinding.Clang.QBCursor(_overridden[i]);
         }

@@ -21,5 +21,6 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetField InterpretAs(BindingType type);
         ISetField InterpretAsCustomType(string typeName);
         ISetField InterpretAsDelegateType(IEnumerable<Parameter> parameters, string name);
+        IClassParameters Return();
     }
 }

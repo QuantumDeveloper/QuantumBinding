@@ -5,6 +5,7 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
@@ -23,7 +24,7 @@ public unsafe partial class QBToken : QBDisposableObject
         Ptr_data = _internal.ptr_data;
     }
 
-    public uint[] Int_data { get; set; }
+    public IReadOnlyList<uint> Int_data { get; set; }
     public void* Ptr_data { get; set; }
     ///<summary>
     /// Determine the kind of the given token.
@@ -39,7 +40,7 @@ public unsafe partial class QBToken : QBDisposableObject
         var _internal = new QuantumBinding.Clang.Interop.CXToken();
         if(Int_data != null)
         {
-            if (Int_data.Length > 4)
+            if (Int_data.Count > 4)
                 throw new System.ArgumentOutOfRangeException(nameof(Int_data), "Array is out of bounds. Size should not be more than 4");
 
             NativeUtils.PrimitiveToFixedArray(_internal.int_data, 4, Int_data);

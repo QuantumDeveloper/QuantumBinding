@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using QuantumBinding.Clang;
-using QuantumBinding.Clang.Interop;
 using QuantumBinding.Generator.Parser;
 
 namespace QuantumBinding.Generator.AST

@@ -19,8 +19,6 @@ namespace QuantumBinding.Generator.AST
 
         public CallingConvention CallingConvention { get; set; }
 
-        public bool SuppressUnmanagedCodeSecurity { get; set; }
-
         public AccessSpecifier AccessSpecifier { get; set; }
 
         public BindingType ReturnType { get; set; }
@@ -49,7 +47,6 @@ namespace QuantumBinding.Generator.AST
                 DllName = DllName,
                 EntryPoint = EntryPoint,
                 CallingConvention = CallingConvention,
-                SuppressUnmanagedCodeSecurity = SuppressUnmanagedCodeSecurity,
                 ReturnType = ReturnType,
                 IsPtrToConstChar = IsPtrToConstChar,
                 Class = Class,

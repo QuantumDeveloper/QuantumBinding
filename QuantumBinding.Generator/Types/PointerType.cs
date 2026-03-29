@@ -40,6 +40,16 @@ namespace QuantumBinding.Generator.Types
             return depth;
         }
 
+        public BindingType GetPointee()
+        {
+            var pointee = Pointee;
+            while (pointee is PointerType pointer)
+            {
+                pointee = pointer.Pointee;
+            }
+            return pointee;
+        }
+
         public override object Clone()
         {
             return new PointerType(this);

@@ -35,8 +35,8 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
         }
 
         Class @class = null;
-        // Create method in global scope
-        // Case if function has more than 0 parameters or zero parameters, but with return type != void
+        // Create a method in global scope
+        // Case if the function has more than 0 parameters or zero parameters, but with return type != void
         if ((function.Parameters.Count > 0 && !GetFunctionParameter(function.Parameters[0], out @class)) ||
             (function.Parameters.Count == 0 && !GetFunctionReturnType(function.ReturnType, out @class)))
         {
@@ -106,7 +106,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
             var parameters = function.Parameters;
             foreach (var parameter1 in parameters)
             {
-                // Copy all parameters because it is extension method
+                // Copy all parameters because it is an extension method
                 var param = (Parameter)parameter1.Clone();
                 method.Parameters.Add(param);
             }
@@ -143,7 +143,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
     private bool GetFunctionReturnType(BindingType type, out Class @class)
     {
         @class = type.Declaration as Class;
-        if (@class == null || @class.ClassType != ClassType.Class)
+        if (@class is not { ClassType: ClassType.Class })
         {
             return false;
         }
@@ -156,7 +156,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
     private bool GetFunctionParameter(Parameter parameter, out Class @class)
     {
         @class = parameter.Type.Declaration as Class;
-        if (@class == null || @class.ClassType != ClassType.Class)
+        if (@class is not { ClassType: ClassType.Class })
         {
             return false;
         }

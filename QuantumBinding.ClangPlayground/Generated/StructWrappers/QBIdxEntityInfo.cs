@@ -33,7 +33,7 @@ public unsafe partial class QBIdxEntityInfo : QBDisposableObject
         Cursor = new QBCursor(_internal.cursor);
         Attributes = new QBIdxAttrInfo[_internal.numAttributes];
         var nativeTmpArray0 = NativeUtils.PointerToManagedArray(_internal.attributes, _internal.numAttributes);
-        for (int i = 0; i < nativeTmpArray0.Length; ++i)
+        for (int i = 0; i < nativeTmpArray0.Count; ++i)
         {
             Attributes[i] = new QBIdxAttrInfo(nativeTmpArray0[i]);
         }

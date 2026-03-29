@@ -24,36 +24,42 @@ namespace QuantumBinding.Generator.AST
 
         public List<Namespace> Namespaces { get; private set; }
 
-        public ReadOnlyCollection<Macro> Macros => declarations.Where(x => x is Macro).Cast<Macro>().ToList().AsReadOnly();
+        public IReadOnlyList<Macro> Macros => declarations.Where(x => x is Macro).Cast<Macro>().ToList();
 
-        public ReadOnlyCollection<Enumeration> Enums => declarations.Where(x => x is Enumeration).Cast<Enumeration>().ToList().AsReadOnly();
-        
-        public ReadOnlyCollection<Class> AllClasses => declarations.Where(x => x is Class).Cast<Class>().ToList().AsReadOnly();
+        public IReadOnlyList<Enumeration> Enums =>
+            declarations.Where(x => x is Enumeration).Cast<Enumeration>().ToList();
 
-        public ReadOnlyCollection<Class> Classes => AllClasses.Where(x => x.ClassType == ClassType.Class).ToList().AsReadOnly();
+        public IReadOnlyList<Class> AllClasses => declarations.Where(x => x is Class).Cast<Class>().ToList();
 
-        public ReadOnlyCollection<Class> Structs => AllClasses.Where(x => x.ClassType == ClassType.Struct).ToList().AsReadOnly();
+        public IReadOnlyList<Class> Classes => AllClasses.Where(x => x.ClassType == ClassType.Class).ToList();
 
-        public ReadOnlyCollection<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList().AsReadOnly();
+        public IReadOnlyList<Class> Structs => AllClasses.Where(x => x.ClassType == ClassType.Struct).ToList();
 
-        public ReadOnlyCollection<Class> Wrappers => AllClasses.Where(x => x.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper).ToList().AsReadOnly();
+        public IReadOnlyList<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList();
 
-        public ReadOnlyCollection<Class> StructWrappers => AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList().AsReadOnly();
+        public IReadOnlyList<Class> Wrappers => AllClasses
+            .Where(x => x.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper).ToList();
 
-        public ReadOnlyCollection<Class> UnionWrappers => AllClasses.Where(x => x.ClassType == ClassType.UnionWrapper).ToList().AsReadOnly();
+        public IReadOnlyList<Class> StructWrappers =>
+            AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList();
 
-        public ReadOnlyCollection<Class> ExtensionClasses => TranslationUnitsPool.SelectMany(x=>x.Classes).Where(x =>x.HasExtensions && x.ExtensionMethods.Any(z => z.Owner == this)).ToList().AsReadOnly();
+        public IReadOnlyList<Class> UnionWrappers =>
+            AllClasses.Where(x => x.ClassType == ClassType.UnionWrapper).ToList();
 
-        public ReadOnlyCollection<Delegate> Delegates => declarations.Where(x => x is Delegate).Cast<Delegate>().ToList().AsReadOnly();
+        public IReadOnlyList<Class> ExtensionClasses => TranslationUnitsPool.SelectMany(x => x.Classes)
+            .Where(x => x.HasExtensions && x.ExtensionMethods.Any(z => z.Owner == this)).ToList();
 
-        public ReadOnlyCollection<Function> Functions => declarations.Where(x => x is Function && !(x is Method)).Cast<Function>().ToList().AsReadOnly();
+        public IReadOnlyList<Delegate> Delegates => declarations.Where(x => x is Delegate).Cast<Delegate>().ToList();
 
-        public ReadOnlyCollection<Method> Methods => declarations.Where(x => x is Method).Cast<Method>().ToList().AsReadOnly();
+        public IReadOnlyList<Function> Functions =>
+            declarations.Where(x => x is Function && !(x is Method)).Cast<Function>().ToList();
 
-        public ReadOnlyCollection<Declaration> Declarations => declarations.AsReadOnly();
+        public IReadOnlyList<Method> StaticMethods => declarations.Where(x => x is Method).Cast<Method>().ToList();
 
-        public ReadOnlyCollection<Declaration> IgnoredDeclarations =>
-            declarations.Where(x => x.IsIgnored).ToList().AsReadOnly();
+        public IReadOnlyList<Declaration> Declarations => declarations;
+
+        public IReadOnlyList<Declaration> IgnoredDeclarations =>
+            declarations.Where(x => x.IsIgnored).ToList();
 
         public static Dictionary<string, string> DummyTypes { get; }
 
@@ -63,7 +69,8 @@ namespace QuantumBinding.Generator.AST
 
         private bool IsUnitEmpty()
         {
-            return (declarations.Count == 0 || declarations.Except(IgnoredDeclarations).ToList().Count == 0) && ExtensionClasses.Count == 0;
+            return (declarations.Count == 0 || declarations.Except(IgnoredDeclarations).ToList().Count == 0) &&
+                   ExtensionClasses.Count == 0;
         }
 
         public bool IsSpecializationsAvailable(GeneratorSpecializations specializations)
@@ -75,20 +82,20 @@ namespace QuantumBinding.Generator.AST
                 switch (spec)
                 {
                     case GeneratorSpecializations.Classes:
-                        isAvailable |= Classes.Count > 0 || 
-                            ExtensionClasses.Where(x => x.ClassType == ClassType.Class).ToList().Count > 0 ||
-                            Methods.Count > 0;
+                        isAvailable |= Classes.Count > 0 ||
+                                       ExtensionClasses.Where(x => x.ClassType == ClassType.Class).ToList().Count > 0 ||
+                                       StaticMethods.Count > 0;
                         break;
                     case GeneratorSpecializations.Structs:
                         isAvailable |= Structs.Count > 0 ||
-                            ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
+                                       ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
                         break;
                     case GeneratorSpecializations.Unions:
                         isAvailable |= Unions.Count > 0;
                         break;
                     case GeneratorSpecializations.StructWrappers:
                         isAvailable |= StructWrappers.Count > 0 ||
-                            ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
+                                       ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
                         break;
                     case GeneratorSpecializations.UnionWrappers:
                         isAvailable |= UnionWrappers.Count > 0;
@@ -164,9 +171,9 @@ namespace QuantumBinding.Generator.AST
         public void AddDeclaration(Declaration declaration)
         {
             if (declaration == null) return;
-            
+
             Declaration decl = null;
-            switch(declaration)
+            switch (declaration)
             {
                 case Enumeration @enum:
                     decl = Enums.FirstOrDefault(x => x.Name == declaration.Name);
@@ -190,6 +197,7 @@ namespace QuantumBinding.Generator.AST
                             decl = UnionWrappers.FirstOrDefault(x => x.Name == declaration.Name);
                             break;
                     }
+
                     break;
             }
 
@@ -262,7 +270,8 @@ namespace QuantumBinding.Generator.AST
 
         public List<Function> FindFunctionsWithParameter(params string[] paramTypes)
         {
-            var functions = Functions.Where(x => x.Parameters.Any(y => paramTypes.Contains(y.Type.ToString()))).ToList();
+            var functions = Functions.Where(x => x.Parameters.Any(y => paramTypes.Contains(y.Type.ToString())))
+                .ToList();
             return functions;
         }
 
@@ -280,7 +289,8 @@ namespace QuantumBinding.Generator.AST
                         continue;
                     }
 
-                    if (customType.Name.Equals(dependentType.Identifier) || customType.Name.Equals(dependentType.PointsTo))
+                    if (customType.Name.Equals(dependentType.Identifier) ||
+                        customType.Name.Equals(dependentType.PointsTo))
                     {
                         customType.Name = @class.Name;
                         type.Declaration = @class;

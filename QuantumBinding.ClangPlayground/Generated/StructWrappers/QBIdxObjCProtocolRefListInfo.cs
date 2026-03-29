@@ -23,7 +23,7 @@ public unsafe partial class QBIdxObjCProtocolRefListInfo : QBDisposableObject
     {
         Protocols = new QBIdxObjCProtocolRefInfo[_internal.numProtocols];
         var nativeTmpArray0 = NativeUtils.PointerToManagedArray(_internal.protocols, _internal.numProtocols);
-        for (int i = 0; i < nativeTmpArray0.Length; ++i)
+        for (int i = 0; i < nativeTmpArray0.Count; ++i)
         {
             Protocols[i] = new QBIdxObjCProtocolRefInfo(nativeTmpArray0[i]);
         }

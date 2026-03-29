@@ -7,7 +7,7 @@ namespace QuantumBinding.Generator.AST
         public Constructor()
         {
             AccessSpecifier = AccessSpecifier.Public;
-            InputParameters = new List<Field>();
+            InputParameters = new List<Parameter>();
         }
 
         public AccessSpecifier AccessSpecifier { get; set; }
@@ -18,6 +18,6 @@ namespace QuantumBinding.Generator.AST
 
         public Class Class { get; set; }
 
-        public List<Field> InputParameters { get; }
+        public List<Parameter> InputParameters { get; }
     }
 }

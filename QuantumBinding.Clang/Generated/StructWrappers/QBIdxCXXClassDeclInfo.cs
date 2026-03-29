@@ -27,7 +27,7 @@ public unsafe partial class QBIdxCXXClassDeclInfo : QBDisposableObject
         NativeUtils.Free(_internal.declInfo);
         Bases = new QBIdxBaseClassInfo[_internal.numBases];
         var nativeTmpArray0 = NativeUtils.PointerToManagedArray(_internal.bases, _internal.numBases);
-        for (int i = 0; i < nativeTmpArray0.Length; ++i)
+        for (int i = 0; i < nativeTmpArray0.Count; ++i)
         {
             Bases[i] = new QBIdxBaseClassInfo(nativeTmpArray0[i]);
         }
