@@ -20,33 +20,14 @@ namespace QuantumBinding.Generator
         public string Attribute { get; set; }
         
         public string ParameterSuffix { get; set; }
+        
+        public string WrapperType { get; set; }
+        
+        public string ParameterName { get; set; }
 
         public static implicit operator TypePrinterResult(string type)
         {
             return new TypePrinterResult { Type = type };
-        }
-
-        public string MergeResult()
-        {
-            string result = string.Empty;
-            if (!string.IsNullOrEmpty(ParameterModifier))
-            {
-                result = $"{ParameterModifier} ";
-            }
-            
-            if (!string.IsNullOrEmpty(Attribute))
-            {
-                result += $"{Attribute} ";
-            }
-
-            result += Type;
-
-            if (!string.IsNullOrEmpty(TypeSuffix))
-            {
-                result += $"{TypeSuffix}";
-            }
-
-            return result;
         }
 
         public override string ToString()
@@ -57,7 +38,19 @@ namespace QuantumBinding.Generator
                 result = $"{ParameterModifier} ";
             }
 
-            result += $"{Type}{TypeSuffix}";
+            if (!string.IsNullOrEmpty(WrapperType))
+            {
+                result += $"{WrapperType}<{Type}{TypeSuffix}>";
+            }
+            else
+            {
+                result += $"{Type}{TypeSuffix}";
+            }
+
+            if (!string.IsNullOrEmpty(ParameterName))
+            {
+                result += $" {ParameterName}";
+            }
 
             return result;
         } 

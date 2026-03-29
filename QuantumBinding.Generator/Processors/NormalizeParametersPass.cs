@@ -1,20 +1,35 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
+using Delegate = QuantumBinding.Generator.AST.Delegate;
 
 namespace QuantumBinding.Generator.Processors
 {
+    [Flags]
+    public enum VisitOptions : uint
+    {
+        None = 0,
+        VisitFunctions = 1,
+        VisitDelegates = 2,
+        VisitClasses = 4,
+        VisitFields = 8,
+        VisitProperties = 16,
+        VisitParameters = 32,
+        All = VisitFunctions | VisitDelegates | VisitClasses | VisitFields | VisitProperties | VisitParameters
+    }
+    
     public class NormalizeParametersPass : PreGeneratorPass
     {
-        public NormalizeParametersPass()
+        public NormalizeParametersPass(VisitOptions options = VisitOptions.All)
         {
-            Options.VisitFunctions = true;
-            Options.VisitDelegates = true;
-            Options.VisitClasses = true;
-            Options.VisitFields = true;
-            Options.VisitProperties = true;
-            Options.VisitParameters = true;
+            if (options.HasFlag(VisitOptions.VisitFunctions)) Options.VisitFunctions = true;
+            if (options.HasFlag(VisitOptions.VisitDelegates)) Options.VisitDelegates = true;
+            if (options.HasFlag(VisitOptions.VisitClasses)) Options.VisitClasses = true;
+            if (options.HasFlag(VisitOptions.VisitFields)) Options.VisitFields = true;
+            if (options.HasFlag(VisitOptions.VisitProperties)) Options.VisitProperties = true;
+            if (options.HasFlag(VisitOptions.VisitParameters)) Options.VisitParameters = true;
         }
 
         public override bool VisitFunction(Function function)
@@ -63,19 +78,19 @@ namespace QuantumBinding.Generator.Processors
                 return false;
             }
 
-            if (!CurrentNamespace.Module.AllowConvertStructToClass && @class.InnerStruct != null)
+            if (!CurrentNamespace.Module.AllowConvertStructToClass && @class.NativeStruct != null)
             {
-                @class.InnerStruct.IsIgnored = true;
+                @class.NativeStruct.IsIgnored = true;
                 return true;
             }
 
-            if (@class.IsPointer && @class.InnerStruct != null && @class.InnerStruct.Fields.Count == 0)
+            if (@class.IsPointer && @class.NativeStruct != null && @class.NativeStruct.Fields.Count == 0)
             {
                 var field = new Field("pointer");
                 field.AccessSpecifier = AccessSpecifier.Public;
                 field.Name = "pointer";
                 field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
-                @class.InnerStruct.AddField(field);
+                @class.NativeStruct.AddField(field);
             }
 
             return true;
@@ -151,10 +166,16 @@ namespace QuantumBinding.Generator.Processors
                 }
             }
 
-            Declaration decl = GetDeclarationFromCustomType(parameter.Type);
+            var decl = GetDeclarationFromCustomType(parameter.Type);
+            
+            if (decl is Class { ClassType: ClassType.Struct, LinkedTo: not null } @class)
+            {
+                decl = @class.LinkedTo;
+            }
+            
             parameter.Type.Declaration = decl;
 
-            Class classDecl = decl as Class;
+            var classDecl = decl as Class;
 
             var type = parameter.Type;
             switch (type)
@@ -169,6 +190,11 @@ namespace QuantumBinding.Generator.Processors
                     parameter.ParameterKind = ParameterKind.Ref;
                     break;
                 case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStructOrUnion():
+                {
+                    parameter.ParameterKind = ParameterKind.Out;
+                    break;
+                }
+                case PointerType pointer when pointer.GetDepth() >= 3:
                     {
                         parameter.ParameterKind = ParameterKind.Out;
                         break;
@@ -178,7 +204,7 @@ namespace QuantumBinding.Generator.Processors
                     break;
             }
 
-            if (parameter.Name.StartsWith("out")) //small hack to set correct parameter kind in cases developers calling out parameters starting with outxxx or out_xxx
+            if (parameter.Name.StartsWith("out")) //small hack to set the correct parameter kind in cases developers calling out parameters starting with outxxx or out_xxx
             {
                 parameter.ParameterKind = ParameterKind.Out;
             }
@@ -205,7 +231,9 @@ namespace QuantumBinding.Generator.Processors
                 foreach (var unit in AstContext.TranslationUnits)
                 {
                     decl = unit.Declarations.FirstOrDefault(x => x.Name == custom.Name);
-                    if (decl != null) break;
+
+                    if (decl != null) 
+                        break;
                 }
             }
 

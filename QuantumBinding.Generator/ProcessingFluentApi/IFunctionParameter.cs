@@ -57,7 +57,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
     public interface IInterpretFunctionParameterByName
     {
-        IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1);
+        IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1, bool isConst = false);
 
         IFunctionParameterName InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
 

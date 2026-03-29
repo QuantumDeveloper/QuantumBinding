@@ -10,6 +10,7 @@
         DelegateType,
         DelegateParameter,
         SkipParamTypes,
+        SkipParamModifiers,
         SkipParamTypesAndModifiers,
         Property,
         WrappedProperty,

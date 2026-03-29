@@ -10,12 +10,23 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             Fields = new List<FieldExtension>();
             FieldsToAdd = new List<FieldExtension>();
             PropertiesToAdd = new List<PropertyExtension>();
+            Operators = new List<OperatorExtension>();
+            Constructors = new List<ConstructorExtension>();
         }
 
         public ClassExtension(string name) : this()
         {
             Name = name;
         }
+
+        static ClassExtension()
+        {
+            AllWrappers = new ClassExtension("AllWrappers");
+        }
+        
+        public static ClassExtension AllWrappers { get; } 
+        
+        public string TranslationUnitFileName { get; set; }
 
         public string Name { get; set; }
 
@@ -26,6 +37,8 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public List<PropertyExtension> PropertiesToAdd { get; }
 
         public ClassType ClassType { get; set; }
+        
+        public string NativeStructName { get; set; }
 
         public BindingType UnderlyingNativeType { get; set; }
 
@@ -36,7 +49,13 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public bool IsIgnored { get; set; }
         
         public bool CopyFieldsFromLinkedObject { get; set; }
+        
+        public string LinkedClassName { get; set; }
 
         public bool CleanObject { get; set; }
+        
+        public List<OperatorExtension> Operators { get; set; }
+        
+        public List<ConstructorExtension> Constructors { get; set; }
     }
 }

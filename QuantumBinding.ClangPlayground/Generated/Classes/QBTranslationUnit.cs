@@ -52,7 +52,7 @@ public unsafe partial class QBTranslationUnit
         }
         var _cursors = NativeUtils.PointerToManagedArray(arg3, (long)numTokens);
         cursors = new QuantumBinding.Clang.QBCursor[numTokens];
-        for (var i = 0U; i< numTokens; ++i)
+        for (var i = 0; i< numTokens; ++i)
         {
             cursors[i] = new QuantumBinding.Clang.QBCursor(_cursors[i]);
         }
@@ -391,7 +391,7 @@ public unsafe partial class QBTranslationUnit
         QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(this, arg1, out arg2, out numTokens);
         var _tokens = NativeUtils.PointerToManagedArray(arg2, (long)numTokens);
         tokens = new QuantumBinding.Clang.QBToken[numTokens];
-        for (var i = 0U; i< numTokens; ++i)
+        for (var i = 0; i< numTokens; ++i)
         {
             tokens[i] = new QuantumBinding.Clang.QBToken(_tokens[i]);
         }

@@ -6,6 +6,12 @@ using QuantumBinding.Generator.CodeGeneration;
 
 namespace QuantumBinding.Generator
 {
+    public enum TargetRuntime
+    {
+        Net8Plus,
+        NetStandard20
+    }
+    
     public class Module
     {
         public Module() : this(string.Empty)
@@ -68,11 +74,11 @@ namespace QuantumBinding.Generator
 
         public GeneratorSpecializations GeneratorSpecializations { get; set; }
 
-        public bool SuppressUnmanagedCodeSecurity { get; set; }
-
         public bool WrapInteropObjects { get; set; }
 
         public bool CharAsBoolForMethods { get; set; }
+        
+        public TargetRuntime TargetRuntime { get; set; }
         
         /// <summary>
         /// Create overloads for functions, which contains input arrays

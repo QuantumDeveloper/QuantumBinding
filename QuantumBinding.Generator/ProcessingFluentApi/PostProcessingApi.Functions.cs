@@ -12,8 +12,9 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             functions = new Dictionary<string, FunctionExtension>();
             delegates = new Dictionary<string, FunctionExtension>();
             classes = new Dictionary<string, ClassExtension>();
+            _classesToAdd = new Dictionary<string, ClassExtension>();
             enums = new Dictionary<string, EnumExtension>();
-            commonParameters = new List<ParameterExtension>();
+            _commonParameters = new List<ParameterExtension>();
         }
 
         private readonly Dictionary<string, FunctionExtension> functions;
@@ -23,7 +24,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
         private ParameterExtension _currentParameter;
         
-        private List<ParameterExtension> commonParameters;
+        private List<ParameterExtension> _commonParameters;
         private ParameterExtension _currentCommonParameter;
         private string _currentCommonParameterTypeName;
 
@@ -143,14 +144,16 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource, uint pointerDepth)
+        IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource, uint pointerDepth, bool isConst)
         {
             var pointer = new PointerType();
+            pointer.Qualifiers.IsConst = isConst;
             pointer.IsNullable = isNullable;
             _currentParameter.Type = pointer;
             for (int i = 1; i < pointerDepth; i++)
             {
                 var ptr = new PointerType();
+                ptr.Qualifiers.IsConst = isConst;
                 pointer.Pointee = ptr;
                 pointer = ptr;
             }
@@ -159,6 +162,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             arrayType.ArraySizeSource = arraySizeSource;
             arrayType.SizeType = ArraySizeType.Incomplete;
             arrayType.ElementType = elementType;
+            arrayType.Qualifiers.IsConst = isConst;
             pointer.Pointee = arrayType;
             
             return this;
@@ -260,7 +264,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                 return false;
             }
 
-            foreach (var param in commonParameters)
+            foreach (var param in _commonParameters)
             {
                 var paramType = param.Type;
 
@@ -315,7 +319,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
             _currentCommonParameterTypeName = typeName;
             _currentCommonParameter = new ParameterExtension();
-            commonParameters.Add(_currentCommonParameter);
+            _commonParameters.Add(_currentCommonParameter);
         }
 
         IFunctionParameterType IFunctionParameterType.SetConst(bool value)

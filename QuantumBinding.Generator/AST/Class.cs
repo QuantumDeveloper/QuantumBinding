@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using QuantumBinding.Generator.Types;
 
@@ -10,18 +9,20 @@ namespace QuantumBinding.Generator.AST
         private List<Field> fields;
         private List<Method> methods;
         private List<Property> properties;
+        private List<Interface> interfaces;
         
         public Class()
         {
             AccessSpecifier = AccessSpecifier.Public;
             fields = new List<Field>();
             methods = new List<Method>();
+            interfaces = new List<Interface>();
             properties = new List<Property>();
             Constructors = new List<Constructor>();
             Operators = new List<Operator>();
         }
         
-        public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper && WrappedStruct != null;
+        public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper;
         
         public ClassType ClassType { get; set; }
 
@@ -30,6 +31,8 @@ namespace QuantumBinding.Generator.AST
         public AccessSpecifier AccessSpecifier { get; set; }
 
         public AccessSpecifier WrapperMethodAccessSpecifier { get; set; }
+        
+        public string InputClassName {get; set;}
 
         public Class LinkedTo { get; set; }
 
@@ -51,28 +54,30 @@ namespace QuantumBinding.Generator.AST
         public string DisposableBaseClass { get; set; }
 
         public string DisposeBody { get; set; }
+        
+        public IReadOnlyList<Interface> Interfaces => interfaces;
 
-        public IReadOnlyList<Field> Fields => fields.AsReadOnly();
+        public IReadOnlyList<Field> Fields => fields;
 
-        public IReadOnlyList<Property> Properties => properties.AsReadOnly();
+        public IReadOnlyList<Property> Properties => properties;
 
         public List<Constructor> Constructors { get; }
 
         public List<Operator> Operators { get; }
 
-        public Class InnerStruct { get; set; }
-
         public Class ExtendedFrom { get; set; }
 
-        public Class WrappedStruct { get; set; }
+        public Class NativeStruct { get; set; }
 
-        public string WrappedStructFieldName { get; set; }
+        public string NativeStructFieldName { get; set; }
+        
+        public string MarshalerStructName => $"{NativeStruct.Name}Marshaller";
 
-        public new List<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
+        public List<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
 
         public List<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
 
-        public IReadOnlyCollection<Method> AllMethods => methods.AsReadOnly();
+        public IReadOnlyCollection<Method> AllMethods => methods;
 
         public void AddConstructor(Constructor ctor)
         {
@@ -176,16 +181,16 @@ namespace QuantumBinding.Generator.AST
                 Name = Name,
                 OriginalName = OriginalName,
                 IsPointer = IsPointer,
-                InnerStruct = InnerStruct,
                 IsTypedef = IsTypedef,
                 UnderlyingNativeType = UnderlyingNativeType,
                 Owner = Owner,
                 Location = Location,
                 IsIgnored = IsIgnored,
                 IsSimpleType = IsSimpleType,
-                WrappedStruct = WrappedStruct,
-                WrappedStructFieldName = WrappedStructFieldName,
+                NativeStruct = NativeStruct,
+                NativeStructFieldName = NativeStructFieldName,
                 ExtendedFrom = ExtendedFrom,
+                interfaces = [..Interfaces],
             };
         }
 

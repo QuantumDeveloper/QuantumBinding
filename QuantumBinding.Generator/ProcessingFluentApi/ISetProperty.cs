@@ -10,5 +10,6 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         ISetProperty SetSetter(Method setter);
         ISetProperty SetGetter(Method getter);
         ISetProperty IsAutoProperty(bool value);
+        IClassParameters Return();
     }
 }

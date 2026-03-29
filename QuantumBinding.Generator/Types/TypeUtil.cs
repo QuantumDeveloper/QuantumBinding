@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using QuantumBinding.Generator.AST;
 using Delegate = QuantumBinding.Generator.AST.Delegate;
 
@@ -84,6 +86,30 @@ namespace QuantumBinding.Generator.Types
             
             return primitive == PrimitiveType.Void;
         }
+        
+        public static bool IsPointerToObject(this BindingType type)
+        {
+            var depth = 1;
+            PrimitiveType primitive = PrimitiveType.Unknown;
+            var pointer = type as PointerType;
+            if (pointer == null) return false;
+            
+            do
+            {
+                if (pointer.Pointee is PointerType pointee)
+                {
+                    depth++;
+                    pointer = pointee;
+                }
+                
+                if (pointer.Pointee is BuiltinType builtin)
+                {
+                    pointer.IsPointerToBuiltInType(out primitive);
+                }
+            } while (pointer.Pointee is PointerType);
+            
+            return primitive == PrimitiveType.Object;
+        }
 
         public static bool IsPointerToBuiltInType(this BindingType type, out PrimitiveType primitive)
         {
@@ -142,8 +168,13 @@ namespace QuantumBinding.Generator.Types
         public static bool IsDoublePointer(this BindingType type)
         {
             var pointer = type as PointerType;
-            var pPtr = pointer?.Pointee as PointerType;
-            return pPtr != null;
+            return pointer != null && pointer.GetDepth() >= 2;
+        }
+        
+        public static bool IsTriplePointer(this BindingType type)
+        {
+            var pointer = type as PointerType;
+            return pointer != null && pointer.GetDepth() == 3;
         }
         
         public static bool IsPointerToVoidArray(this BindingType type)
@@ -155,6 +186,28 @@ namespace QuantumBinding.Generator.Types
             }
 
             return false;
+        }
+        
+        public static bool IsPointerToArrayOfHandleWrappers(this BindingType type)
+        {
+            var pointer = type as PointerType;
+            var array = pointer?.Pointee as ArrayType;
+            
+            if (array == null)
+                return false;
+            
+            return array.ElementType.IsPointerToClass(out var @class);
+        }
+        
+        public static bool IsPointerToArrayOfStructWrappers(this BindingType type)
+        {
+            var pointer = type as PointerType;
+            var array = pointer?.Pointee as ArrayType;
+            
+            if (array == null)
+                return false;
+            
+            return array.ElementType.IsPointerToWrapper(out var @class);
         }
 
         public static bool IsPointerToArray(this BindingType type)
@@ -210,6 +263,17 @@ namespace QuantumBinding.Generator.Types
                 return t.ElementType.IsPrimitiveType;
             }
 
+            return false;
+        }
+
+        public static bool IsArrayOfCustomTypes(this BindingType type)
+        {
+            if (IsArray(type))
+            {
+                var t = (ArrayType)type;
+                return !t.ElementType.IsPrimitiveType && !t.IsEnum();
+            }
+            
             return false;
         }
         
@@ -302,16 +366,48 @@ namespace QuantumBinding.Generator.Types
 
             return false;
         }
+        
+        public static bool IsPointerToArrayOfSimpleTypes(this BindingType type, out Declaration typeDeclaration)
+        {
+            typeDeclaration = null;
+            if (IsPointerToArray(type))
+            {
+                var ptr = (PointerType) type;
+                var t = (ArrayType)ptr.Pointee;
+                var isPrimitive = t.ElementType.IsSimpleType();
+                if (isPrimitive)
+                {
+                    typeDeclaration = t.ElementType.Declaration;
+                }
+                return isPrimitive;
+            }
+
+            return false;
+        }
 
         public static bool IsPointerToStructOrUnion(this BindingType type)
         {
-            return IsPointerToStructOrUnion(type, out Class @class);
+            return type.IsPointerToStructOrUnion(out Class @class);
         }
 
         public static bool IsPointerToString(this BindingType type)
         {
-            
             return type.IsAnsiString() || type.IsUnicodeString() || type.IsStringArray();
+        }
+
+        public static bool IsPointerToStringArray(this BindingType type)
+        {
+            if (type is PointerType pointer)
+            {
+                var depth = pointer.GetDepth();
+                var pointee = pointer.GetPointee();
+                if (depth >= 3 && pointee is ArrayType array && array.ElementType is BuiltinType { Type: PrimitiveType.Sbyte or PrimitiveType.SChar or PrimitiveType.WideChar })
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool IsPointerToStructOrUnion(this BindingType type, out Class @class)
@@ -325,14 +421,13 @@ namespace QuantumBinding.Generator.Types
                 return false;
             }
 
-            if (decl.ClassType is not (ClassType.Struct or ClassType.Union) &&
-                (decl.ClassType is not (ClassType.StructWrapper or ClassType.UnionWrapper)))
+            if (decl.IsWrapper || decl.ClassType == ClassType.Struct || decl.ClassType == ClassType.Union)
             {
-                return false;
+                @class = decl;
+                return true;
             }
-
-            @class = decl;
-            return true;
+            
+            return false;
         }
 
         public static bool IsPrimitiveType(this BindingType type, out PrimitiveType primitive)
@@ -360,7 +455,7 @@ namespace QuantumBinding.Generator.Types
                         return false;
                     }
 
-                    if (elementType.Type is PrimitiveType.SChar or PrimitiveType.UChar or PrimitiveType.WideChar)
+                    if (elementType.Type is PrimitiveType.SChar or PrimitiveType.UChar or PrimitiveType.Sbyte or PrimitiveType.WideChar)
                     {
                         return true;
                     }
@@ -368,12 +463,29 @@ namespace QuantumBinding.Generator.Types
             }
             else if (type is PointerType p)
             {
-                if (p.IsConst && p.Pointee.IsPrimitiveType)
+                var pointee = p.GetPointee();
+                if (p.IsConst && pointee.IsPrimitiveType)
                 {
-                    var builtin = (BuiltinType)p.Pointee;
-                    if (builtin.Type is PrimitiveType.SChar or PrimitiveType.WideChar)
+                    var builtin = (BuiltinType)pointee;
+                    if (builtin.Type is PrimitiveType.SChar or PrimitiveType.Sbyte or PrimitiveType.WideChar)
                     {
                         return true;
+                    }
+                }
+                else if (pointee is ArrayType array)
+                {
+                    if (array.ElementType.IsPrimitiveType && array.IsConst)
+                    {
+                        var elementType = array.ElementType as BuiltinType;
+                        if (elementType == null)
+                        {
+                            return false;
+                        }
+
+                        if (elementType.Type is PrimitiveType.Sbyte or PrimitiveType.SChar or PrimitiveType.WideChar)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -445,6 +557,18 @@ namespace QuantumBinding.Generator.Types
             return false;
         }
         
+        public static bool IsPointerToWrapper(this BindingType type, out Class @class)
+        {
+            @class = null;
+            if (type is PointerType && type.Declaration is Class { ClassType: ClassType.StructWrapper or ClassType.UnionWrapper } decl)
+            {
+                @class = decl;
+                return true;
+            }
+
+            return false;
+        }
+        
         public static bool IsPointerToSystemType(this BindingType type, out CustomType customType)
         {
             customType = null;
@@ -473,6 +597,11 @@ namespace QuantumBinding.Generator.Types
         public static bool IsClass(this BindingType type)
         {
             return type.Declaration is Class;
+        }
+        
+        public static bool IsWrapper(this BindingType type)
+        {
+            return type.Declaration is Class { IsWrapper: true };
         }
 
         public static bool IsSimpleType(this BindingType type)
@@ -611,16 +740,19 @@ namespace QuantumBinding.Generator.Types
         {
             if (type is PointerType pointer)
             {
-                if (pointer.IsConst && pointer.Pointee is PointerType pointer2)
+                var pointee = pointer.GetPointee();
+                var depth = pointer.GetDepth();
+                
+                if (pointer.IsConst && pointee is BuiltinType pointer2 && depth >= 2)
                 {
-                    if (pointer2.Pointee.IsPrimitiveTypeEquals(PrimitiveType.SChar) ||
-                        pointer2.Pointee.IsPrimitiveTypeEquals(PrimitiveType.Sbyte) ||
-                        pointer2.Pointee.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
+                    if (pointer2.IsPrimitiveTypeEquals(PrimitiveType.SChar) ||
+                        pointer2.IsPrimitiveTypeEquals(PrimitiveType.Sbyte) ||
+                        pointer2.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
                     {
                         return true;
                     }
                 }
-                else if (pointer.Pointee is ArrayType arrayType)
+                else if (pointee is ArrayType arrayType)
                 {
                     if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar) ||
                         arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.Sbyte) ||
@@ -700,6 +832,18 @@ namespace QuantumBinding.Generator.Types
                     return false;
             }
 
+        }
+
+        public static bool IsAvailableForMarshalContext(this BindingType type)
+        {
+            return type.IsWrapper() || type.IsArray() || type.IsPointerToArray() || type.IsPointerToString();
+        }
+        
+        public static string GetDisplayName(this Enum enumValue)
+        {
+            var field = enumValue.GetType().GetField(enumValue.ToString());
+            var displayAttribute = field.GetCustomAttribute<DisplayAttribute>();
+            return displayAttribute?.Name ?? enumValue.ToString();
         }
     }
 }

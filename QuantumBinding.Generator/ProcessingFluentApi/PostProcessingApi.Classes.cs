@@ -18,12 +18,16 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         }
 
         private readonly Dictionary<string, ClassExtension> classes;
+        private readonly Dictionary<string, ClassExtension> _classesToAdd;
+        private ClassExtension _allWrappers;
         private ClassExtension _currentClass;
         private FieldExtension _currentField;
         private List<ClassExtension> _currentClasses;
         private PropertyExtension _currentProperty;
 
         private LastOperation lastOperation;
+        
+        public ClassExtension[] GetNewClasses() => _classesToAdd.Values.ToArray();
 
         public IClassParameters Class(string className)
         {
@@ -34,10 +38,39 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
             if (!classes.TryGetValue(className, out _currentClass))
             {
-                var @class = new ClassExtension();
+                var @class = new ClassExtension
+                {
+                    Name = className
+                };
 
-                @class.Name = className;
                 _currentClass = @class;
+                classes.Add(className, @class);
+            }
+
+            lastOperation = LastOperation.AddClass;
+
+            return this;
+        }
+
+        public IClassParameters CreateClass(string translationUnitFileName, string className, ClassType classType, string nativeClassName = "")
+        {
+            if (string.IsNullOrEmpty(className))
+            {
+                throw new ArgumentNullException(nameof(className));
+            }
+
+            if (!_classesToAdd.TryGetValue(className, out _currentClass))
+            {
+                var @class = new ClassExtension
+                {
+                    TranslationUnitFileName = translationUnitFileName,
+                    Name = className,
+                    ClassType = classType,
+                    NativeStructName = nativeClassName
+                };
+
+                _currentClass = @class;
+                _classesToAdd.Add(className, @class);
                 classes.Add(className, @class);
             }
 
@@ -76,6 +109,19 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
 
             lastOperation = LastOperation.AddClasses;
 
+            return this;
+        }
+
+        public IClassParameters Wrappers()
+        {
+            _currentClass = ClassExtension.AllWrappers;
+            if (_allWrappers == null)
+            {
+                var classExtension = new ClassExtension(ClassExtension.AllWrappers.Name);
+                _currentClass = classExtension;
+                _allWrappers = classExtension;
+            }
+            lastOperation = LastOperation.AddClass;
             return this;
         }
 
@@ -231,7 +277,12 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             return this;
         }
 
-        void IClassParameters.SetUnderlyingType(BindingType type)
+        IClassParameters ISetProperty.Return()
+        {
+            return this;
+        }
+
+        IClassParameters IClassParameters.SetUnderlyingType(BindingType type)
         {
             if (lastOperation == LastOperation.AddClass)
             {
@@ -244,6 +295,8 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                     currentClass.UnderlyingNativeType = type;
                 }
             }
+            
+            return this;
         }
 
         public IClassParameters Ignore()
@@ -263,6 +316,44 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
             _currentClass.CopyFieldsFromLinkedObject = true;
             return this;
         }
+
+        public IClassParameters UpdateLinkedClass(string linkedClassName)
+        {
+            _currentClass.LinkedClassName = linkedClassName;
+            return this;
+        }
+
+        public IClassParameters AddOverloadOperator(
+            OperatorKind operatorKind, 
+            TransformationKind transformationKind, 
+            string fieldName, 
+            bool passValueToConstructor)
+        {
+            var @operator = new OperatorExtension();
+            @operator.OperatorKind = operatorKind;
+            @operator.TransformationKind = transformationKind;
+            @operator.FieldName = fieldName;
+            @operator.PassValueToConstructor = passValueToConstructor;
+            
+            _currentClass.Operators.Add(@operator);
+            return this;
+        }
+
+        public IClassParameters AddDefaultConstructor()
+        {
+            _currentClass.Constructors.Add(new ConstructorExtension() {IsDefault = true});
+            return this;
+        }
+
+        public IClassParameters AddConstructorWithParameters<T>(string paramName, ParameterKind parameterKind, BindingType type) where T: Declaration
+        {
+            var ctor = new ConstructorExtension();
+            ctor.Parameters.Add(new ParameterExtension(){Name = paramName, ParameterKind = parameterKind, Type = type, DeclarationType = typeof(T), ReplaceDeclaration = true});
+            _currentClass.Constructors.Add(ctor);
+            return this;
+        }
+
+        public ClassExtension GetAllWrappers() => _allWrappers;
 
         public bool TryGetClass(string className, bool matchCase, out ClassExtension @class)
         {
@@ -313,7 +404,7 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
                 pointer = ptr;
             }
 
-            var builtin = new BuiltinType(PrimitiveType.Void);
+            var builtin = new BuiltinType(primitiveType);
             pointer.Pointee = builtin;
 
             return this;
@@ -358,6 +449,11 @@ namespace QuantumBinding.Generator.ProcessingFluentApi
         public ISetField InterpretAsDelegateType(IEnumerable<Parameter> parameters, string name)
         {
             _currentField.Type = new DelegateType() { Name = name, Parameters = new List<Parameter>(parameters)};
+            return this;
+        }
+
+        IClassParameters ISetField.Return()
+        {
             return this;
         }
 
