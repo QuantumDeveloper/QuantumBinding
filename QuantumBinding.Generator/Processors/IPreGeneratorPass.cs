@@ -1,23 +1,22 @@
 ﻿using QuantumBinding.Generator.AST;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public interface IPreGeneratorPass : IDeclarationVisitor<bool>
 {
-    public interface IPreGeneratorPass : IDeclarationVisitor<bool>
-    {
-        public bool RunAgain { get; set; }
+    public bool RunAgain { get; set; }
 
-        public uint RunIndex { get; }
+    public uint RunIndex { get; }
 
-        PreGeneratorOptions Options { get; }
+    PreGeneratorOptions Options { get; }
 
-        ProcessingContext ProcessingContext { get; set; }
+    ProcessingContext ProcessingContext { get; set; }
 
-        ASTContext AstContext { get; }
+    ASTContext AstContext { get; }
 
-        void OnInitialize();
+    void OnInitialize();
 
-        void Run();
+    void Run();
 
-        void OnComplete();
-    }
+    void OnComplete();
 }

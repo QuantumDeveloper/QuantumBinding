@@ -2,16 +2,15 @@
 using QuantumBinding.Generator.CodeGeneration;
 using System.Collections.Generic;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public interface ICodeGenerationPass
 {
-    public interface ICodeGenerationPass
-    {
-        ProcessingContext ProcessingContext { get; set; }
+    ProcessingContext ProcessingContext { get; set; }
 
-        ASTContext AstContext { get; }
+    ASTContext AstContext { get; }
 
-        string OutputFileName { get; set; }
+    string OutputFileName { get; set; }
 
-        List<GeneratorOutput> Generate();
-    }
+    List<GeneratorOutput> Generate();
 }

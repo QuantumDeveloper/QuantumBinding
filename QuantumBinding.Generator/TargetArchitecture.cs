@@ -1,9 +1,8 @@
-﻿namespace QuantumBinding.Generator
-{
-    public enum TargetArchitecture
-    {
-        x86,
+﻿namespace QuantumBinding.Generator;
 
-        x64
-    }
+public enum TargetArchitecture
+{
+    x86,
+
+    x64
 }

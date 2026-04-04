@@ -4,190 +4,189 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace QuantumBinding.Generator.CodeGeneration
+namespace QuantumBinding.Generator.CodeGeneration;
+
+[DebuggerDisplay("{BlockKind} | {CodeObject}")]
+public class CodeBlock : ITextGenerator
 {
-    [DebuggerDisplay("{BlockKind} | {CodeObject}")]
-    public class CodeBlock : ITextGenerator
+    public CodeBlock()
     {
-        public CodeBlock()
-        {
-            BlockKind = CodeBlockKind.Undefined;
-            Blocks = new List<CodeBlock>();
-            Text = new TextGenerator();
-        }
+        BlockKind = CodeBlockKind.Undefined;
+        Blocks = new List<CodeBlock>();
+        Text = new TextGenerator();
+    }
 
-        public CodeBlock(CodeBlockKind blockKind) : this()
-        {
-            BlockKind = blockKind;
-        }
+    public CodeBlock(CodeBlockKind blockKind) : this()
+    {
+        BlockKind = blockKind;
+    }
 
-        private bool indentChanged;
-        private bool isSubBlock;
+    private bool indentChanged;
+    private bool isSubBlock;
 
-        public TextGenerator Text { get; private set; }
+    public TextGenerator Text { get; private set; }
 
-        public CodeBlockKind BlockKind { get; set; }
+    public CodeBlockKind BlockKind { get; set; }
 
-        public object CodeObject { get; set; }
+    public object CodeObject { get; set; }
         
-        public CodeBlock Parent { get; set; }
+    public CodeBlock Parent { get; set; }
 
-        public List<CodeBlock> Blocks { get; }
+    public List<CodeBlock> Blocks { get; }
 
-        public NewLineStrategy NewLineStrategy { get; set; }
+    public NewLineStrategy NewLineStrategy { get; set; }
 
-        public void AddBlock(CodeBlock block)
+    public void AddBlock(CodeBlock block)
+    {
+        if (Text.HasText || indentChanged)
         {
-            if (Text.HasText || indentChanged)
-            {
-                indentChanged = false;
-                var subBlock = new CodeBlock(){ Text = Text.Clone(), isSubBlock = true};
-                Text.Clear();
+            indentChanged = false;
+            var subBlock = new CodeBlock(){ Text = Text.Clone(), isSubBlock = true};
+            Text.Clear();
 
-                AddBlock(subBlock);
-            }
-
-            block.Parent = this;
-            Blocks.Add(block);
+            AddBlock(subBlock);
         }
 
-        public IEnumerable<CodeBlock> FindBlocks(CodeBlockKind blockKind)
+        block.Parent = this;
+        Blocks.Add(block);
+    }
+
+    public IEnumerable<CodeBlock> FindBlocks(CodeBlockKind blockKind)
+    {
+        foreach (var block in Blocks)
         {
-            foreach (var block in Blocks)
+            if (block.BlockKind == blockKind)
             {
-                if (block.BlockKind == blockKind)
+                yield return block;
+            }
+
+            foreach (var codeBlock in block.Blocks)
+            {
+                if (codeBlock.BlockKind == blockKind)
                 {
-                    yield return block;
+                    yield return codeBlock;
+                }
+            }
+        }
+    }
+
+    public string Generate()
+    {
+        if (Blocks.Count == 0)
+        {
+            return Text.ToString();
+        }
+
+        var sb = new StringBuilder();
+
+        var totalIndent = Text.Indent;
+
+        foreach (var block in Blocks)
+        {
+            var text = block.Generate();
+            if (block.NewLineStrategy == NewLineStrategy.OnNewLine || (block.NewLineStrategy == NewLineStrategy.IfNotEmpty && Text.HasText))
+            {
+                sb.AppendLine();
+            }
+
+            if (block.isSubBlock)
+            {
+                totalIndent = 0;
+            }
+
+            var lines = text.Split(Environment.NewLine);
+
+            for (var index = 0; index < lines.Length; index++)
+            {
+                var line = lines[index];
+                var isLast = index == lines.Length - 1;
+
+                if (!string.IsNullOrEmpty(line))
+                {
+                    sb.Append(' ', (int) totalIndent);
                 }
 
-                foreach (var codeBlock in block.Blocks)
+                sb.Append(line);
+
+                if (isLast)
                 {
-                    if (codeBlock.BlockKind == blockKind)
+                    if (!line.EndsWith(Environment.NewLine) && (block.NewLineStrategy != NewLineStrategy.NoShift && block.NewLineStrategy != NewLineStrategy.SpaceBeforeNextBlock))
                     {
-                        yield return codeBlock;
+                        sb.AppendLine();
+                    }
+                }
+                else
+                {
+                    if (!line.EndsWith(Environment.NewLine))
+                    {
+                        sb.AppendLine();
                     }
                 }
             }
-        }
 
-        public string Generate()
-        {
-            if (Blocks.Count == 0)
+            if (block.NewLineStrategy == NewLineStrategy.SpaceBeforeNextBlock)
             {
-                return Text.ToString();
+                sb.Append(' ');
             }
 
-            var sb = new StringBuilder();
+            totalIndent += block.Text.Indent;
 
-            var totalIndent = Text.Indent;
-
-            foreach (var block in Blocks)
-            {
-                var text = block.Generate();
-                if (block.NewLineStrategy == NewLineStrategy.OnNewLine || (block.NewLineStrategy == NewLineStrategy.IfNotEmpty && Text.HasText))
-                {
-                    sb.AppendLine();
-                }
-
-                if (block.isSubBlock)
-                {
-                    totalIndent = 0;
-                }
-
-                var lines = text.Split(Environment.NewLine);
-
-                for (var index = 0; index < lines.Length; index++)
-                {
-                    var line = lines[index];
-                    var isLast = index == lines.Length - 1;
-
-                    if (!string.IsNullOrEmpty(line))
-                    {
-                        sb.Append(' ', (int) totalIndent);
-                    }
-
-                    sb.Append(line);
-
-                    if (isLast)
-                    {
-                        if (!line.EndsWith(Environment.NewLine) && (block.NewLineStrategy != NewLineStrategy.NoShift && block.NewLineStrategy != NewLineStrategy.SpaceBeforeNextBlock))
-                        {
-                            sb.AppendLine();
-                        }
-                    }
-                    else
-                    {
-                        if (!line.EndsWith(Environment.NewLine))
-                        {
-                            sb.AppendLine();
-                        }
-                    }
-                }
-
-                if (block.NewLineStrategy == NewLineStrategy.SpaceBeforeNextBlock)
-                {
-                    sb.Append(' ');
-                }
-
-                totalIndent += block.Text.Indent;
-
-            }
-
-            if (Text.HasText)
-            {
-                sb.Append(Text);
-            }
-
-            return sb.ToString();
         }
 
-        public uint Indent { get; }
-
-        public void Write(string text)
+        if (Text.HasText)
         {
-            Text.Write(text);
+            sb.Append(Text);
         }
 
-        public void WriteLine(string text)
-        {
-            Text.WriteLine(text);
-        }
+        return sb.ToString();
+    }
 
-        public void WriteLineWithTrim(string text)
-        {
-            Text.WriteLineWithTrim(text);
-        }
+    public uint Indent { get; }
 
-        public void WriteLineWithIndent(string text)
-        {
-            Text.WriteLineWithIndent(text);
-        }
+    public void Write(string text)
+    {
+        Text.Write(text);
+    }
 
-        public void WriteOpenBraceAndIndent()
-        {
-            Text.WriteOpenBraceAndIndent();
-        }
+    public void WriteLine(string text)
+    {
+        Text.WriteLine(text);
+    }
 
-        public void UnindentAndWriteCloseBrace()
-        {
-            Text.UnindentAndWriteCloseBrace();
-        }
+    public void WriteLineWithTrim(string text)
+    {
+        Text.WriteLineWithTrim(text);
+    }
 
-        public void NewLine()
-        {
-            Text.NewLine();
-        }
+    public void WriteLineWithIndent(string text)
+    {
+        Text.WriteLineWithIndent(text);
+    }
 
-        public void PushIndent(uint indentation = TextGenerator.DefaultIndentation)
-        {
-            indentChanged = true;
-            Text.PushIndent(indentation);
-        }
+    public void WriteOpenBraceAndIndent()
+    {
+        Text.WriteOpenBraceAndIndent();
+    }
 
-        public void PopIndent()
-        {
-            indentChanged = true;
-            Text.PopIndent();
-        }
+    public void UnindentAndWriteCloseBrace()
+    {
+        Text.UnindentAndWriteCloseBrace();
+    }
+
+    public void NewLine()
+    {
+        Text.NewLine();
+    }
+
+    public void PushIndent(uint indentation = TextGenerator.DefaultIndentation)
+    {
+        indentChanged = true;
+        Text.PushIndent(indentation);
+    }
+
+    public void PopIndent()
+    {
+        indentChanged = true;
+        Text.PopIndent();
     }
 }

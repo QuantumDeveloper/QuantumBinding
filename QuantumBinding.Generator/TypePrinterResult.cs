@@ -1,58 +1,57 @@
 ﻿using System;
 
-namespace QuantumBinding.Generator
+namespace QuantumBinding.Generator;
+
+public class TypePrinterResult
 {
-    public class TypePrinterResult
+    public TypePrinterResult()
     {
-        public TypePrinterResult()
-        {
-            Attribute = String.Empty;
-            ParameterModifier = String.Empty;
-            Type = String.Empty;
-            TypeSuffix = String.Empty;
-            ParameterSuffix = String.Empty;
-        }
-        public string ParameterModifier { get; set; }
-        public string Type { get; set; }
-
-        public string TypeSuffix { get; set; }
-        
-        public string Attribute { get; set; }
-        
-        public string ParameterSuffix { get; set; }
-        
-        public string WrapperType { get; set; }
-        
-        public string ParameterName { get; set; }
-
-        public static implicit operator TypePrinterResult(string type)
-        {
-            return new TypePrinterResult { Type = type };
-        }
-
-        public override string ToString()
-        {
-            string result = string.Empty;
-            if (!string.IsNullOrEmpty(ParameterModifier))
-            {
-                result = $"{ParameterModifier} ";
-            }
-
-            if (!string.IsNullOrEmpty(WrapperType))
-            {
-                result += $"{WrapperType}<{Type}{TypeSuffix}>";
-            }
-            else
-            {
-                result += $"{Type}{TypeSuffix}";
-            }
-
-            if (!string.IsNullOrEmpty(ParameterName))
-            {
-                result += $" {ParameterName}";
-            }
-
-            return result;
-        } 
+        Attribute = String.Empty;
+        ParameterModifier = String.Empty;
+        Type = String.Empty;
+        TypeSuffix = String.Empty;
+        ParameterSuffix = String.Empty;
     }
+    public string ParameterModifier { get; set; }
+    public string Type { get; set; }
+
+    public string TypeSuffix { get; set; }
+        
+    public string Attribute { get; set; }
+        
+    public string ParameterSuffix { get; set; }
+        
+    public string WrapperType { get; set; }
+        
+    public string ParameterName { get; set; }
+
+    public static implicit operator TypePrinterResult(string type)
+    {
+        return new TypePrinterResult { Type = type };
+    }
+
+    public override string ToString()
+    {
+        string result = string.Empty;
+        if (!string.IsNullOrEmpty(ParameterModifier))
+        {
+            result = $"{ParameterModifier} ";
+        }
+
+        if (!string.IsNullOrEmpty(WrapperType))
+        {
+            result += $"{WrapperType}<{Type}{TypeSuffix}>";
+        }
+        else
+        {
+            result += $"{Type}{TypeSuffix}";
+        }
+
+        if (!string.IsNullOrEmpty(ParameterName))
+        {
+            result += $" {ParameterName}";
+        }
+
+        return result;
+    } 
 }

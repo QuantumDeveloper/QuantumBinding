@@ -1,26 +1,25 @@
-﻿namespace QuantumBinding.Generator.AST
+﻿namespace QuantumBinding.Generator.AST;
+
+public class Comment : Declaration
 {
-    public class Comment : Declaration
+    public RawCommentKind Kind { get; set; }
+
+    public string Text { get; set; }
+
+    public string BriefText { get; set; }
+
+    public override T Visit<T>(IDeclarationVisitor<T> visitor)
     {
-        public RawCommentKind Kind { get; set; }
+        return visitor.VisitComment(this);
+    }
 
-        public string Text { get; set; }
-
-        public string BriefText { get; set; }
-
-        public override T Visit<T>(IDeclarationVisitor<T> visitor)
+    public override object Clone()
+    {
+        return new Comment()
         {
-            return visitor.VisitComment(this);
-        }
-
-        public override object Clone()
-        {
-            return new Comment()
-            {
-                Kind = Kind,
-                Text = Text,
-                BriefText = BriefText
-            };
-        }
+            Kind = Kind,
+            Text = Text,
+            BriefText = BriefText
+        };
     }
 }

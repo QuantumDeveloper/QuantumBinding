@@ -1,35 +1,34 @@
 ﻿using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Utils;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public class CheckMacrosPass : PreGeneratorPass
 {
-    public class CheckMacrosPass : PreGeneratorPass
+    public CheckMacrosPass()
     {
-        public CheckMacrosPass()
+        Options.VisitMacros = true;
+    }
+
+    public override bool VisitMacro(Macro macro)
+    {
+        if (IsVisited(macro))
         {
-            Options.VisitMacros = true;
+            return false;
         }
 
-        public override bool VisitMacro(Macro macro)
+        if (macro.Value.Contains("ULL"))
         {
-            if (IsVisited(macro))
-            {
-                return false;
-            }
-
-            if (macro.Value.Contains("ULL"))
-            {
-                macro.Value = macro.Value.Replace("ULL", "UL");
-            }
-
-            if (macro.Value.StartsWith("(") && macro.Value.EndsWith(")"))
-            {
-                macro.Value = macro.Value[1..^1];
-            }
-
-            macro.Type = ClangUtils.GetMacroType(macro.Value);
-
-            return true;
+            macro.Value = macro.Value.Replace("ULL", "UL");
         }
+
+        if (macro.Value.StartsWith("(") && macro.Value.EndsWith(")"))
+        {
+            macro.Value = macro.Value[1..^1];
+        }
+
+        macro.Type = ClangUtils.GetMacroType(macro.Value);
+
+        return true;
     }
 }

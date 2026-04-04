@@ -1,8 +1,7 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum CasePattern
 {
-    public enum CasePattern
-    {
-        PascalCase,
-        CamelCase
-    }
+    PascalCase,
+    CamelCase
 }

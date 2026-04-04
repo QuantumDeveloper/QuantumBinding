@@ -1,11 +1,10 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum ParseResult
 {
-    public enum ParseResult
-    {
-        Success = 0,
-        Failure = 1,
-        Crashed = 2,
-        InvalidArguments = 3,
-        AstReadError = 4
-    }
+    Success = 0,
+    Failure = 1,
+    Crashed = 2,
+    InvalidArguments = 3,
+    AstReadError = 4
 }

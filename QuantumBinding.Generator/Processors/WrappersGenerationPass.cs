@@ -4,37 +4,36 @@ using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Utils;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public class WrappersGenerationPass : CodeGeneratorPass
 {
-    public class WrappersGenerationPass : CodeGeneratorPass
+    public WrappersGenerationPass()
     {
-        public WrappersGenerationPass()
+        CodeGeneratorPassKind = ExecutionPassKind.PerTranslationUnit;
+        GeneratorSpecializations = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
+    }
+
+    protected override CodeGenerator OnCreateGenerator(GeneratorCategory category, params TranslationUnit[] units)
+    {
+        if (CodeGeneratorPassKind == ExecutionPassKind.PerTranslationUnit)
         {
-            CodeGeneratorPassKind = ExecutionPassKind.PerTranslationUnit;
-            GeneratorSpecializations = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;
+            OutputPath = units[0].OutputPath;
         }
 
-        protected override CodeGenerator OnCreateGenerator(GeneratorCategory category, params TranslationUnit[] units)
-        {
-            if (CodeGeneratorPassKind == ExecutionPassKind.PerTranslationUnit)
-            {
-                OutputPath = units[0].OutputPath;
-            }
+        return new WrapperGenerator(ProcessingContext, units, category);
+    }
 
-            return new WrapperGenerator(ProcessingContext, units, category);
-        }
-
-        protected override List<CodeGenerator> ProcessPerTypeCodeGeneration(TranslationUnit unit, GeneratorSpecializations specs)
+    protected override List<CodeGenerator> ProcessPerTypeCodeGeneration(TranslationUnit unit, GeneratorSpecializations specs)
+    {
+        switch (specs)
         {
-            switch (specs)
-            {
-                case GeneratorSpecializations.StructWrappers:
-                    return ProcessDeclarations(unit.StructWrappers, unit);
-                case GeneratorSpecializations.UnionWrappers:
-                    return ProcessDeclarations(unit.UnionWrappers, unit);
-                default:
-                    return new List<CodeGenerator>();
-            }
+            case GeneratorSpecializations.StructWrappers:
+                return ProcessDeclarations(unit.StructWrappers, unit);
+            case GeneratorSpecializations.UnionWrappers:
+                return ProcessDeclarations(unit.UnionWrappers, unit);
+            default:
+                return new List<CodeGenerator>();
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace QuantumBinding.Generator.Processors
+﻿namespace QuantumBinding.Generator.Processors;
+
+public enum ExecutionPassKind
 {
-    public enum ExecutionPassKind
-    {
-        PerTranslationUnit,
-        Once
-    }
+    PerTranslationUnit,
+    Once
 }
