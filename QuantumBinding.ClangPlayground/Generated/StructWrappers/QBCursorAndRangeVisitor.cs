@@ -5,40 +5,68 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBCursorAndRangeVisitor : QBDisposableObject
+public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>
 {
     public QBCursorAndRangeVisitor()
     {
     }
 
-    public QBCursorAndRangeVisitor(QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor _internal)
+    public QBCursorAndRangeVisitor(in QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor native)
     {
-        Context = _internal.context;
-        Visit = _internal.visit;
+        MarshalFrom(in native);
     }
 
-    public void* Context { get; set; }
-    public void* Visit { get; set; }
-
-    public QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor();
-        _internal.context = Context;
-        _internal.visit = Visit;
-        return _internal;
-    }
+    public nuint Context { get; set; }
+    public nuint Visit { get; set; }
 
     public static implicit operator QBCursorAndRangeVisitor(QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor q)
     {
-        return new QBCursorAndRangeVisitor(q);
+        return new QBCursorAndRangeVisitor(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor> context)
+    {
+        new CXCursorAndRangeVisitorMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor native)
+    {
+        Context = native.context;
+        Visit = native.visit;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXCursorAndRangeVisitorMarshaller
+    {
+        public CXCursorAndRangeVisitorMarshaller(QuantumBinding.Clang.QBCursorAndRangeVisitor qBCursorAndRangeVisitor, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor> context)
+        {
+            context.Destination[0].context = qBCursorAndRangeVisitor.Context;
+
+            context.Destination[0].visit = qBCursorAndRangeVisitor.Visit;
+
+        }
+    }
 }
 
 

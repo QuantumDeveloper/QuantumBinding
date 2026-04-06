@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The client's data object that is associated with a CXFile.
 ///</summary>
-public unsafe partial class QBIdxClientFile
+public unsafe partial class QBIdxClientFile : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIdxClientFileImpl>
 {
     internal CXIdxClientFileImpl __Instance;
     public QBIdxClientFile()
     {
     }
 
-    public QBIdxClientFile(QuantumBinding.Clang.Interop.CXIdxClientFileImpl __Instance)
+    public QBIdxClientFile(in QuantumBinding.Clang.Interop.CXIdxClientFileImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXIdxClientFileImpl GetNativeValue() => __Instance;
     public ref readonly CXIdxClientFileImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientFileImpl(QBIdxClientFile q)
@@ -37,7 +38,7 @@ public unsafe partial class QBIdxClientFile
 
     public static implicit operator QBIdxClientFile(QuantumBinding.Clang.Interop.CXIdxClientFileImpl q)
     {
-        return new QBIdxClientFile(q);
+        return new QBIdxClientFile(in q);
     }
 
 }

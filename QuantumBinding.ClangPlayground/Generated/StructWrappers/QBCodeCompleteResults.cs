@@ -5,25 +5,22 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBCodeCompleteResults : QBDisposableObject
+public unsafe partial class QBCodeCompleteResults : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCodeCompleteResults>
 {
-    private NativeStruct<QuantumBinding.Clang.Interop.CXCompletionResult> _results;
-
     public QBCodeCompleteResults()
     {
     }
 
-    public QBCodeCompleteResults(QuantumBinding.Clang.Interop.CXCodeCompleteResults _internal)
+    public QBCodeCompleteResults(in QuantumBinding.Clang.Interop.CXCodeCompleteResults native)
     {
-        Results = new QBCompletionResult(*_internal.results);
-        NativeUtils.Free(_internal.results);
-        NumResults = _internal.numResults;
+        MarshalFrom(in native);
     }
 
     public QBCompletionResult Results { get; set; }
@@ -33,9 +30,9 @@ public unsafe partial class QBCodeCompleteResults : QBDisposableObject
     ///</summary>
     public void DisposeCodeCompleteResults()
     {
-        var arg0 = NativeUtils.StructOrEnumToPointer(ToNative());
+        System.Span<byte> arg0Span = stackalloc byte[GetSize()];
+        var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(this, ref arg0Span);
         QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCodeCompleteResults(arg0);
-        NativeUtils.Free(arg0);
     }
 
     ///<summary>
@@ -43,12 +40,29 @@ public unsafe partial class QBCodeCompleteResults : QBDisposableObject
     ///</summary>
     public QBString GetCompletionFixIt(uint completion_index, uint fixit_index, QBSourceRange replacement_range)
     {
-        var arg0 = NativeUtils.StructOrEnumToPointer(ToNative());
-        var arg3 = ReferenceEquals(replacement_range, null) ? null : NativeUtils.StructOrEnumToPointer(replacement_range.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionFixIt(arg0, completion_index, fixit_index, arg3);
-        NativeUtils.Free(arg0);
-        NativeUtils.Free(arg3);
-        return result;
+        int CalculateSize(QBSourceRange replacement_range)
+        {
+            int totalSize = 0;
+            if (replacement_range != null)
+                totalSize += replacement_range.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(replacement_range);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(this, ref currentCursor);
+            var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(replacement_range, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionFixIt(arg0, completion_index, fixit_index, arg3);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -56,38 +70,66 @@ public unsafe partial class QBCodeCompleteResults : QBDisposableObject
     ///</summary>
     public uint GetCompletionNumFixIts(uint completion_index)
     {
-        var arg0 = NativeUtils.StructOrEnumToPointer(ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionNumFixIts(arg0, completion_index);
-        NativeUtils.Free(arg0);
-        return result;
-    }
-
-
-    public QuantumBinding.Clang.Interop.CXCodeCompleteResults ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXCodeCompleteResults();
-        _results.Dispose();
-        if (Results != null)
-        {
-            var struct0 = Results.ToNative();
-            _results = new NativeStruct<QuantumBinding.Clang.Interop.CXCompletionResult>(struct0);
-            _internal.results = _results.Handle;
-        }
-        _internal.numResults = NumResults;
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _results.Dispose();
+        System.Span<byte> arg0Span = stackalloc byte[GetSize()];
+        var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(this, ref arg0Span);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionNumFixIts(arg0, completion_index);
     }
 
 
     public static implicit operator QBCodeCompleteResults(QuantumBinding.Clang.Interop.CXCodeCompleteResults q)
     {
-        return new QBCodeCompleteResults(q);
+        return new QBCodeCompleteResults(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+        if (Results != default)
+        {
+            size += Results.GetSize();
+        }
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXCodeCompleteResults> context)
+    {
+        new CXCodeCompleteResultsMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXCodeCompleteResults native)
+    {
+        Results = new QBCompletionResult(in *native.results);
+        NativeUtils.Free(native.results);
+        NumResults = native.numResults;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXCodeCompleteResultsMarshaller
+    {
+        public CXCodeCompleteResultsMarshaller(QuantumBinding.Clang.QBCodeCompleteResults qBCodeCompleteResults, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXCodeCompleteResults> context)
+        {
+            if (qBCodeCompleteResults.Results != default)
+            {
+                var structSlice0 = context.AllocateData(sizeof(QuantumBinding.Clang.Interop.CXCompletionResult));
+                var structDestination0 = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, QuantumBinding.Clang.Interop.CXCompletionResult>(structSlice0).Slice(0, 1);
+                context.Destination[0].results = (QuantumBinding.Clang.Interop.CXCompletionResult*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref structDestination0[0]);
+                var childContext = new QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXCompletionResult>(structDestination0, context.DataCursor);
+                qBCodeCompleteResults.Results.MarshalTo(ref childContext);
+                context.DataCursor = childContext.DataCursor;
+            }
+
+            context.Destination[0].numResults = qBCodeCompleteResults.NumResults;
+
+        }
+    }
 }
 
 

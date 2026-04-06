@@ -5,55 +5,85 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBToken : QBDisposableObject
+public unsafe partial class QBToken : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXToken>
 {
     public QBToken()
     {
     }
 
-    public QBToken(QuantumBinding.Clang.Interop.CXToken _internal)
+    public QBToken(in QuantumBinding.Clang.Interop.CXToken native)
     {
-        Int_data = NativeUtils.PointerToManagedArray(_internal.int_data, 4);
-        Ptr_data = _internal.ptr_data;
+        MarshalFrom(in native);
     }
 
-    public IReadOnlyList<uint> Int_data { get; set; }
-    public void* Ptr_data { get; set; }
+    public System.ReadOnlyMemory<uint> Int_data { get; set; }
+    public nuint Ptr_data { get; set; }
     ///<summary>
     /// Determine the kind of the given token.
     ///</summary>
     public CXTokenKind GetTokenKind()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenKind(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenKind(native);
     }
 
-
-    public QuantumBinding.Clang.Interop.CXToken ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXToken();
-        if(Int_data != null)
-        {
-            if (Int_data.Count > 4)
-                throw new System.ArgumentOutOfRangeException(nameof(Int_data), "Array is out of bounds. Size should not be more than 4");
-
-            NativeUtils.PrimitiveToFixedArray(_internal.int_data, 4, Int_data);
-        }
-        _internal.ptr_data = Ptr_data;
-        return _internal;
-    }
 
     public static implicit operator QBToken(QuantumBinding.Clang.Interop.CXToken q)
     {
-        return new QBToken(q);
+        return new QBToken(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXToken>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXToken> context)
+    {
+        new CXTokenMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXToken native)
+    {
+        var tmpInt_data = new uint[4];
+        var pInt_data = (uint*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in native.int_data[0]));
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(pInt_data, 4, tmpInt_data);
+        Int_data = tmpInt_data;
+        Ptr_data = native.ptr_data;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXToken>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXToken>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXTokenMarshaller
+    {
+        public CXTokenMarshaller(QuantumBinding.Clang.QBToken qBToken, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXToken> context)
+        {
+            ref var tmpDestination0 = ref context.Destination[0];
+            fixed (uint* pDest = tmpDestination0.int_data)
+            {
+                QuantumBinding.Utils.MarshalingUtils.MarshalFixedArrayToPointer(qBToken.Int_data.Span, pDest, 4);
+            }
+
+            context.Destination[0].ptr_data = qBToken.Ptr_data;
+
+        }
+    }
 }
 
 

@@ -1,72 +1,71 @@
 ﻿using QuantumBinding.Generator.Types;
 
-namespace QuantumBinding.Generator.ProcessingFluentApi
+namespace QuantumBinding.Generator.ProcessingFluentApi;
+
+public interface IFunctionParameter
 {
-    public interface IFunctionParameter
-    {
-        IInterpretFunctionParameterByName WithParameterName(string paramName);
+    IInterpretFunctionParameterByName WithParameterName(string paramName);
 
-        IInterpretFunctionParameterByName RenameTo(string newName);
+    IInterpretFunctionParameterByName RenameTo(string newName);
 
-        void WithReturnType(BindingType returnType);
-    }
+    void WithReturnType(BindingType returnType);
+}
 
-    public interface ICommonFunctionParameter
-    {
-        IInterpretFunctionParameter WithParameterType(string typeName);
-    }
+public interface ICommonFunctionParameter
+{
+    IInterpretFunctionParameter WithParameterType(string typeName);
+}
 
-    public interface IFunctionParameterType
-    {
-        IFunctionParameterType SetConst(bool value);
+public interface IFunctionParameterType
+{
+    IFunctionParameterType SetConst(bool value);
 
-        IFunctionParameterType SetNullable(bool value);
+    IFunctionParameterType SetNullable(bool value);
 
-        IFunctionParameterType SetDelegateNullable(bool value);
+    IFunctionParameterType SetDelegateNullable(bool value);
 
-        IFunctionParameterType SetDefaultValue(string value);
+    IFunctionParameterType SetDefaultValue(string value);
 
-        IFunctionParameterType SetParameterKind(ParameterKind parameterKind);
+    IFunctionParameterType SetParameterKind(ParameterKind parameterKind);
 
-        IFunctionParameterType NextParameter(string paramType);
-    }
+    IFunctionParameterType NextParameter(string paramType);
+}
 
-    public interface IInterpretFunctionParameter
-    {
-        IFunctionParameterType InterpretAsIs();
+public interface IInterpretFunctionParameter
+{
+    IFunctionParameterType InterpretAsIs();
 
-        IFunctionParameterType InterpretAsBuiltinType();
+    IFunctionParameterType InterpretAsBuiltinType();
 
-        IFunctionParameterType InterpretAsPointerType();
+    IFunctionParameterType InterpretAsPointerType();
 
-        IFunctionParameterType InterpretAsPointerToArray(ArraySizeType sizeType, long size = 0);
+    IFunctionParameterType InterpretAsPointerToArray(ArraySizeType sizeType, long size = 0);
 
-        IFunctionParameterType InterpretAsArray(ArraySizeType sizeType, long size = 0);
+    IFunctionParameterType InterpretAsArray(ArraySizeType sizeType, long size = 0);
 
-        IFunctionParameterType InterpretAsCustomType();
-    }
+    IFunctionParameterType InterpretAsCustomType();
+}
 
-    public interface IFunctionParameterName
-    {
-        IFunctionParameterName SetParameterKind(ParameterKind parameterKind);
+public interface IFunctionParameterName
+{
+    IFunctionParameterName SetParameterKind(ParameterKind parameterKind);
 
-        IFunctionParameterName SetDefaultValue(string value);
+    IFunctionParameterName SetDefaultValue(string value);
 
-        IInterpretFunctionParameterByName WithParameterName(string paramName);
-    }
+    IInterpretFunctionParameterByName WithParameterName(string paramName);
+}
 
-    public interface IInterpretFunctionParameterByName
-    {
-        IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1, bool isConst = false);
+public interface IInterpretFunctionParameterByName
+{
+    IFunctionParameterName InterpretAsPointerToArray(BindingType elementType, bool isNullable = true, string arraySizeSource = "", uint pointerDepth = 1, bool isConst = false);
 
-        IFunctionParameterName InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
+    IFunctionParameterName InterpretAsArray(BindingType elementType, ArraySizeType sizeType, int size = 0);
 
-        IFunctionParameterName InterpretAsPointerType(BindingType pointeeType, uint pointerDepth = 1);
+    IFunctionParameterName InterpretAsPointerType(BindingType pointeeType, uint pointerDepth = 1);
 
-        IFunctionParameterName InterpretAsIs();
+    IFunctionParameterName InterpretAsIs();
         
-        IFunctionParameterName InterpretAsBuiltinType(PrimitiveType type);
+    IFunctionParameterName InterpretAsBuiltinType(PrimitiveType type);
         
-        IFunctionParameterName ChangeType(BindingType type);
-    }
+    IFunctionParameterName ChangeType(BindingType type);
 }

@@ -5,40 +5,73 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxContainerInfo
+public unsafe partial class QBIdxContainerInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxContainerInfo>
 {
     public QBIdxContainerInfo()
     {
     }
 
-    public QBIdxContainerInfo(QuantumBinding.Clang.Interop.CXIdxContainerInfo _internal)
+    public QBIdxContainerInfo(in QuantumBinding.Clang.Interop.CXIdxContainerInfo native)
     {
-        Cursor = new QBCursor(_internal.cursor);
+        MarshalFrom(in native);
     }
 
     public QBCursor Cursor { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXIdxContainerInfo ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxContainerInfo();
-        if (Cursor != null)
-        {
-            _internal.cursor = Cursor.ToNative();
-        }
-        return _internal;
-    }
-
     public static implicit operator QBIdxContainerInfo(QuantumBinding.Clang.Interop.CXIdxContainerInfo q)
     {
-        return new QBIdxContainerInfo(q);
+        return new QBIdxContainerInfo(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxContainerInfo>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxContainerInfo> context)
+    {
+        new CXIdxContainerInfoMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxContainerInfo native)
+    {
+        Cursor = new QBCursor(native.cursor);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxContainerInfo>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxContainerInfo>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxContainerInfoMarshaller
+    {
+        public CXIdxContainerInfoMarshaller(QuantumBinding.Clang.QBIdxContainerInfo qBIdxContainerInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxContainerInfo> context)
+        {
+            if (qBIdxContainerInfo.Cursor != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXCursor* pField = &context.Destination[0].cursor)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXCursor>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCursor>(fieldSpan, context.DataCursor);
+                    qBIdxContainerInfo.Cursor.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+        }
+    }
 }
 
 

@@ -2,45 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QuantumBinding.Generator.ProcessingFluentApi
+namespace QuantumBinding.Generator.ProcessingFluentApi;
+
+public partial class PostProcessingApi
 {
-    public partial class PostProcessingApi
+    private readonly Dictionary<string, FunctionExtension> delegates;
+
+    public IFunctionParameter Delegate(string delegateName)
     {
-        private readonly Dictionary<string, FunctionExtension> delegates;
-
-        public IFunctionParameter Delegate(string delegateName)
+        if (string.IsNullOrEmpty(delegateName))
         {
-            if (string.IsNullOrEmpty(delegateName))
-            {
-                throw new ArgumentNullException(nameof(delegateName));
-            }
-
-            if (!delegates.TryGetValue(delegateName, out _currentFunction))
-            {
-                var @delegate = new FunctionExtension();
-                @delegate.DecoratedName = delegateName;
-                _currentFunction = @delegate;
-                delegates.Add(delegateName, @delegate);
-            }
-
-            return this;
+            throw new ArgumentNullException(nameof(delegateName));
         }
 
-        public bool TryGetDelegate(string delegateName, bool matchCase, out FunctionExtension @delegate)
+        if (!delegates.TryGetValue(delegateName, out _currentFunction))
         {
-            if (matchCase)
-            {
-                return delegates.TryGetValue(delegateName, out @delegate);
-            }
-
-            var key = delegates.Keys.FirstOrDefault(x => x.Equals(delegateName, StringComparison.OrdinalIgnoreCase));
-            if (!string.IsNullOrEmpty(key))
-            {
-                return delegates.TryGetValue(key, out @delegate);
-            }
-
-            @delegate = null;
-            return false;
+            var @delegate = new FunctionExtension();
+            @delegate.DecoratedName = delegateName;
+            _currentFunction = @delegate;
+            delegates.Add(delegateName, @delegate);
         }
+
+        return this;
+    }
+
+    public bool TryGetDelegate(string delegateName, bool matchCase, out FunctionExtension @delegate)
+    {
+        if (matchCase)
+        {
+            return delegates.TryGetValue(delegateName, out @delegate);
+        }
+
+        var key = delegates.Keys.FirstOrDefault(x => x.Equals(delegateName, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(key))
+        {
+            return delegates.TryGetValue(key, out @delegate);
+        }
+
+        @delegate = null;
+        return false;
     }
 }

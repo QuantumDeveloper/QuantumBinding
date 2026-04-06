@@ -1,23 +1,22 @@
 ﻿using System.Collections.Generic;
 
-namespace QuantumBinding.Generator.AST
+namespace QuantumBinding.Generator.AST;
+
+public class Constructor
 {
-    public class Constructor
+    public Constructor()
     {
-        public Constructor()
-        {
-            AccessSpecifier = AccessSpecifier.Public;
-            InputParameters = new List<Parameter>();
-        }
-
-        public AccessSpecifier AccessSpecifier { get; set; }
-
-        public bool IsDefault { get; set; }
-
-        public bool IsStatic { get; set; }
-
-        public Class Class { get; set; }
-
-        public List<Parameter> InputParameters { get; }
+        AccessSpecifier = AccessSpecifier.Public;
+        InputParameters = new List<Parameter>();
     }
+
+    public AccessSpecifier AccessSpecifier { get; set; }
+
+    public bool IsDefault { get; set; }
+
+    public bool IsStatic { get; set; }
+
+    public Class Class { get; set; }
+
+    public List<Parameter> InputParameters { get; }
 }

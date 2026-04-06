@@ -1,11 +1,10 @@
-﻿namespace QuantumBinding.Generator.CodeGeneration
+﻿namespace QuantumBinding.Generator.CodeGeneration;
+
+public enum NewLineStrategy
 {
-    public enum NewLineStrategy
-    {
-        NoShift,
-        IfNotEmpty,
-        OnNewLine,
-        NewLineBeforeNextBlock,
-        SpaceBeforeNextBlock
-    }
+    NoShift,
+    IfNotEmpty,
+    OnNewLine,
+    NewLineBeforeNextBlock,
+    SpaceBeforeNextBlock
 }

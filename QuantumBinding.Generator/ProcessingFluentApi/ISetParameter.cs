@@ -1,7 +1,6 @@
-﻿namespace QuantumBinding.Generator.ProcessingFluentApi
+﻿namespace QuantumBinding.Generator.ProcessingFluentApi;
+
+public interface ISetParameter : IInterpretFunctionParameterByName
 {
-    public interface ISetParameter : IInterpretFunctionParameterByName
-    {
-        ISetParameter SetParameterKind(ParameterKind parameterKind);
-    }
+    ISetParameter SetParameterKind(ParameterKind parameterKind);
 }

@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A fast container representing a set of CXCursors.
 ///</summary>
-public unsafe partial class QBCursorSet
+public unsafe partial class QBCursorSet : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXCursorSetImpl>
 {
     internal CXCursorSetImpl __Instance;
     public QBCursorSet()
     {
     }
 
-    public QBCursorSet(QuantumBinding.Clang.Interop.CXCursorSetImpl __Instance)
+    public QBCursorSet(in QuantumBinding.Clang.Interop.CXCursorSetImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXCursorSetImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Creates an empty CXCursorSet.
     ///</summary>
@@ -41,9 +42,28 @@ public unsafe partial class QBCursorSet
     ///</summary>
     public uint CXCursorSet_contains(QBCursor cursor)
     {
-        var arg1 = ReferenceEquals(cursor, null) ? new QuantumBinding.Clang.Interop.CXCursor() : cursor.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_CXCursorSet_contains(this, arg1);
-        return result;
+        int CalculateSize(QBCursor cursor)
+        {
+            int totalSize = 0;
+            if (cursor != null)
+                totalSize += cursor.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(cursor);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(cursor, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXCursorSet_contains(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -51,9 +71,28 @@ public unsafe partial class QBCursorSet
     ///</summary>
     public uint CXCursorSet_insert(QBCursor cursor)
     {
-        var arg1 = ReferenceEquals(cursor, null) ? new QuantumBinding.Clang.Interop.CXCursor() : cursor.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_CXCursorSet_insert(this, arg1);
-        return result;
+        int CalculateSize(QBCursor cursor)
+        {
+            int totalSize = 0;
+            if (cursor != null)
+                totalSize += cursor.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(cursor);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(cursor, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_CXCursorSet_insert(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -73,7 +112,7 @@ public unsafe partial class QBCursorSet
 
     public static implicit operator QBCursorSet(QuantumBinding.Clang.Interop.CXCursorSetImpl q)
     {
-        return new QBCursorSet(q);
+        return new QBCursorSet(in q);
     }
 
 }

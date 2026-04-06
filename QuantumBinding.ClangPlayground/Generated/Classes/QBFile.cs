@@ -16,24 +16,25 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A particular source file that is part of a translation unit.
 ///</summary>
-public unsafe partial class QBFile
+public unsafe partial class QBFile : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXFileImpl>
 {
     internal CXFileImpl __Instance;
     public QBFile()
     {
     }
 
-    public QBFile(QuantumBinding.Clang.Interop.CXFileImpl __Instance)
+    public QBFile(in QuantumBinding.Clang.Interop.CXFileImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXFileImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Returns non-zero if the file1 and file2 point to the same file, or they are both NULL.
     ///</summary>
-    public int File_isEqual(QBFile file2)
+    public int File_isEqual(QuantumBinding.Clang.QBFile file2)
     {
-        var arg1 = ReferenceEquals(file2, null) ? new CXFileImpl() : (CXFileImpl)file2;
+        var arg1 = file2 == null ? new CXFileImpl() : (CXFileImpl)file2;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_File_isEqual(this, arg1);
     }
 
@@ -81,7 +82,7 @@ public unsafe partial class QBFile
 
     public static implicit operator QBFile(QuantumBinding.Clang.Interop.CXFileImpl q)
     {
-        return new QBFile(q);
+        return new QBFile(in q);
     }
 
 }

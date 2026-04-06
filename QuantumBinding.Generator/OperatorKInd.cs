@@ -1,9 +1,8 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum OperatorKind
 {
-    public enum OperatorKind
-    {
-        None,
-        Explicit,
-        Implicit
-    }
+    None,
+    Explicit,
+    Implicit
 }

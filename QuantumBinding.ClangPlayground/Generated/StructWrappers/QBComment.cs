@@ -5,32 +5,34 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBComment : QBDisposableObject
+public unsafe partial class QBComment : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXComment>
 {
     public QBComment()
     {
     }
 
-    public QBComment(QuantumBinding.Clang.Interop.CXComment _internal)
+    public QBComment(in QuantumBinding.Clang.Interop.CXComment native)
     {
-        ASTNode = _internal.aSTNode;
-        TranslationUnit = new QBTranslationUnit(_internal.translationUnit);
+        MarshalFrom(in native);
     }
 
-    public void* ASTNode { get; set; }
+    public nuint ASTNode { get; set; }
     public QBTranslationUnit TranslationUnit { get; set; }
     ///<summary>
     /// Returns text of the specified word-like argument.
     ///</summary>
     public QBString BlockCommandComment_getArgText(uint argIdx)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getArgText(ToNative(), argIdx);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getArgText(native, argIdx);
     }
 
     ///<summary>
@@ -38,7 +40,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString BlockCommandComment_getCommandName()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getCommandName(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getCommandName(native);
     }
 
     ///<summary>
@@ -46,7 +50,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint BlockCommandComment_getNumArgs()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getNumArgs(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getNumArgs(native);
     }
 
     ///<summary>
@@ -54,7 +60,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBComment BlockCommandComment_getParagraph()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getParagraph(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_BlockCommandComment_getParagraph(native);
     }
 
     ///<summary>
@@ -62,7 +70,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBComment Comment_getChild(uint childIdx)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getChild(ToNative(), childIdx);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getChild(native, childIdx);
     }
 
     ///<summary>
@@ -70,7 +80,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public CXCommentKind Comment_getKind()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getKind(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getKind(native);
     }
 
     ///<summary>
@@ -78,7 +90,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint Comment_getNumChildren()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getNumChildren(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_getNumChildren(native);
     }
 
     ///<summary>
@@ -86,7 +100,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint Comment_isWhitespace()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_isWhitespace(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Comment_isWhitespace(native);
     }
 
     ///<summary>
@@ -94,7 +110,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString FullComment_getAsHTML()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_FullComment_getAsHTML(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_FullComment_getAsHTML(native);
     }
 
     ///<summary>
@@ -102,7 +120,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString FullComment_getAsXML()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_FullComment_getAsXML(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_FullComment_getAsXML(native);
     }
 
     ///<summary>
@@ -110,7 +130,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString HTMLStartTag_getAttrName(uint attrIdx)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getAttrName(ToNative(), attrIdx);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getAttrName(native, attrIdx);
     }
 
     ///<summary>
@@ -118,7 +140,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString HTMLStartTag_getAttrValue(uint attrIdx)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getAttrValue(ToNative(), attrIdx);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getAttrValue(native, attrIdx);
     }
 
     ///<summary>
@@ -126,7 +150,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint HTMLStartTag_getNumAttrs()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getNumAttrs(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTag_getNumAttrs(native);
     }
 
     ///<summary>
@@ -134,7 +160,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint HTMLStartTagComment_isSelfClosing()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTagComment_isSelfClosing(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLStartTagComment_isSelfClosing(native);
     }
 
     ///<summary>
@@ -142,7 +170,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString HTMLTagComment_getAsString()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLTagComment_getAsString(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLTagComment_getAsString(native);
     }
 
     ///<summary>
@@ -150,7 +180,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString HTMLTagComment_getTagName()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLTagComment_getTagName(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_HTMLTagComment_getTagName(native);
     }
 
     ///<summary>
@@ -158,7 +190,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString InlineCommandComment_getArgText(uint argIdx)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getArgText(ToNative(), argIdx);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getArgText(native, argIdx);
     }
 
     ///<summary>
@@ -166,7 +200,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString InlineCommandComment_getCommandName()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getCommandName(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getCommandName(native);
     }
 
     ///<summary>
@@ -174,7 +210,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint InlineCommandComment_getNumArgs()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getNumArgs(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getNumArgs(native);
     }
 
     ///<summary>
@@ -182,7 +220,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public CXCommentInlineCommandRenderKind InlineCommandComment_getRenderKind()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getRenderKind(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineCommandComment_getRenderKind(native);
     }
 
     ///<summary>
@@ -190,7 +230,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint InlineContentComment_hasTrailingNewline()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineContentComment_hasTrailingNewline(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_InlineContentComment_hasTrailingNewline(native);
     }
 
     ///<summary>
@@ -198,7 +240,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public CXCommentParamPassDirection ParamCommandComment_getDirection()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getDirection(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getDirection(native);
     }
 
     ///<summary>
@@ -206,7 +250,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint ParamCommandComment_getParamIndex()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getParamIndex(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getParamIndex(native);
     }
 
     ///<summary>
@@ -214,7 +260,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString ParamCommandComment_getParamName()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getParamName(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_getParamName(native);
     }
 
     ///<summary>
@@ -222,7 +270,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint ParamCommandComment_isDirectionExplicit()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_isDirectionExplicit(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_isDirectionExplicit(native);
     }
 
     ///<summary>
@@ -230,7 +280,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint ParamCommandComment_isParamIndexValid()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_isParamIndexValid(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_ParamCommandComment_isParamIndexValid(native);
     }
 
     ///<summary>
@@ -238,7 +290,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString TextComment_getText()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_TextComment_getText(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_TextComment_getText(native);
     }
 
     ///<summary>
@@ -246,7 +300,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint TParamCommandComment_getDepth()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getDepth(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getDepth(native);
     }
 
     ///<summary>
@@ -254,7 +310,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint TParamCommandComment_getIndex(uint depth)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getIndex(ToNative(), depth);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getIndex(native, depth);
     }
 
     ///<summary>
@@ -262,7 +320,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString TParamCommandComment_getParamName()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getParamName(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_getParamName(native);
     }
 
     ///<summary>
@@ -270,7 +330,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public uint TParamCommandComment_isParamPositionValid()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_isParamPositionValid(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_TParamCommandComment_isParamPositionValid(native);
     }
 
     ///<summary>
@@ -278,7 +340,9 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString VerbatimBlockLineComment_getText()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_VerbatimBlockLineComment_getText(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_VerbatimBlockLineComment_getText(native);
     }
 
     ///<summary>
@@ -286,23 +350,56 @@ public unsafe partial class QBComment : QBDisposableObject
     ///</summary>
     public QBString VerbatimLineComment_getText()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_VerbatimLineComment_getText(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_VerbatimLineComment_getText(native);
     }
 
-
-    public QuantumBinding.Clang.Interop.CXComment ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXComment();
-        _internal.aSTNode = ASTNode;
-        _internal.translationUnit = TranslationUnit;
-        return _internal;
-    }
 
     public static implicit operator QBComment(QuantumBinding.Clang.Interop.CXComment q)
     {
-        return new QBComment(q);
+        return new QBComment(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXComment>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXComment> context)
+    {
+        new CXCommentMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXComment native)
+    {
+        ASTNode = native.aSTNode;
+        TranslationUnit = new QBTranslationUnit(native.translationUnit);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXComment>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXComment>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXCommentMarshaller
+    {
+        public CXCommentMarshaller(QuantumBinding.Clang.QBComment qBComment, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXComment> context)
+        {
+            context.Destination[0].aSTNode = qBComment.ASTNode;
+
+            if (qBComment.TranslationUnit != default)
+            {
+                context.Destination[0].translationUnit = qBComment.TranslationUnit;
+            }
+
+        }
+    }
 }
 
 

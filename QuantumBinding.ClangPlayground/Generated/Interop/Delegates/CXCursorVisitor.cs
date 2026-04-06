@@ -19,26 +19,34 @@ namespace QuantumBinding.Clang.Interop;
 ///</summary>
 public unsafe struct CXCursorVisitor
 {
+    public CXCursorVisitor(nuint ptr) : this((void*) ptr) { }
+
     public CXCursorVisitor(void* ptr)
     {
         NativePointer = ptr;
-        InvokeFunc = (delegate* unmanaged<CXCursor, CXCursor, CXClientDataImpl, CXChildVisitResult>)ptr;
+        InvokeFunc = (delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXChildVisitResult>)ptr;
     }
 
-    private delegate* unmanaged<CXCursor, CXCursor, CXClientDataImpl, CXChildVisitResult> InvokeFunc;
+    private delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXChildVisitResult> InvokeFunc;
 
     public void* NativePointer { get; }
 
-    public CXChildVisitResult Invoke(CXCursor cursor, CXCursor parent, CXClientDataImpl client_data)
+    public CXChildVisitResult Invoke(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXCursor parent, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
     {
         return InvokeFunc(cursor, parent, client_data);
     }
-    public static CXChildVisitResult Invoke(void* ptr, CXCursor cursor, CXCursor parent, CXClientDataImpl client_data)
+    public static CXChildVisitResult Invoke(void* ptr, QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXCursor parent, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
     {
-        return ((delegate* unmanaged<CXCursor, CXCursor, CXClientDataImpl, CXChildVisitResult>)ptr)(cursor, parent, client_data);
+        return ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXChildVisitResult>)ptr)(cursor, parent, client_data);
+    }
+    public static CXChildVisitResult Invoke(nuint ptr, QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXCursor parent, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
+    {
+        return ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXChildVisitResult>)(void*)ptr)(cursor, parent, client_data);
     }
 
     public static explicit operator CXCursorVisitor(void* ptr) => new(ptr);
+
+    public static explicit operator CXCursorVisitor(nuint ptr) => new(ptr);
 }
 
 

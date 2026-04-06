@@ -2,37 +2,36 @@
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
 
-namespace QuantumBinding.Generator.ProcessingFluentApi
+namespace QuantumBinding.Generator.ProcessingFluentApi;
+
+public interface IClassParameters
 {
-    public interface IClassParameters
-    {
-        ISetField WithField(string fieldName);
+    ISetField WithField(string fieldName);
 
-        ISetField AddField(string fieldName);
+    ISetField AddField(string fieldName);
 
-        ISetProperty AddProperty(string propertyName);
+    ISetProperty AddProperty(string propertyName);
 
-        ISetField SetClassType(ClassType classType);
+    ISetField SetClassType(ClassType classType);
 
-        IClassParameters SetUnderlyingType(BindingType type);
+    IClassParameters SetUnderlyingType(BindingType type);
 
-        IClassParameters Ignore();
+    IClassParameters Ignore();
 
-        IClassParameters CleanObject();
+    IClassParameters CleanObject();
 
-        IClassParameters CopyFieldsFromLinkedObject();
+    IClassParameters CopyFieldsFromLinkedObject();
         
-        IClassParameters UpdateLinkedClass(string linkedClassName);
+    IClassParameters UpdateLinkedClass(string linkedClassName);
         
-        IClassParameters AddOverloadOperator(
-            OperatorKind operatorKind, 
-            TransformationKind transformationKind, 
-            string fieldName,
-            bool passValueToConstructor);
+    IClassParameters AddOverloadOperator(
+        OperatorKind operatorKind, 
+        TransformationKind transformationKind, 
+        string fieldName,
+        bool passValueToConstructor);
 
-        IClassParameters AddDefaultConstructor();
+    IClassParameters AddDefaultConstructor();
 
-        IClassParameters AddConstructorWithParameters<T>(string paramName, ParameterKind parameterKind,
-            BindingType type) where T : Declaration;
-    }
+    IClassParameters AddConstructorWithParameters<T>(string paramName, ParameterKind parameterKind,
+        BindingType type) where T : Declaration;
 }

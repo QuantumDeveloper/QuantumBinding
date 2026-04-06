@@ -594,37 +594,72 @@ public enum CXTypeKind : uint
     ///<summary>
     /// OpenCL builtin types.
     ///</summary>
-    CXType_OCLIntelSubgroupAVCImeResultSingleRefStreamout = 172,
+    CXType_OCLIntelSubgroupAVCImeResultSingleReferenceStreamout = 172,
 
     ///<summary>
     /// OpenCL builtin types.
+    ///</summary>
+    CXType_OCLIntelSubgroupAVCImeResultDualReferenceStreamout = 173,
+
+    ///<summary>
+    /// OpenCL builtin types.
+    ///</summary>
+    CXType_OCLIntelSubgroupAVCImeSingleReferenceStreamin = 174,
+
+    ///<summary>
+    /// OpenCL builtin types.
+    ///</summary>
+    CXType_OCLIntelSubgroupAVCImeDualReferenceStreamin = 175,
+
+    ///<summary>
+    /// Old aliases for AVC OpenCL extension types.
+    ///</summary>
+    CXType_OCLIntelSubgroupAVCImeResultSingleRefStreamout = 172,
+
+    ///<summary>
+    /// Old aliases for AVC OpenCL extension types.
     ///</summary>
     CXType_OCLIntelSubgroupAVCImeResultDualRefStreamout = 173,
 
     ///<summary>
-    /// OpenCL builtin types.
+    /// Old aliases for AVC OpenCL extension types.
     ///</summary>
     CXType_OCLIntelSubgroupAVCImeSingleRefStreamin = 174,
 
     ///<summary>
-    /// OpenCL builtin types.
+    /// Old aliases for AVC OpenCL extension types.
     ///</summary>
     CXType_OCLIntelSubgroupAVCImeDualRefStreamin = 175,
 
     ///<summary>
-    /// OpenCL builtin types.
+    /// Old aliases for AVC OpenCL extension types.
     ///</summary>
     CXType_ExtVector = 176,
 
     ///<summary>
-    /// OpenCL builtin types.
+    /// Old aliases for AVC OpenCL extension types.
     ///</summary>
     CXType_Atomic = 177,
 
     ///<summary>
-    /// OpenCL builtin types.
+    /// Old aliases for AVC OpenCL extension types.
     ///</summary>
     CXType_BTFTagAttributed = 178,
+
+    ///<summary>
+    /// HLSL Types
+    ///</summary>
+    CXType_HLSLResource = 179,
+
+    ///<summary>
+    /// HLSL Types
+    ///</summary>
+    CXType_HLSLAttributedResource = 180,
+
+    ///<summary>
+    /// HLSL Types
+    ///</summary>
+    CXType_HLSLInlineSpirv = 181,
 
 }
 

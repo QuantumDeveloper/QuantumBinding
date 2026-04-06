@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A semantic string that describes a code-completion result.
 ///</summary>
-public unsafe partial class QBCompletionString
+public unsafe partial class QBCompletionString : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXCompletionStringImpl>
 {
     internal CXCompletionStringImpl __Instance;
     public QBCompletionString()
     {
     }
 
-    public QBCompletionString(QuantumBinding.Clang.Interop.CXCompletionStringImpl __Instance)
+    public QBCompletionString(in QuantumBinding.Clang.Interop.CXCompletionStringImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXCompletionStringImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Retrieve the annotation associated with the given completion string.
     ///</summary>
@@ -89,13 +90,13 @@ public unsafe partial class QBCompletionString
     ///</summary>
     public QBString GetCompletionParent(ref CXCursorKind kind)
     {
-        var arg1 = NativeUtils.StructOrEnumToPointer(kind);
+        var arg1 = stackalloc QuantumBinding.Clang.CXCursorKind[1];
+        *arg1 = kind;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCompletionParent(this, arg1);
         if (arg1 is not null)
         {
             kind = *arg1;
         }
-        NativeUtils.Free(arg1);
         return result;
     }
 
@@ -124,7 +125,7 @@ public unsafe partial class QBCompletionString
 
     public static implicit operator QBCompletionString(QuantumBinding.Clang.Interop.CXCompletionStringImpl q)
     {
-        return new QBCompletionString(q);
+        return new QBCompletionString(in q);
     }
 
 }

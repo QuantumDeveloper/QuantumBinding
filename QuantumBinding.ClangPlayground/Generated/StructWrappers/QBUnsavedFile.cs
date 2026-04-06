@@ -5,64 +5,88 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBUnsavedFile : QBDisposableObject
+public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXUnsavedFile>
 {
-    private MarshaledString _filename;
-
-    private MarshaledString _contents;
-
     public QBUnsavedFile()
     {
     }
 
-    public QBUnsavedFile(QuantumBinding.Clang.Interop.CXUnsavedFile _internal)
+    public QBUnsavedFile(in QuantumBinding.Clang.Interop.CXUnsavedFile native)
     {
-        Filename = new string(_internal.filename);
-        Contents = new string(_internal.contents);
-        Length = _internal.length;
+        MarshalFrom(in native);
     }
 
     public string Filename { get; set; }
     public string Contents { get; set; }
     public uint Length { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXUnsavedFile ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXUnsavedFile();
-        _filename.Dispose();
-        if (Filename != null)
-        {
-            _filename = new MarshaledString(Filename, false);
-            _internal.filename = (sbyte*)_filename;
-        }
-        _contents.Dispose();
-        if (Contents != null)
-        {
-            _contents = new MarshaledString(Contents, false);
-            _internal.contents = (sbyte*)_contents;
-        }
-        _internal.length = Length;
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _filename.Dispose();
-        _contents.Dispose();
-    }
-
-
     public static implicit operator QBUnsavedFile(QuantumBinding.Clang.Interop.CXUnsavedFile q)
     {
-        return new QBUnsavedFile(q);
+        return new QBUnsavedFile(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXUnsavedFile>();
+        if (!string.IsNullOrEmpty(Filename))
+            size += System.Text.Encoding.UTF8.GetByteCount(Filename) + 1;
+        if (!string.IsNullOrEmpty(Contents))
+            size += System.Text.Encoding.UTF8.GetByteCount(Contents) + 1;
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXUnsavedFile> context)
+    {
+        new CXUnsavedFileMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXUnsavedFile native)
+    {
+        Filename = new string(native.filename);
+        Contents = new string(native.contents);
+        Length = native.length;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXUnsavedFile>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXUnsavedFile>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXUnsavedFileMarshaller
+    {
+        public CXUnsavedFileMarshaller(QuantumBinding.Clang.QBUnsavedFile qBUnsavedFile, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXUnsavedFile> context)
+        {
+            if (qBUnsavedFile.Filename != default)
+            {
+                var byteCount = System.Text.Encoding.UTF8.GetByteCount(qBUnsavedFile.Filename);
+                var stringSpan = context.AllocateData(byteCount+1);
+                QuantumBinding.Utils.MarshalingUtils.MarshalStringToFixedUtf8Buffer(qBUnsavedFile.Filename, stringSpan);
+                context.Destination[0].filename = (sbyte*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(stringSpan));
+            }
+
+            if (qBUnsavedFile.Contents != default)
+            {
+                var byteCount = System.Text.Encoding.UTF8.GetByteCount(qBUnsavedFile.Contents);
+                var stringSpan = context.AllocateData(byteCount+1);
+                QuantumBinding.Utils.MarshalingUtils.MarshalStringToFixedUtf8Buffer(qBUnsavedFile.Contents, stringSpan);
+                context.Destination[0].contents = (sbyte*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(stringSpan));
+            }
+
+            context.Destination[0].length = qBUnsavedFile.Length;
+
+        }
+    }
 }
 
 

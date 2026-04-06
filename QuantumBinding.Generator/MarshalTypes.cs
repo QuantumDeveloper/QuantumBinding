@@ -1,19 +1,18 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum MarshalTypes
 {
-    public enum MarshalTypes
-    {
-        Undefined,
-        NativeField,
-        MethodParameter,
-        NativeParameter,
-        NativeReturnType,
-        DelegateType,
-        DelegateParameter,
-        SkipParamTypes,
-        SkipParamModifiers,
-        SkipParamTypesAndModifiers,
-        Property,
-        WrappedProperty,
-        NativeFunctionCall
-    }
+    Undefined,
+    NativeField,
+    MethodParameter,
+    NativeParameter,
+    NativeReturnType,
+    DelegateType,
+    DelegateParameter,
+    SkipParamTypes,
+    SkipParamModifiers,
+    SkipParamTypesAndModifiers,
+    Property,
+    WrappedProperty,
+    NativeFunctionCall
 }
