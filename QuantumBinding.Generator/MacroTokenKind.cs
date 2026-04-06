@@ -1,11 +1,10 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum MacroTokenKind
 {
-    public enum MacroTokenKind
-    {
-        Punctuation = 0,
-        Keyword = 1,
-        Identifier = 2,
-        Literal = 3,
-        Comment = 4
-    }
+    Punctuation = 0,
+    Keyword = 1,
+    Identifier = 2,
+    Literal = 3,
+    Comment = 4
 }

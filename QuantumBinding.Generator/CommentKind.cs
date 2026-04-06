@@ -1,12 +1,11 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum CommentKind
 {
-    public enum CommentKind
-    {
-        // "/// code"
-        CSharp,
-        // "// code"
-        CSharpShort,
-        // "/* code */"
-        Cpp,
-    }
+    // "/// code"
+    CSharp,
+    // "// code"
+    CSharpShort,
+    // "/* code */"
+    Cpp,
 }

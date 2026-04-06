@@ -2,10 +2,9 @@
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.Types;
 
-namespace QuantumBinding.Generator
+namespace QuantumBinding.Generator;
+
+public interface ITypePrinter<out T> : ITypeVisitor<T>
 {
-    public interface ITypePrinter<out T> : ITypeVisitor<T>
-    {
-        T VisitParameters(IEnumerable<Parameter> @params, MarshalTypes marshalType, bool isExtensionMethod = false);
-    }
+    T VisitParameters(IEnumerable<Parameter> @params, MarshalTypes marshalType, bool isExtensionMethod = false);
 }

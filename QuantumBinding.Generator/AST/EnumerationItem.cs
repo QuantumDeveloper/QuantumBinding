@@ -1,30 +1,29 @@
-﻿namespace QuantumBinding.Generator.AST
+﻿namespace QuantumBinding.Generator.AST;
+
+public class EnumerationItem : Declaration
 {
-    public class EnumerationItem : Declaration
+    public Enumeration Enumeration { get; set; }
+
+    public long Value { get; set; }
+
+    public override string ToString()
     {
-        public Enumeration Enumeration { get; set; }
+        return $"{Name} = {Value}";
+    }
 
-        public long Value { get; set; }
+    public override T Visit<T>(IDeclarationVisitor<T> visitor)
+    {
+        return visitor.VisitEnumItem(this);
+    }
 
-        public override string ToString()
+    public override object Clone()
+    {
+        return new EnumerationItem()
         {
-            return $"{Name} = {Value}";
-        }
-
-        public override T Visit<T>(IDeclarationVisitor<T> visitor)
-        {
-            return visitor.VisitEnumItem(this);
-        }
-
-        public override object Clone()
-        {
-            return new EnumerationItem()
-            {
-                Enumeration = Enumeration,
-                Value = Value,
-                Name = Name,
-                Owner = Owner
-            };
-        }
+            Enumeration = Enumeration,
+            Value = Value,
+            Name = Name,
+            Owner = Owner
+        };
     }
 }

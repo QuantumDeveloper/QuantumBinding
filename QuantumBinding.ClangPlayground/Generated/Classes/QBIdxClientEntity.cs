@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The client's data object that is associated with a semantic entity.
 ///</summary>
-public unsafe partial class QBIdxClientEntity
+public unsafe partial class QBIdxClientEntity : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIdxClientEntityImpl>
 {
     internal CXIdxClientEntityImpl __Instance;
     public QBIdxClientEntity()
     {
     }
 
-    public QBIdxClientEntity(QuantumBinding.Clang.Interop.CXIdxClientEntityImpl __Instance)
+    public QBIdxClientEntity(in QuantumBinding.Clang.Interop.CXIdxClientEntityImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXIdxClientEntityImpl GetNativeValue() => __Instance;
     public ref readonly CXIdxClientEntityImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientEntityImpl(QBIdxClientEntity q)
@@ -37,7 +38,7 @@ public unsafe partial class QBIdxClientEntity
 
     public static implicit operator QBIdxClientEntity(QuantumBinding.Clang.Interop.CXIdxClientEntityImpl q)
     {
-        return new QBIdxClientEntity(q);
+        return new QBIdxClientEntity(in q);
     }
 
 }

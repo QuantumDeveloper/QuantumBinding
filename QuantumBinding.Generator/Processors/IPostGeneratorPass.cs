@@ -1,13 +1,12 @@
 ﻿using QuantumBinding.Generator.AST;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public interface IPostGeneratorPass
 {
-    public interface IPostGeneratorPass
-    {
-        ProcessingContext ProcessingContext { get; set; }
+    ProcessingContext ProcessingContext { get; set; }
 
-        ASTContext AstContext { get; }
+    ASTContext AstContext { get; }
 
-        void Run();
-    }
+    void Run();
 }

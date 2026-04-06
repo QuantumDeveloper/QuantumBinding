@@ -5,49 +5,90 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxAttrInfo
+public unsafe partial class QBIdxAttrInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxAttrInfo>
 {
     public QBIdxAttrInfo()
     {
     }
 
-    public QBIdxAttrInfo(QuantumBinding.Clang.Interop.CXIdxAttrInfo _internal)
+    public QBIdxAttrInfo(in QuantumBinding.Clang.Interop.CXIdxAttrInfo native)
     {
-        Kind = _internal.kind;
-        Cursor = new QBCursor(_internal.cursor);
-        Loc = new QBIdxLoc(_internal.loc);
+        MarshalFrom(in native);
     }
 
     public CXIdxAttrKind Kind { get; set; }
     public QBCursor Cursor { get; set; }
     public QBIdxLoc Loc { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXIdxAttrInfo ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxAttrInfo();
-        _internal.kind = Kind;
-        if (Cursor != null)
-        {
-            _internal.cursor = Cursor.ToNative();
-        }
-        if (Loc != null)
-        {
-            _internal.loc = Loc.ToNative();
-        }
-        return _internal;
-    }
-
     public static implicit operator QBIdxAttrInfo(QuantumBinding.Clang.Interop.CXIdxAttrInfo q)
     {
-        return new QBIdxAttrInfo(q);
+        return new QBIdxAttrInfo(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxAttrInfo>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxAttrInfo> context)
+    {
+        new CXIdxAttrInfoMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxAttrInfo native)
+    {
+        Kind = native.kind;
+        Cursor = new QBCursor(native.cursor);
+        Loc = new QBIdxLoc(native.loc);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxAttrInfo>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxAttrInfo>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxAttrInfoMarshaller
+    {
+        public CXIdxAttrInfoMarshaller(QuantumBinding.Clang.QBIdxAttrInfo qBIdxAttrInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxAttrInfo> context)
+        {
+            context.Destination[0].kind = qBIdxAttrInfo.Kind;
+
+            if (qBIdxAttrInfo.Cursor != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXCursor* pField = &context.Destination[0].cursor)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXCursor>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCursor>(fieldSpan, context.DataCursor);
+                    qBIdxAttrInfo.Cursor.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            if (qBIdxAttrInfo.Loc != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXIdxLoc* pField = &context.Destination[0].loc)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXIdxLoc>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc>(fieldSpan, context.DataCursor);
+                    qBIdxAttrInfo.Loc.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+        }
+    }
 }
 
 

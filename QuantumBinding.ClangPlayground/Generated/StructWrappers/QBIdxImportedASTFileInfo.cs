@@ -5,24 +5,22 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxImportedASTFileInfo
+public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>
 {
     public QBIdxImportedASTFileInfo()
     {
     }
 
-    public QBIdxImportedASTFileInfo(QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo _internal)
+    public QBIdxImportedASTFileInfo(in QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo native)
     {
-        File = new QBFile(_internal.file);
-        Module = new QBModule(_internal.module);
-        Loc = new QBIdxLoc(_internal.loc);
-        IsImplicit = _internal.isImplicit;
+        MarshalFrom(in native);
     }
 
     public QBFile File { get; set; }
@@ -30,24 +28,68 @@ public unsafe partial class QBIdxImportedASTFileInfo
     public QBIdxLoc Loc { get; set; }
     public int IsImplicit { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo();
-        _internal.file = File;
-        _internal.module = Module;
-        if (Loc != null)
-        {
-            _internal.loc = Loc.ToNative();
-        }
-        _internal.isImplicit = IsImplicit;
-        return _internal;
-    }
-
     public static implicit operator QBIdxImportedASTFileInfo(QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo q)
     {
-        return new QBIdxImportedASTFileInfo(q);
+        return new QBIdxImportedASTFileInfo(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo> context)
+    {
+        new CXIdxImportedASTFileInfoMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo native)
+    {
+        File = new QBFile(native.file);
+        Module = new QBModule(native.module);
+        Loc = new QBIdxLoc(native.loc);
+        IsImplicit = native.isImplicit;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxImportedASTFileInfoMarshaller
+    {
+        public CXIdxImportedASTFileInfoMarshaller(QuantumBinding.Clang.QBIdxImportedASTFileInfo qBIdxImportedASTFileInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo> context)
+        {
+            if (qBIdxImportedASTFileInfo.File != default)
+            {
+                context.Destination[0].file = qBIdxImportedASTFileInfo.File;
+            }
+
+            if (qBIdxImportedASTFileInfo.Module != default)
+            {
+                context.Destination[0].module = qBIdxImportedASTFileInfo.Module;
+            }
+
+            if (qBIdxImportedASTFileInfo.Loc != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXIdxLoc* pField = &context.Destination[0].loc)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXIdxLoc>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc>(fieldSpan, context.DataCursor);
+                    qBIdxImportedASTFileInfo.Loc.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            context.Destination[0].isImplicit = qBIdxImportedASTFileInfo.IsImplicit;
+
+        }
+    }
 }
 
 

@@ -1,9 +1,8 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum NamingStyle
 {
-    public enum NamingStyle
-    {
-        FirstLetterUpperCase,
-        CamelCase,
-        PascalCase
-    }
+    FirstLetterUpperCase,
+    CamelCase,
+    PascalCase
 }

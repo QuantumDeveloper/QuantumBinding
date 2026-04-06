@@ -5,38 +5,54 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBType
+public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXType>
 {
     public QBType()
     {
     }
 
-    public QBType(QuantumBinding.Clang.Interop.CXType _internal)
+    public QBType(in QuantumBinding.Clang.Interop.CXType native)
     {
-        Kind = _internal.kind;
-        Data = new void*[2];
-        for (int i = 0; i < 2; ++i)
-        {
-            Data[i] = _internal.data[i];
-        }
+        MarshalFrom(in native);
     }
 
     public CXTypeKind Kind { get; set; }
-    public void*[] Data { get; set; }
+    public System.ReadOnlyMemory<nuint> Data { get; set; }
     ///<summary>
     /// Determine whether two CXTypes represent the same type.
     ///</summary>
     public uint EqualTypes(QBType b)
     {
-        var arg1 = ReferenceEquals(b, null) ? new QuantumBinding.Clang.Interop.CXType() : b.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalTypes(ToNative(), arg1);
-        return result;
+        int CalculateSize(QBType b)
+        {
+            int totalSize = 0;
+            if (b != null)
+                totalSize += b.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(b);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBType, QuantumBinding.Clang.Interop.CXType>(this, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBType, QuantumBinding.Clang.Interop.CXType>(b, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_equalTypes(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -44,7 +60,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint GetAddressSpace()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getAddressSpace(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getAddressSpace(native);
     }
 
     ///<summary>
@@ -52,7 +70,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetArgType(uint i)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getArgType(ToNative(), i);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getArgType(native, i);
     }
 
     ///<summary>
@@ -60,7 +80,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetArrayElementType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getArrayElementType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getArrayElementType(native);
     }
 
     ///<summary>
@@ -68,7 +90,9 @@ public unsafe partial class QBType
     ///</summary>
     public long GetArraySize()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getArraySize(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getArraySize(native);
     }
 
     ///<summary>
@@ -76,7 +100,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetCanonicalType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getCanonicalType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getCanonicalType(native);
     }
 
     ///<summary>
@@ -84,7 +110,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetElementType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getElementType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getElementType(native);
     }
 
     ///<summary>
@@ -92,7 +120,20 @@ public unsafe partial class QBType
     ///</summary>
     public int GetExceptionSpecificationType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getExceptionSpecificationType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getExceptionSpecificationType(native);
+    }
+
+    ///<summary>
+    /// Get the fully qualified name for a type.
+    ///</summary>
+    public QBString GetFullyQualifiedName(QuantumBinding.Clang.QBPrintingPolicy policy, uint withGlobalNsPrefix)
+    {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        var arg1 = policy == null ? new CXPrintingPolicyImpl() : (CXPrintingPolicyImpl)policy;
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getFullyQualifiedName(native, arg1, withGlobalNsPrefix);
     }
 
     ///<summary>
@@ -100,7 +141,9 @@ public unsafe partial class QBType
     ///</summary>
     public CXCallingConv GetFunctionTypeCallingConv()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getFunctionTypeCallingConv(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getFunctionTypeCallingConv(native);
     }
 
     ///<summary>
@@ -108,7 +151,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetNonReferenceType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getNonReferenceType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getNonReferenceType(native);
     }
 
     ///<summary>
@@ -116,7 +161,9 @@ public unsafe partial class QBType
     ///</summary>
     public int GetNumArgTypes()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumArgTypes(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumArgTypes(native);
     }
 
     ///<summary>
@@ -124,7 +171,9 @@ public unsafe partial class QBType
     ///</summary>
     public long GetNumElements()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumElements(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumElements(native);
     }
 
     ///<summary>
@@ -132,7 +181,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetPointeeType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getPointeeType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getPointeeType(native);
     }
 
     ///<summary>
@@ -140,7 +191,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetResultType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getResultType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getResultType(native);
     }
 
     ///<summary>
@@ -148,7 +201,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBCursor GetTypeDeclaration()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypeDeclaration(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypeDeclaration(native);
     }
 
     ///<summary>
@@ -156,7 +211,20 @@ public unsafe partial class QBType
     ///</summary>
     public QBString GetTypedefName()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypedefName(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypedefName(native);
+    }
+
+    ///<summary>
+    /// Pretty-print the underlying type using a custom printing policy.
+    ///</summary>
+    public QBString GetTypePrettyPrinted(QuantumBinding.Clang.QBPrintingPolicy cxPolicy)
+    {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        var arg1 = cxPolicy == null ? new CXPrintingPolicyImpl() : (CXPrintingPolicyImpl)cxPolicy;
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypePrettyPrinted(native, arg1);
     }
 
     ///<summary>
@@ -164,7 +232,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBString GetTypeSpelling()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypeSpelling(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypeSpelling(native);
     }
 
     ///<summary>
@@ -172,7 +242,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType GetUnqualifiedType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getUnqualifiedType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getUnqualifiedType(native);
     }
 
     ///<summary>
@@ -180,7 +252,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint IsConstQualifiedType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_isConstQualifiedType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_isConstQualifiedType(native);
     }
 
     ///<summary>
@@ -188,7 +262,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint IsFunctionTypeVariadic()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_isFunctionTypeVariadic(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_isFunctionTypeVariadic(native);
     }
 
     ///<summary>
@@ -196,7 +272,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint IsPODType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_isPODType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_isPODType(native);
     }
 
     ///<summary>
@@ -204,7 +282,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint IsRestrictQualifiedType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_isRestrictQualifiedType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_isRestrictQualifiedType(native);
     }
 
     ///<summary>
@@ -212,7 +292,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint IsVolatileQualifiedType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_isVolatileQualifiedType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_isVolatileQualifiedType(native);
     }
 
     ///<summary>
@@ -220,7 +302,9 @@ public unsafe partial class QBType
     ///</summary>
     public long Type_getAlignOf()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getAlignOf(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getAlignOf(native);
     }
 
     ///<summary>
@@ -228,7 +312,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getClassType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getClassType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getClassType(native);
     }
 
     ///<summary>
@@ -236,7 +322,9 @@ public unsafe partial class QBType
     ///</summary>
     public CXRefQualifierKind Type_getCXXRefQualifier()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getCXXRefQualifier(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getCXXRefQualifier(native);
     }
 
     ///<summary>
@@ -244,7 +332,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getModifiedType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getModifiedType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getModifiedType(native);
     }
 
     ///<summary>
@@ -252,7 +342,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getNamedType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNamedType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNamedType(native);
     }
 
     ///<summary>
@@ -260,7 +352,9 @@ public unsafe partial class QBType
     ///</summary>
     public CXTypeNullabilityKind Type_getNullability()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNullability(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNullability(native);
     }
 
     ///<summary>
@@ -268,7 +362,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint Type_getNumObjCProtocolRefs()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumObjCProtocolRefs(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumObjCProtocolRefs(native);
     }
 
     ///<summary>
@@ -276,7 +372,9 @@ public unsafe partial class QBType
     ///</summary>
     public uint Type_getNumObjCTypeArgs()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumObjCTypeArgs(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumObjCTypeArgs(native);
     }
 
     ///<summary>
@@ -284,7 +382,9 @@ public unsafe partial class QBType
     ///</summary>
     public int Type_getNumTemplateArguments()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumTemplateArguments(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getNumTemplateArguments(native);
     }
 
     ///<summary>
@@ -292,7 +392,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBString Type_getObjCEncoding()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCEncoding(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCEncoding(native);
     }
 
     ///<summary>
@@ -300,7 +402,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getObjCObjectBaseType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCObjectBaseType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCObjectBaseType(native);
     }
 
     ///<summary>
@@ -308,7 +412,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBCursor Type_getObjCProtocolDecl(uint i)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCProtocolDecl(ToNative(), i);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCProtocolDecl(native, i);
     }
 
     ///<summary>
@@ -316,7 +422,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getObjCTypeArg(uint i)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCTypeArg(ToNative(), i);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getObjCTypeArg(native, i);
     }
 
     ///<summary>
@@ -324,10 +432,29 @@ public unsafe partial class QBType
     ///</summary>
     public long Type_getOffsetOf(string s)
     {
-        var arg1 = (sbyte*)NativeUtils.StringToPointer(s, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getOffsetOf(ToNative(), arg1);
-        NativeUtils.Free(arg1);
-        return result;
+        int CalculateSize(string s)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(s))
+                totalSize += s.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(s);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBType, QuantumBinding.Clang.Interop.CXType>(this, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(s, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getOffsetOf(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -335,7 +462,9 @@ public unsafe partial class QBType
     ///</summary>
     public long Type_getSizeOf()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getSizeOf(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getSizeOf(native);
     }
 
     ///<summary>
@@ -343,7 +472,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getTemplateArgumentAsType(uint i)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getTemplateArgumentAsType(ToNative(), i);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getTemplateArgumentAsType(native, i);
     }
 
     ///<summary>
@@ -351,7 +482,9 @@ public unsafe partial class QBType
     ///</summary>
     public QBType Type_getValueType()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getValueType(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_getValueType(native);
     }
 
     ///<summary>
@@ -359,41 +492,94 @@ public unsafe partial class QBType
     ///</summary>
     public uint Type_isTransparentTagTypedef()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_isTransparentTagTypedef(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_isTransparentTagTypedef(native);
     }
 
     ///<summary>
     /// Visit the fields of a particular type.
     ///</summary>
-    public uint Type_visitFields(void* visitor, QBClientData client_data)
+    public uint Type_visitFields(nuint visitor, QuantumBinding.Clang.QBClientData client_data)
     {
-        var arg2 = ReferenceEquals(client_data, null) ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_visitFields(ToNative(), visitor, arg2);
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_visitFields(native, visitor, arg2);
     }
 
-
-    public QuantumBinding.Clang.Interop.CXType ToNative()
+    ///<summary>
+    /// Visit the base classes of a type.
+    ///</summary>
+    public uint VisitCXXBaseClasses(nuint visitor, QuantumBinding.Clang.QBClientData client_data)
     {
-        var _internal = new QuantumBinding.Clang.Interop.CXType();
-        _internal.kind = Kind;
-        if(Data != null)
-        {
-            if (Data.Length > 2)
-                throw new System.ArgumentOutOfRangeException(nameof(Data), "Array is out of bounds. Size should not be more than 2");
-
-            for (int i = 0; i < 2; ++i)
-            {
-                _internal.data[i] = Data[i];
-            }
-        }
-        return _internal;
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_visitCXXBaseClasses(native, visitor, arg2);
     }
+
+    ///<summary>
+    /// Visit the class methods of a type.
+    ///</summary>
+    public uint VisitCXXMethods(nuint visitor, QuantumBinding.Clang.QBClientData client_data)
+    {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_visitCXXMethods(native, visitor, arg2);
+    }
+
 
     public static implicit operator QBType(QuantumBinding.Clang.Interop.CXType q)
     {
-        return new QBType(q);
+        return new QBType(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXType>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXType> context)
+    {
+        new CXTypeMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXType native)
+    {
+        Kind = native.kind;
+        var tmpData = new nuint[2];
+        for (int i = 0; i < 2; ++i)
+        {
+            tmpData[i] = native.data[i];
+        }
+        Data = tmpData;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXType>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXType>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXTypeMarshaller
+    {
+        public CXTypeMarshaller(QuantumBinding.Clang.QBType qBType, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXType> context)
+        {
+            context.Destination[0].kind = qBType.Kind;
+
+            for (int i = 0; i < 2; ++i)
+            {
+                context.Destination[0].data[i] = qBType.Data.Span[i];
+            }
+
+        }
+    }
 }
 
 

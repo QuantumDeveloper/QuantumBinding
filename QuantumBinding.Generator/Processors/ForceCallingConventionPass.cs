@@ -1,41 +1,40 @@
 ﻿using System.Runtime.InteropServices;
 using QuantumBinding.Generator.AST;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public class ForceCallingConventionPass : PreGeneratorPass
 {
-    public class ForceCallingConventionPass : PreGeneratorPass
+    public ForceCallingConventionPass(CallingConvention callingConvention)
     {
-        public ForceCallingConventionPass(CallingConvention callingConvention)
+        Options.VisitFunctions = true;
+        Options.VisitDelegates = true;
+        CallingConvention = callingConvention;
+    }
+
+    public CallingConvention CallingConvention { get; }
+
+    public override bool VisitFunction(Function function)
+    {
+        if (IsVisited(function))
         {
-            Options.VisitFunctions = true;
-            Options.VisitDelegates = true;
-            CallingConvention = callingConvention;
+            return false;
         }
 
-        public CallingConvention CallingConvention { get; }
+        function.CallingConvention = CallingConvention;
 
-        public override bool VisitFunction(Function function)
+        return true;
+    }
+
+    public override bool VisitDelegate(Delegate @delegate)
+    {
+        if (IsVisited(@delegate))
         {
-            if (IsVisited(function))
-            {
-                return false;
-            }
-
-            function.CallingConvention = CallingConvention;
-
-            return true;
+            return false;
         }
 
-        public override bool VisitDelegate(Delegate @delegate)
-        {
-            if (IsVisited(@delegate))
-            {
-                return false;
-            }
+        @delegate.CallingConvention = CallingConvention;
 
-            @delegate.CallingConvention = CallingConvention;
-
-            return true;
-        }
+        return true;
     }
 }

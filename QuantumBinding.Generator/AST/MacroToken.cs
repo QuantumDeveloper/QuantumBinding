@@ -1,9 +1,8 @@
-﻿namespace QuantumBinding.Generator.AST
-{
-    public class MacroToken
-    {
-        public string Item { get; set; }
+﻿namespace QuantumBinding.Generator.AST;
 
-        public MacroTokenKind TokenKind { get; set; }
-    }
+public class MacroToken
+{
+    public string Item { get; set; }
+
+    public MacroTokenKind TokenKind { get; set; }
 }

@@ -5,32 +5,34 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBString : QBDisposableObject
+public unsafe partial class QBString : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXString>
 {
     public QBString()
     {
     }
 
-    public QBString(QuantumBinding.Clang.Interop.CXString _internal)
+    public QBString(in QuantumBinding.Clang.Interop.CXString native)
     {
-        Data = _internal.data;
-        Private_flags = _internal.private_flags;
+        MarshalFrom(in native);
     }
 
-    public void* Data { get; set; }
+    public nuint Data { get; set; }
     public uint Private_flags { get; set; }
     ///<summary>
     /// Free the given string.
     ///</summary>
     public void DisposeString()
     {
-        QuantumBinding.Clang.Interop.ClangInterop.clang_disposeString(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_disposeString(native);
     }
 
     ///<summary>
@@ -38,24 +40,54 @@ public unsafe partial class QBString : QBDisposableObject
     ///</summary>
     public string GetCString()
     {
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCString(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCString(native);
         return new string(result);
     }
 
 
-    public QuantumBinding.Clang.Interop.CXString ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXString();
-        _internal.data = Data;
-        _internal.private_flags = Private_flags;
-        return _internal;
-    }
-
     public static implicit operator QBString(QuantumBinding.Clang.Interop.CXString q)
     {
-        return new QBString(q);
+        return new QBString(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXString>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXString> context)
+    {
+        new CXStringMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXString native)
+    {
+        Data = native.data;
+        Private_flags = native.private_flags;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXString>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXString>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXStringMarshaller
+    {
+        public CXStringMarshaller(QuantumBinding.Clang.QBString qBString, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXString> context)
+        {
+            context.Destination[0].data = qBString.Data;
+
+            context.Destination[0].private_flags = qBString.Private_flags;
+
+        }
+    }
 }
 
 

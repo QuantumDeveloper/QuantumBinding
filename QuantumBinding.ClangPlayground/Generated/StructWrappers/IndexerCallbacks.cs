@@ -5,58 +5,92 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class IndexerCallbacks : QBDisposableObject
+public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.IndexerCallbacks>
 {
     public IndexerCallbacks()
     {
     }
 
-    public IndexerCallbacks(QuantumBinding.Clang.Interop.IndexerCallbacks _internal)
+    public IndexerCallbacks(in QuantumBinding.Clang.Interop.IndexerCallbacks native)
     {
-        AbortQuery = _internal.abortQuery;
-        Diagnostic = _internal.diagnostic;
-        EnteredMainFile = _internal.enteredMainFile;
-        PIncludedFile = _internal.ppIncludedFile;
-        ImportedASTFile = _internal.importedASTFile;
-        StartedTranslationUnit = _internal.startedTranslationUnit;
-        IndexDeclaration = _internal.indexDeclaration;
-        IndexEntityReference = _internal.indexEntityReference;
+        MarshalFrom(in native);
     }
 
-    public void* AbortQuery { get; set; }
-    public void* Diagnostic { get; set; }
-    public void* EnteredMainFile { get; set; }
-    public void* PIncludedFile { get; set; }
-    public void* ImportedASTFile { get; set; }
-    public void* StartedTranslationUnit { get; set; }
-    public void* IndexDeclaration { get; set; }
-    public void* IndexEntityReference { get; set; }
-
-    public QuantumBinding.Clang.Interop.IndexerCallbacks ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.IndexerCallbacks();
-        _internal.abortQuery = AbortQuery;
-        _internal.diagnostic = Diagnostic;
-        _internal.enteredMainFile = EnteredMainFile;
-        _internal.ppIncludedFile = PIncludedFile;
-        _internal.importedASTFile = ImportedASTFile;
-        _internal.startedTranslationUnit = StartedTranslationUnit;
-        _internal.indexDeclaration = IndexDeclaration;
-        _internal.indexEntityReference = IndexEntityReference;
-        return _internal;
-    }
+    public nuint AbortQuery { get; set; }
+    public nuint Diagnostic { get; set; }
+    public nuint EnteredMainFile { get; set; }
+    public nuint PIncludedFile { get; set; }
+    public nuint ImportedASTFile { get; set; }
+    public nuint StartedTranslationUnit { get; set; }
+    public nuint IndexDeclaration { get; set; }
+    public nuint IndexEntityReference { get; set; }
 
     public static implicit operator IndexerCallbacks(QuantumBinding.Clang.Interop.IndexerCallbacks i)
     {
-        return new IndexerCallbacks(i);
+        return new IndexerCallbacks(in i);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.IndexerCallbacks>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.IndexerCallbacks> context)
+    {
+        new IndexerCallbacksMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.IndexerCallbacks native)
+    {
+        AbortQuery = native.abortQuery;
+        Diagnostic = native.diagnostic;
+        EnteredMainFile = native.enteredMainFile;
+        PIncludedFile = native.ppIncludedFile;
+        ImportedASTFile = native.importedASTFile;
+        StartedTranslationUnit = native.startedTranslationUnit;
+        IndexDeclaration = native.indexDeclaration;
+        IndexEntityReference = native.indexEntityReference;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.IndexerCallbacks>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.IndexerCallbacks>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct IndexerCallbacksMarshaller
+    {
+        public IndexerCallbacksMarshaller(QuantumBinding.Clang.IndexerCallbacks indexerCallbacks, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.IndexerCallbacks> context)
+        {
+            context.Destination[0].abortQuery = indexerCallbacks.AbortQuery;
+
+            context.Destination[0].diagnostic = indexerCallbacks.Diagnostic;
+
+            context.Destination[0].enteredMainFile = indexerCallbacks.EnteredMainFile;
+
+            context.Destination[0].ppIncludedFile = indexerCallbacks.PIncludedFile;
+
+            context.Destination[0].importedASTFile = indexerCallbacks.ImportedASTFile;
+
+            context.Destination[0].startedTranslationUnit = indexerCallbacks.StartedTranslationUnit;
+
+            context.Destination[0].indexDeclaration = indexerCallbacks.IndexDeclaration;
+
+            context.Destination[0].indexEntityReference = indexerCallbacks.IndexEntityReference;
+
+        }
+    }
 }
 
 

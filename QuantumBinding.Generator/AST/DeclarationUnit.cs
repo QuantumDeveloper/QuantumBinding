@@ -5,296 +5,295 @@ using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
 using QuantumBinding.Generator.Utils;
 
-namespace QuantumBinding.Generator.AST
+namespace QuantumBinding.Generator.AST;
+
+public abstract class DeclarationUnit : Declaration
 {
-    public abstract class DeclarationUnit : Declaration
+    protected DeclarationUnit()
     {
-        protected DeclarationUnit()
+        declarations = new List<Declaration>();
+        Namespaces = new List<Namespace>();
+    }
+
+    static DeclarationUnit()
+    {
+        DummyTypes = new Dictionary<string, string>();
+    }
+
+    private List<Declaration> declarations;
+
+    public List<Namespace> Namespaces { get; private set; }
+
+    public IReadOnlyList<Macro> Macros => declarations.Where(x => x is Macro).Cast<Macro>().ToList();
+
+    public IReadOnlyList<Enumeration> Enums =>
+        declarations.Where(x => x is Enumeration).Cast<Enumeration>().ToList();
+
+    public IReadOnlyList<Class> AllClasses => declarations.Where(x => x is Class).Cast<Class>().ToList();
+
+    public IReadOnlyList<Class> Classes => AllClasses.Where(x => x.ClassType == ClassType.Class).ToList();
+
+    public IReadOnlyList<Class> Structs => AllClasses.Where(x => x.ClassType == ClassType.Struct).ToList();
+
+    public IReadOnlyList<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList();
+
+    public IReadOnlyList<Class> Wrappers => AllClasses
+        .Where(x => x.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper).ToList();
+
+    public IReadOnlyList<Class> StructWrappers =>
+        AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList();
+
+    public IReadOnlyList<Class> UnionWrappers =>
+        AllClasses.Where(x => x.ClassType == ClassType.UnionWrapper).ToList();
+
+    public IReadOnlyList<Class> ExtensionClasses => TranslationUnitsPool.SelectMany(x => x.Classes)
+        .Where(x => x.HasExtensions && x.ExtensionMethods.Any(z => z.Owner == this)).ToList();
+
+    public IReadOnlyList<Delegate> Delegates => declarations.Where(x => x is Delegate).Cast<Delegate>().ToList();
+
+    public IReadOnlyList<Function> Functions =>
+        declarations.Where(x => x is Function && !(x is Method)).Cast<Function>().ToList();
+
+    public IReadOnlyList<Method> StaticMethods => declarations.Where(x => x is Method).Cast<Method>().ToList();
+
+    public IReadOnlyList<Declaration> Declarations => declarations;
+
+    public IReadOnlyList<Declaration> IgnoredDeclarations =>
+        declarations.Where(x => x.IsIgnored).ToList();
+
+    public static Dictionary<string, string> DummyTypes { get; }
+
+    public static List<TranslationUnit> TranslationUnitsPool { get; set; }
+
+    public bool IsEmpty => IsUnitEmpty();
+
+    private bool IsUnitEmpty()
+    {
+        return (declarations.Count == 0 || declarations.Except(IgnoredDeclarations).ToList().Count == 0) &&
+               ExtensionClasses.Count == 0;
+    }
+
+    public bool IsSpecializationsAvailable(GeneratorSpecializations specializations)
+    {
+        var specs = specializations.GetFlags();
+        bool isAvailable = false;
+        foreach (var spec in specs)
         {
-            declarations = new List<Declaration>();
-            Namespaces = new List<Namespace>();
-        }
-
-        static DeclarationUnit()
-        {
-            DummyTypes = new Dictionary<string, string>();
-        }
-
-        private List<Declaration> declarations;
-
-        public List<Namespace> Namespaces { get; private set; }
-
-        public IReadOnlyList<Macro> Macros => declarations.Where(x => x is Macro).Cast<Macro>().ToList();
-
-        public IReadOnlyList<Enumeration> Enums =>
-            declarations.Where(x => x is Enumeration).Cast<Enumeration>().ToList();
-
-        public IReadOnlyList<Class> AllClasses => declarations.Where(x => x is Class).Cast<Class>().ToList();
-
-        public IReadOnlyList<Class> Classes => AllClasses.Where(x => x.ClassType == ClassType.Class).ToList();
-
-        public IReadOnlyList<Class> Structs => AllClasses.Where(x => x.ClassType == ClassType.Struct).ToList();
-
-        public IReadOnlyList<Class> Unions => AllClasses.Where(x => x.ClassType == ClassType.Union).ToList();
-
-        public IReadOnlyList<Class> Wrappers => AllClasses
-            .Where(x => x.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper).ToList();
-
-        public IReadOnlyList<Class> StructWrappers =>
-            AllClasses.Where(x => x.ClassType == ClassType.StructWrapper).ToList();
-
-        public IReadOnlyList<Class> UnionWrappers =>
-            AllClasses.Where(x => x.ClassType == ClassType.UnionWrapper).ToList();
-
-        public IReadOnlyList<Class> ExtensionClasses => TranslationUnitsPool.SelectMany(x => x.Classes)
-            .Where(x => x.HasExtensions && x.ExtensionMethods.Any(z => z.Owner == this)).ToList();
-
-        public IReadOnlyList<Delegate> Delegates => declarations.Where(x => x is Delegate).Cast<Delegate>().ToList();
-
-        public IReadOnlyList<Function> Functions =>
-            declarations.Where(x => x is Function && !(x is Method)).Cast<Function>().ToList();
-
-        public IReadOnlyList<Method> StaticMethods => declarations.Where(x => x is Method).Cast<Method>().ToList();
-
-        public IReadOnlyList<Declaration> Declarations => declarations;
-
-        public IReadOnlyList<Declaration> IgnoredDeclarations =>
-            declarations.Where(x => x.IsIgnored).ToList();
-
-        public static Dictionary<string, string> DummyTypes { get; }
-
-        public static List<TranslationUnit> TranslationUnitsPool { get; set; }
-
-        public bool IsEmpty => IsUnitEmpty();
-
-        private bool IsUnitEmpty()
-        {
-            return (declarations.Count == 0 || declarations.Except(IgnoredDeclarations).ToList().Count == 0) &&
-                   ExtensionClasses.Count == 0;
-        }
-
-        public bool IsSpecializationsAvailable(GeneratorSpecializations specializations)
-        {
-            var specs = specializations.GetFlags();
-            bool isAvailable = false;
-            foreach (var spec in specs)
+            switch (spec)
             {
-                switch (spec)
-                {
-                    case GeneratorSpecializations.Classes:
-                        isAvailable |= Classes.Count > 0 ||
-                                       ExtensionClasses.Where(x => x.ClassType == ClassType.Class).ToList().Count > 0 ||
-                                       StaticMethods.Count > 0;
-                        break;
-                    case GeneratorSpecializations.Structs:
-                        isAvailable |= Structs.Count > 0 ||
-                                       ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
-                        break;
-                    case GeneratorSpecializations.Unions:
-                        isAvailable |= Unions.Count > 0;
-                        break;
-                    case GeneratorSpecializations.StructWrappers:
-                        isAvailable |= StructWrappers.Count > 0 ||
-                                       ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
-                        break;
-                    case GeneratorSpecializations.UnionWrappers:
-                        isAvailable |= UnionWrappers.Count > 0;
-                        break;
-                    case GeneratorSpecializations.Enums:
-                        isAvailable |= Enums.Count > 0;
-                        break;
-                    case GeneratorSpecializations.Functions:
-                        isAvailable |= Functions.Count > 0;
-                        break;
-                    case GeneratorSpecializations.Delegates:
-                        isAvailable |= Delegates.Count > 0;
-                        break;
-                    case GeneratorSpecializations.Macros:
-                        isAvailable |= Macros.Count > 0;
-                        break;
-                    case GeneratorSpecializations.ExtensionMethods:
-                        isAvailable |= ExtensionClasses.Count > 0;
-                        break;
-                }
-            }
-
-            return isAvailable;
-        }
-
-        public void AddDummyType(string dummyType, string originalType)
-        {
-            if (!DummyTypes.ContainsKey(dummyType))
-            {
-                DummyTypes.Add(dummyType, originalType);
-            }
-        }
-
-        public DeclarationUnit FindNamespace(string @namespace)
-        {
-            return Namespaces.FirstOrDefault(x => x.Name == @namespace);
-        }
-
-        public void RemoveClasses(Class[] classes)
-        {
-            for (int i = 0; i < classes.Length; ++i)
-            {
-                declarations.Remove(classes[i]);
-            }
-        }
-
-        public IEnumerable<Declaration> FindDeclarationsBySourceLocation(string fileName, bool remove)
-        {
-            var declsOutput = new List<Declaration>();
-
-            if (remove)
-            {
-                var decls = Declarations.Where(x => x.Location.FileNameWithoutExtension == fileName).ToList();
-                declsOutput.AddRange(decls);
-                declarations = Declarations.Except(decls).ToList();
-            }
-            else
-            {
-                declsOutput.AddRange(Declarations.Where(x => x.Location.FileNameWithoutExtension == fileName));
-            }
-
-            return declsOutput;
-        }
-
-        public void AddDeclarations(IEnumerable<Declaration> decs)
-        {
-            foreach (var declaration in decs)
-            {
-                AddDeclaration(declaration);
-            }
-        }
-
-        public void AddDeclaration(Declaration declaration)
-        {
-            if (declaration == null) return;
-
-            Declaration decl = null;
-            switch (declaration)
-            {
-                case Enumeration @enum:
-                    decl = Enums.FirstOrDefault(x => x.Name == declaration.Name);
+                case GeneratorSpecializations.Classes:
+                    isAvailable |= Classes.Count > 0 ||
+                                   ExtensionClasses.Where(x => x.ClassType == ClassType.Class).ToList().Count > 0 ||
+                                   StaticMethods.Count > 0;
                     break;
-                case Class @class:
-                    switch (@class.ClassType)
-                    {
-                        case ClassType.Class:
-                            decl = Classes.FirstOrDefault(x => x.Name == declaration.Name);
-                            break;
-                        case ClassType.Struct:
-                            decl = Structs.FirstOrDefault(x => x.Name == declaration.Name);
-                            break;
-                        case ClassType.Union:
-                            decl = Unions.FirstOrDefault(x => x.Name == declaration.Name);
-                            break;
-                        case ClassType.StructWrapper:
-                            decl = StructWrappers.FirstOrDefault(x => x.Name == declaration.Name);
-                            break;
-                        case ClassType.UnionWrapper:
-                            decl = UnionWrappers.FirstOrDefault(x => x.Name == declaration.Name);
-                            break;
-                    }
-
+                case GeneratorSpecializations.Structs:
+                    isAvailable |= Structs.Count > 0 ||
+                                   ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
+                    break;
+                case GeneratorSpecializations.Unions:
+                    isAvailable |= Unions.Count > 0;
+                    break;
+                case GeneratorSpecializations.StructWrappers:
+                    isAvailable |= StructWrappers.Count > 0 ||
+                                   ExtensionClasses.Where(x => x.ClassType == ClassType.Struct).ToList().Count > 0;
+                    break;
+                case GeneratorSpecializations.UnionWrappers:
+                    isAvailable |= UnionWrappers.Count > 0;
+                    break;
+                case GeneratorSpecializations.Enums:
+                    isAvailable |= Enums.Count > 0;
+                    break;
+                case GeneratorSpecializations.Functions:
+                    isAvailable |= Functions.Count > 0;
+                    break;
+                case GeneratorSpecializations.Delegates:
+                    isAvailable |= Delegates.Count > 0;
+                    break;
+                case GeneratorSpecializations.Macros:
+                    isAvailable |= Macros.Count > 0;
+                    break;
+                case GeneratorSpecializations.ExtensionMethods:
+                    isAvailable |= ExtensionClasses.Count > 0;
                     break;
             }
-
-            if (decl == null)
-            {
-                declarations.Add(declaration);
-            }
         }
 
-        public void RemoveDeclaration(Declaration declaration)
+        return isAvailable;
+    }
+
+    public void AddDummyType(string dummyType, string originalType)
+    {
+        if (!DummyTypes.ContainsKey(dummyType))
         {
-            declarations.Remove(declaration);
+            DummyTypes.Add(dummyType, originalType);
+        }
+    }
+
+    public DeclarationUnit FindNamespace(string @namespace)
+    {
+        return Namespaces.FirstOrDefault(x => x.Name == @namespace);
+    }
+
+    public void RemoveClasses(Class[] classes)
+    {
+        for (int i = 0; i < classes.Length; ++i)
+        {
+            declarations.Remove(classes[i]);
+        }
+    }
+
+    public IEnumerable<Declaration> FindDeclarationsBySourceLocation(string fileName, bool remove)
+    {
+        var declsOutput = new List<Declaration>();
+
+        if (remove)
+        {
+            var decls = Declarations.Where(x => x.Location.FileNameWithoutExtension == fileName).ToList();
+            declsOutput.AddRange(decls);
+            declarations = Declarations.Except(decls).ToList();
+        }
+        else
+        {
+            declsOutput.AddRange(Declarations.Where(x => x.Location.FileNameWithoutExtension == fileName));
         }
 
-        public bool IsWrapperPresent(string declName, out Declaration declaration)
+        return declsOutput;
+    }
+
+    public void AddDeclarations(IEnumerable<Declaration> decs)
+    {
+        foreach (var declaration in decs)
         {
-            var wrapper = Wrappers.FirstOrDefault(x => x.Name == declName);
-            declaration = wrapper;
-            return wrapper != null;
+            AddDeclaration(declaration);
         }
+    }
 
-        public Declaration FindDeclaration(CustomType customType)
+    public void AddDeclaration(Declaration declaration)
+    {
+        if (declaration == null) return;
+
+        Declaration decl = null;
+        switch (declaration)
         {
-            if (customType == null)
-                return null;
-
-            foreach (var unit in TranslationUnitsPool)
-            {
-                var decl = unit.Declarations.FirstOrDefault(x => x.Name == customType.Name);
-                if (decl != null)
+            case Enumeration @enum:
+                decl = Enums.FirstOrDefault(x => x.Name == declaration.Name);
+                break;
+            case Class @class:
+                switch (@class.ClassType)
                 {
-                    return decl;
+                    case ClassType.Class:
+                        decl = Classes.FirstOrDefault(x => x.Name == declaration.Name);
+                        break;
+                    case ClassType.Struct:
+                        decl = Structs.FirstOrDefault(x => x.Name == declaration.Name);
+                        break;
+                    case ClassType.Union:
+                        decl = Unions.FirstOrDefault(x => x.Name == declaration.Name);
+                        break;
+                    case ClassType.StructWrapper:
+                        decl = StructWrappers.FirstOrDefault(x => x.Name == declaration.Name);
+                        break;
+                    case ClassType.UnionWrapper:
+                        decl = UnionWrappers.FirstOrDefault(x => x.Name == declaration.Name);
+                        break;
                 }
-            }
 
+                break;
+        }
+
+        if (decl == null)
+        {
+            declarations.Add(declaration);
+        }
+    }
+
+    public void RemoveDeclaration(Declaration declaration)
+    {
+        declarations.Remove(declaration);
+    }
+
+    public bool IsWrapperPresent(string declName, out Declaration declaration)
+    {
+        var wrapper = Wrappers.FirstOrDefault(x => x.Name == declName);
+        declaration = wrapper;
+        return wrapper != null;
+    }
+
+    public Declaration FindDeclaration(CustomType customType)
+    {
+        if (customType == null)
             return null;
-        }
 
-        public DeclarationUnit FindClass(string className)
+        foreach (var unit in TranslationUnitsPool)
         {
-            return AllClasses.FirstOrDefault(x => x.Name == className);
-        }
-
-        public DeclarationUnit FindEnum(string enumName)
-        {
-            return Enums.FirstOrDefault(x => x.Name == enumName);
-        }
-
-        public DeclarationUnit FindOrCreateEnum(string enumName, bool create = false)
-        {
-            var @enum = FindEnum(enumName) as Enumeration;
-            if (@enum == null && create)
+            var decl = unit.Declarations.FirstOrDefault(x => x.Name == customType.Name);
+            if (decl != null)
             {
-                @enum = new Enumeration();
-                @enum.Name = enumName;
+                return decl;
             }
-
-            return @enum;
         }
 
-        public DeclarationUnit FindDelegate(string delgateName)
+        return null;
+    }
+
+    public DeclarationUnit FindClass(string className)
+    {
+        return AllClasses.FirstOrDefault(x => x.Name == className);
+    }
+
+    public DeclarationUnit FindEnum(string enumName)
+    {
+        return Enums.FirstOrDefault(x => x.Name == enumName);
+    }
+
+    public DeclarationUnit FindOrCreateEnum(string enumName, bool create = false)
+    {
+        var @enum = FindEnum(enumName) as Enumeration;
+        if (@enum == null && create)
         {
-            return Delegates.FirstOrDefault(x => x.Name.Equals(delgateName));
+            @enum = new Enumeration();
+            @enum.Name = enumName;
         }
 
-        public DeclarationUnit FindFunction(string functionName)
-        {
-            return Functions.FirstOrDefault(x => x.Name.Equals(functionName));
-        }
+        return @enum;
+    }
 
-        public List<Function> FindFunctionsWithParameter(params string[] paramTypes)
-        {
-            var functions = Functions.Where(x => x.Parameters.Any(y => paramTypes.Contains(y.Type.ToString())))
-                .ToList();
-            return functions;
-        }
+    public DeclarationUnit FindDelegate(string delgateName)
+    {
+        return Delegates.FirstOrDefault(x => x.Name.Equals(delgateName));
+    }
 
-        public void ReplaceFunctionsParameter(DependentNameType dependentType, Class @class)
+    public DeclarationUnit FindFunction(string functionName)
+    {
+        return Functions.FirstOrDefault(x => x.Name.Equals(functionName));
+    }
+
+    public List<Function> FindFunctionsWithParameter(params string[] paramTypes)
+    {
+        var functions = Functions.Where(x => x.Parameters.Any(y => paramTypes.Contains(y.Type.ToString())))
+            .ToList();
+        return functions;
+    }
+
+    public void ReplaceFunctionsParameter(DependentNameType dependentType, Class @class)
+    {
+        var functions = FindFunctionsWithParameter(dependentType.PointsTo, @class.Name);
+        foreach (var function in functions)
         {
-            var functions = FindFunctionsWithParameter(dependentType.PointsTo, @class.Name);
-            foreach (var function in functions)
+            foreach (var parameter in function.Parameters)
             {
-                foreach (var parameter in function.Parameters)
+                var type = parameter.Type;
+
+                if (!type.IsCustomType(out CustomType customType))
                 {
-                    var type = parameter.Type;
+                    continue;
+                }
 
-                    if (!type.IsCustomType(out CustomType customType))
-                    {
-                        continue;
-                    }
-
-                    if (customType.Name.Equals(dependentType.Identifier) ||
-                        customType.Name.Equals(dependentType.PointsTo))
-                    {
-                        customType.Name = @class.Name;
-                        type.Declaration = @class;
-                    }
+                if (customType.Name.Equals(dependentType.Identifier) ||
+                    customType.Name.Equals(dependentType.PointsTo))
+                {
+                    customType.Name = @class.Name;
+                    type.Declaration = @class;
                 }
             }
         }

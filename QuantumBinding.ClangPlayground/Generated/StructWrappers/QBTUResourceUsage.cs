@@ -5,63 +5,92 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBTUResourceUsage : QBDisposableObject
+public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXTUResourceUsage>
 {
-    private NativeStruct<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry> _entries;
-
     public QBTUResourceUsage()
     {
     }
 
-    public QBTUResourceUsage(QuantumBinding.Clang.Interop.CXTUResourceUsage _internal)
+    public QBTUResourceUsage(in QuantumBinding.Clang.Interop.CXTUResourceUsage native)
     {
-        Data = _internal.data;
-        NumEntries = _internal.numEntries;
-        Entries = new QBTUResourceUsageEntry(*_internal.entries);
-        NativeUtils.Free(_internal.entries);
+        MarshalFrom(in native);
     }
 
-    public void* Data { get; set; }
+    public nuint Data { get; set; }
     public uint NumEntries { get; set; }
     public QBTUResourceUsageEntry Entries { get; set; }
     public void DisposeCXTUResourceUsage()
     {
-        QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCXTUResourceUsage(ToNative());
-    }
-
-
-    public QuantumBinding.Clang.Interop.CXTUResourceUsage ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXTUResourceUsage();
-        _internal.data = Data;
-        _internal.numEntries = NumEntries;
-        _entries.Dispose();
-        if (Entries != null)
-        {
-            var struct0 = Entries.ToNative();
-            _entries = new NativeStruct<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>(struct0);
-            _internal.entries = _entries.Handle;
-        }
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _entries.Dispose();
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCXTUResourceUsage(native);
     }
 
 
     public static implicit operator QBTUResourceUsage(QuantumBinding.Clang.Interop.CXTUResourceUsage q)
     {
-        return new QBTUResourceUsage(q);
+        return new QBTUResourceUsage(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXTUResourceUsage>();
+        if (Entries != default)
+        {
+            size += Entries.GetSize();
+        }
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsage> context)
+    {
+        new CXTUResourceUsageMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXTUResourceUsage native)
+    {
+        Data = native.data;
+        NumEntries = native.numEntries;
+        Entries = new QBTUResourceUsageEntry(in *native.entries);
+        NativeUtils.Free(native.entries);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXTUResourceUsage>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsage>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXTUResourceUsageMarshaller
+    {
+        public CXTUResourceUsageMarshaller(QuantumBinding.Clang.QBTUResourceUsage qBTUResourceUsage, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsage> context)
+        {
+            context.Destination[0].data = qBTUResourceUsage.Data;
+
+            context.Destination[0].numEntries = qBTUResourceUsage.NumEntries;
+
+            if (qBTUResourceUsage.Entries != default)
+            {
+                var structSlice0 = context.AllocateData(sizeof(QuantumBinding.Clang.Interop.CXTUResourceUsageEntry));
+                var structDestination0 = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>(structSlice0).Slice(0, 1);
+                context.Destination[0].entries = (QuantumBinding.Clang.Interop.CXTUResourceUsageEntry*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref structDestination0[0]);
+                var childContext = new QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>(structDestination0, context.DataCursor);
+                qBTUResourceUsage.Entries.MarshalTo(ref childContext);
+                context.DataCursor = childContext.DataCursor;
+            }
+
+        }
+    }
 }
 
 

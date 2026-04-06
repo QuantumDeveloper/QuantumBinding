@@ -1,87 +1,86 @@
-﻿namespace QuantumBinding.Generator.AST
+﻿namespace QuantumBinding.Generator.AST;
+
+public class Method : Function
 {
-    public class Method : Function
+    public Method()
     {
-        public Method()
+        AccessSpecifier = AccessSpecifier.Public;
+    }
+
+    public Function Function { get; set; }
+        
+    public bool GenerateMarshalContext { get; set; }
+        
+    public string MarshalContextName { get; set; }
+
+    public bool IsVirtual { get; set; }
+
+    public bool IsStatic { get; set; }
+
+    public bool IsExtensionMethod { get; set; }
+
+    public bool IsExplicit { get; set; }
+
+    public bool IsSealed { get; set; }
+
+    public bool ConvertToProperty { get; set; }
+        
+    public bool IsOverload { get; set; }
+
+    public bool IsInstanceMethod => Class != null;
+        
+    public bool IsGeneric { get; set; }
+        
+    public string GenericType { get; set; }
+
+    public static bool ContainsOutParameters(Method method)
+    {
+        foreach (var parameter in method.Parameters)
         {
-            AccessSpecifier = AccessSpecifier.Public;
-        }
-
-        public Function Function { get; set; }
-        
-        public bool GenerateMarshalContext { get; set; }
-        
-        public string MarshalContextName { get; set; }
-
-        public bool IsVirtual { get; set; }
-
-        public bool IsStatic { get; set; }
-
-        public bool IsExtensionMethod { get; set; }
-
-        public bool IsExplicit { get; set; }
-
-        public bool IsSealed { get; set; }
-
-        public bool ConvertToProperty { get; set; }
-        
-        public bool IsOverload { get; set; }
-
-        public bool IsInstanceMethod => Class != null;
-        
-        public bool IsGeneric { get; set; }
-        
-        public string GenericType { get; set; }
-
-        public static bool ContainsOutParameters(Method method)
-        {
-            foreach (var parameter in method.Parameters)
+            if (parameter.ParameterKind == ParameterKind.Out)
             {
-                if (parameter.ParameterKind == ParameterKind.Out)
-                {
-                    return true;
-                }
+                return true;
             }
-
-            return false;
         }
 
-        public override T Visit<T>(IDeclarationVisitor<T> visitor)
+        return false;
+    }
+
+    public override T Visit<T>(IDeclarationVisitor<T> visitor)
+    {
+        return visitor.VisitMethod(this);
+    }
+
+    public override object Clone()
+    {
+        var method = new Method()
         {
-            return visitor.VisitMethod(this);
-        }
-
-        public override object Clone()
+            Function = (Function)Function.Clone(),
+            IsVirtual = IsVirtual,
+            IsSealed = IsSealed,
+            IsStatic = IsStatic,
+            IsExtensionMethod = IsExtensionMethod,
+            IsExplicit = IsExplicit,
+            ConvertToProperty = ConvertToProperty,
+            Name = Name,
+            Id = Id,
+            Owner = Owner,
+            Class = Class,
+            ReturnType = ReturnType,
+            Location = Location,
+            IsIgnored = IsIgnored,
+            IsOverload = IsOverload,
+            IsGeneric = IsGeneric,
+            GenericType = GenericType,
+            GenerateMarshalContext = GenerateMarshalContext,
+            MarshalContextName = MarshalContextName
+        };
+        method.Parameters.AddRange(Parameters);
+        if (Comment != null)
         {
-            var method = new Method()
-            {
-                Function = (Function)Function.Clone(),
-                IsVirtual = IsVirtual,
-                IsSealed = IsSealed,
-                IsStatic = IsStatic,
-                IsExtensionMethod = IsExtensionMethod,
-                IsExplicit = IsExplicit,
-                ConvertToProperty = ConvertToProperty,
-                Name = Name,
-                Id = Id,
-                Owner = Owner,
-                Class = Class,
-                ReturnType = ReturnType,
-                Location = Location,
-                IsIgnored = IsIgnored,
-                IsOverload = IsOverload,
-                IsGeneric = IsGeneric,
-                GenericType = GenericType,
-                GenerateMarshalContext = GenerateMarshalContext,
-                MarshalContextName = MarshalContextName
-            };
-            method.Parameters.AddRange(Parameters);
-            if (Comment != null)
-            {
-                method.Comment = (Comment) Comment.Clone();
-            }
-
-            return method;
+            method.Comment = (Comment) Comment.Clone();
         }
+
+        return method;
     }
 }

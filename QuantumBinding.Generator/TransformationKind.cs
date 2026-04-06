@@ -1,8 +1,7 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum TransformationKind
 {
-    public enum TransformationKind
-    {
-        FromClassToValue,
-        FromValueToClass
-    }
+    FromClassToValue,
+    FromValueToClass
 }

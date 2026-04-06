@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using QuantumBinding.Generator.Types;
 
-namespace QuantumBinding.Generator
+namespace QuantumBinding.Generator;
+
+public class MacroFunction
 {
-    public class MacroFunction
+    public MacroFunction()
     {
-        public MacroFunction()
-        {
-            Parameters = new List<Parameter>();
-        }
-
-        public List<Parameter> Parameters { get; }
-
-        public string FunctionBody { get; set; }
-
-        public BindingType ReturnType { get; set; }
-
-        public MacroFunctionStrategy ApplyStrategy { get; set; }
+        Parameters = new List<Parameter>();
     }
+
+    public List<Parameter> Parameters { get; }
+
+    public string FunctionBody { get; set; }
+
+    public BindingType ReturnType { get; set; }
+
+    public MacroFunctionStrategy ApplyStrategy { get; set; }
 }

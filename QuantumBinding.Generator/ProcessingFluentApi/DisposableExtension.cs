@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace QuantumBinding.Generator.ProcessingFluentApi
-{
-    public class DisposableExtension
-    {
-        public string Name { get; set; }
+namespace QuantumBinding.Generator.ProcessingFluentApi;
 
-        public string DisposableContent { get; set; }
-    }
+public class DisposableExtension
+{
+    public string Name { get; set; }
+
+    public string DisposableContent { get; set; }
 }

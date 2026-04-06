@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// CXAPISet is an opaque type that represents a data structure containing all the API information for a given translation unit. This can be used for a single symbol symbol graph for a given symbol.
 ///</summary>
-public unsafe partial class QBAPISet
+public unsafe partial class QBAPISet : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXAPISetImpl>
 {
     internal CXAPISetImpl __Instance;
     public QBAPISet()
     {
     }
 
-    public QBAPISet(QuantumBinding.Clang.Interop.CXAPISetImpl __Instance)
+    public QBAPISet(in QuantumBinding.Clang.Interop.CXAPISetImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXAPISetImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Dispose of an APISet.
     ///</summary>
@@ -45,7 +46,7 @@ public unsafe partial class QBAPISet
 
     public static implicit operator QBAPISet(QuantumBinding.Clang.Interop.CXAPISetImpl q)
     {
-        return new QBAPISet(q);
+        return new QBAPISet(in q);
     }
 
 }

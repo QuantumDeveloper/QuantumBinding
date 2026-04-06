@@ -14,7 +14,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXCompletionStringImpl
 {
-    public void* pointer;
+    public nuint pointer;
 }
 
 

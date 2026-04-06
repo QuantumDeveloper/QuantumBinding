@@ -1,19 +1,18 @@
-﻿namespace QuantumBinding.Generator.AST
+﻿namespace QuantumBinding.Generator.AST;
+
+public enum RawCommentKind
 {
-    public enum RawCommentKind
-    {
-        Null = 0,
-        Text = 1,
-        InlineCommand = 2,
-        HTMLStartTag = 3,
-        HTMLEndTag = 4,
-        Paragraph = 5,
-        BlockCommand = 6,
-        ParamCommand = 7,
-        TParamCommand = 8,
-        VerbatimBlockCommand = 9,
-        VerbatimBlockLine = 10,
-        VerbatimLine = 11,
-        FullComment = 12
-    }
+    Null = 0,
+    Text = 1,
+    InlineCommand = 2,
+    HTMLStartTag = 3,
+    HTMLEndTag = 4,
+    Paragraph = 5,
+    BlockCommand = 6,
+    ParamCommand = 7,
+    TParamCommand = 8,
+    VerbatimBlockCommand = 9,
+    VerbatimBlockLine = 10,
+    VerbatimLine = 11,
+    FullComment = 12
 }

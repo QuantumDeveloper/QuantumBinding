@@ -1,25 +1,24 @@
-﻿namespace QuantumBinding.Generator.CodeGeneration
+﻿namespace QuantumBinding.Generator.CodeGeneration;
+
+public interface ITextGenerator
 {
-    public interface ITextGenerator
-    {
-        uint Indent { get; }
+    uint Indent { get; }
 
-        void Write(string text);
+    void Write(string text);
 
-        void WriteLine(string text);
+    void WriteLine(string text);
 
-        void WriteLineWithTrim(string text);
+    void WriteLineWithTrim(string text);
 
-        void WriteLineWithIndent(string text);
+    void WriteLineWithIndent(string text);
 
-        void WriteOpenBraceAndIndent();
+    void WriteOpenBraceAndIndent();
 
-        void UnindentAndWriteCloseBrace();
+    void UnindentAndWriteCloseBrace();
 
-        void NewLine();
+    void NewLine();
 
-        void PushIndent(uint indentation = TextGenerator.DefaultIndentation);
+    void PushIndent(uint indentation = TextGenerator.DefaultIndentation);
 
-        void PopIndent();
-    }
+    void PopIndent();
 }

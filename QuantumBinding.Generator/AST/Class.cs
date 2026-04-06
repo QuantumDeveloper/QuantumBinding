@@ -2,201 +2,200 @@
 using System.Linq;
 using QuantumBinding.Generator.Types;
 
-namespace QuantumBinding.Generator.AST
+namespace QuantumBinding.Generator.AST;
+
+public class Class: DeclarationUnit
 {
-    public class Class: DeclarationUnit
+    private List<Field> fields;
+    private List<Method> methods;
+    private List<Property> properties;
+    private List<Interface> interfaces;
+        
+    public Class()
     {
-        private List<Field> fields;
-        private List<Method> methods;
-        private List<Property> properties;
-        private List<Interface> interfaces;
+        AccessSpecifier = AccessSpecifier.Public;
+        fields = new List<Field>();
+        methods = new List<Method>();
+        interfaces = new List<Interface>();
+        properties = new List<Property>();
+        Constructors = new List<Constructor>();
+        Operators = new List<Operator>();
+    }
         
-        public Class()
-        {
-            AccessSpecifier = AccessSpecifier.Public;
-            fields = new List<Field>();
-            methods = new List<Method>();
-            interfaces = new List<Interface>();
-            properties = new List<Property>();
-            Constructors = new List<Constructor>();
-            Operators = new List<Operator>();
-        }
+    public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper;
         
-        public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper;
+    public ClassType ClassType { get; set; }
+
+    public BindingType UnderlyingNativeType { get; set; }
+
+    public AccessSpecifier AccessSpecifier { get; set; }
+
+    public AccessSpecifier WrapperMethodAccessSpecifier { get; set; }
         
-        public ClassType ClassType { get; set; }
+    public string InputClassName {get; set;}
 
-        public BindingType UnderlyingNativeType { get; set; }
+    public Class LinkedTo { get; set; }
 
-        public AccessSpecifier AccessSpecifier { get; set; }
+    // True if the record is a POD (Plain Old Data) type.
+    public bool IsSimpleType { get; set; }
 
-        public AccessSpecifier WrapperMethodAccessSpecifier { get; set; }
+    public bool IsTypedef { get; set; }
+
+    public bool IsPointer { get; set; }
+
+    public bool IsUnsafe { get; set; }
+
+    public bool HasExtensions => ExtensionMethods.Any();
+
+    public bool IsExtension { get; set; }
+
+    public bool IsDisposable { get; set; }
+
+    public string DisposableBaseClass { get; set; }
+
+    public string DisposeBody { get; set; }
         
-        public string InputClassName {get; set;}
+    public IReadOnlyList<Interface> Interfaces => interfaces;
 
-        public Class LinkedTo { get; set; }
+    public IReadOnlyList<Field> Fields => fields;
 
-        // True if the record is a POD (Plain Old Data) type.
-        public bool IsSimpleType { get; set; }
+    public IReadOnlyList<Property> Properties => properties;
 
-        public bool IsTypedef { get; set; }
+    public List<Constructor> Constructors { get; }
 
-        public bool IsPointer { get; set; }
+    public List<Operator> Operators { get; }
 
-        public bool IsUnsafe { get; set; }
+    public Class ExtendedFrom { get; set; }
 
-        public bool HasExtensions => ExtensionMethods.Any();
+    public Class NativeStruct { get; set; }
 
-        public bool IsExtension { get; set; }
-
-        public bool IsDisposable { get; set; }
-
-        public string DisposableBaseClass { get; set; }
-
-        public string DisposeBody { get; set; }
+    public string NativeStructFieldName { get; set; }
         
-        public IReadOnlyList<Interface> Interfaces => interfaces;
+    public string MarshalerStructName => $"{NativeStruct.Name}Marshaller";
 
-        public IReadOnlyList<Field> Fields => fields;
+    public List<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
 
-        public IReadOnlyList<Property> Properties => properties;
+    public List<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
 
-        public List<Constructor> Constructors { get; }
+    public IReadOnlyCollection<Method> AllMethods => methods;
 
-        public List<Operator> Operators { get; }
+    public void AddConstructor(Constructor ctor)
+    {
+        Constructors.Add(ctor);
+    }
 
-        public Class ExtendedFrom { get; set; }
+    public bool AddField(Field field)
+    {
+        var f = Fields.FirstOrDefault(x => x.Name == field.Name);
+        if (f == null)
+        {
+            field.Class = this;
+            fields.Add(field);
+        }
 
-        public Class NativeStruct { get; set; }
+        return f == null;
+    }
 
-        public string NativeStructFieldName { get; set; }
+    public void RemoveField(Field field)
+    {
+        field.Class = null;
+        fields.Remove(field);
+    }
+
+    public bool AddProperty(Property prop)
+    {
+        var property = properties.FirstOrDefault(x => x.Name == prop.Name);
+        if (property == null)
+        {
+            properties.Add(prop);
+        }
+
+        return property == null;
+    }
+
+    public void RemoveProperty(string name)
+    {
+        var property = properties.FirstOrDefault(x => x.Name == name);
+        if (property != null)
+        {
+            properties.Remove(property);
+        }
+    }
         
-        public string MarshalerStructName => $"{NativeStruct.Name}Marshaller";
+    public void ClearConstructors()
+    {
+        Constructors.Clear();
+    }
 
-        public List<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
-
-        public List<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
-
-        public IReadOnlyCollection<Method> AllMethods => methods;
-
-        public void AddConstructor(Constructor ctor)
-        {
-            Constructors.Add(ctor);
-        }
-
-        public bool AddField(Field field)
-        {
-            var f = Fields.FirstOrDefault(x => x.Name == field.Name);
-            if (f == null)
-            {
-                field.Class = this;
-                fields.Add(field);
-            }
-
-            return f == null;
-        }
-
-        public void RemoveField(Field field)
-        {
-            field.Class = null;
-            fields.Remove(field);
-        }
-
-        public bool AddProperty(Property prop)
-        {
-            var property = properties.FirstOrDefault(x => x.Name == prop.Name);
-            if (property == null)
-            {
-                properties.Add(prop);
-            }
-
-            return property == null;
-        }
-
-        public void RemoveProperty(string name)
-        {
-            var property = properties.FirstOrDefault(x => x.Name == name);
-            if (property != null)
-            {
-                properties.Remove(property);
-            }
-        }
+    public void ClearProperties()
+    {
+        properties.Clear();
+    }
         
-        public void ClearConstructors()
-        {
-            Constructors.Clear();
-        }
+    public void ClearOperators()
+    {
+        Operators.Clear();
+    }
 
-        public void ClearProperties()
-        {
-            properties.Clear();
-        }
+    public void ClearMethods()
+    {
+        Methods.Clear();
+    }
         
-        public void ClearOperators()
-        {
-            Operators.Clear();
-        }
+    public void ClearFields()
+    {
+        fields.Clear();
+    }
 
-        public void ClearMethods()
-        {
-            Methods.Clear();
-        }
+    public void AddMethod(Method method)
+    {
+        if (method == null) return;
+        methods.Add(method);
+    }
         
-        public void ClearFields()
-        {
-            fields.Clear();
-        }
+    public void AddMethods(IEnumerable<Method> methodsList)
+    {
+        if (methodsList == null) return;
+        methods.AddRange(methodsList);
+    }
 
-        public void AddMethod(Method method)
-        {
-            if (method == null) return;
-            methods.Add(method);
-        }
-        
-        public void AddMethods(IEnumerable<Method> methodsList)
-        {
-            if (methodsList == null) return;
-            methods.AddRange(methodsList);
-        }
+    public void RemoveMethod(Method method)
+    {
+        methods.Remove(method);
+    }
 
-        public void RemoveMethod(Method method)
-        {
-            methods.Remove(method);
-        }
+    public override string ToString()
+    {
+        return Name;
+    }
 
-        public override string ToString()
-        {
-            return Name;
-        }
+    public bool HasPointerFields => Fields.Any(x => x.IsPointer);
 
-        public bool HasPointerFields => Fields.Any(x => x.IsPointer);
-
-        public override object Clone()
+    public override object Clone()
+    {
+        return new Class()
         {
-            return new Class()
-            {
-                Id = Id,
-                AccessSpecifier = AccessSpecifier,
-                ClassType = ClassType,
-                Name = Name,
-                OriginalName = OriginalName,
-                IsPointer = IsPointer,
-                IsTypedef = IsTypedef,
-                UnderlyingNativeType = UnderlyingNativeType,
-                Owner = Owner,
-                Location = Location,
-                IsIgnored = IsIgnored,
-                IsSimpleType = IsSimpleType,
-                NativeStruct = NativeStruct,
-                NativeStructFieldName = NativeStructFieldName,
-                ExtendedFrom = ExtendedFrom,
-                interfaces = [..Interfaces],
-            };
-        }
+            Id = Id,
+            AccessSpecifier = AccessSpecifier,
+            ClassType = ClassType,
+            Name = Name,
+            OriginalName = OriginalName,
+            IsPointer = IsPointer,
+            IsTypedef = IsTypedef,
+            UnderlyingNativeType = UnderlyingNativeType,
+            Owner = Owner,
+            Location = Location,
+            IsIgnored = IsIgnored,
+            IsSimpleType = IsSimpleType,
+            NativeStruct = NativeStruct,
+            NativeStructFieldName = NativeStructFieldName,
+            ExtendedFrom = ExtendedFrom,
+            interfaces = [..Interfaces],
+        };
+    }
 
-        public override T Visit<T>(IDeclarationVisitor<T> visitor)
-        {
-            return visitor.VisitClass(this);
-        }
+    public override T Visit<T>(IDeclarationVisitor<T> visitor)
+    {
+        return visitor.VisitClass(this);
     }
 }

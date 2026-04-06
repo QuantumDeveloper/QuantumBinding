@@ -14,7 +14,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXIdxClientASTFileImpl
 {
-    public void* pointer;
+    public nuint pointer;
 }
 
 

@@ -5,73 +5,100 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxLoc
+public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxLoc>
 {
     public QBIdxLoc()
     {
     }
 
-    public QBIdxLoc(QuantumBinding.Clang.Interop.CXIdxLoc _internal)
+    public QBIdxLoc(in QuantumBinding.Clang.Interop.CXIdxLoc native)
     {
-        Ptr_data = new void*[2];
-        for (int i = 0; i < 2; ++i)
-        {
-            Ptr_data[i] = _internal.ptr_data[i];
-        }
-        Int_data = _internal.int_data;
+        MarshalFrom(in native);
     }
 
-    public void*[] Ptr_data { get; set; }
+    public System.ReadOnlyMemory<nuint> Ptr_data { get; set; }
     public uint Int_data { get; set; }
     ///<summary>
     /// Retrieve the CXSourceLocation represented by the given CXIdxLoc.
     ///</summary>
     public QBSourceLocation IndexLoc_getCXSourceLocation()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getCXSourceLocation(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getCXSourceLocation(native);
     }
 
     ///<summary>
     /// Retrieve the CXIdxFile, file, line, column, and offset represented by the given CXIdxLoc.
     ///</summary>
-    public void IndexLoc_getFileLocation(out QBIdxClientFile indexFile, out QBFile file, out uint line, out uint column, out uint offset)
+    public void IndexLoc_getFileLocation(out QuantumBinding.Clang.QBIdxClientFile indexFile, out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
     {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
         CXIdxClientFileImpl arg1;
         CXFileImpl arg2;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getFileLocation(ToNative(), out arg1, out arg2, out line, out column, out offset);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getFileLocation(native, out arg1, out arg2, out line, out column, out offset);
         indexFile = new QBIdxClientFile(arg1);
         file = new QBFile(arg2);
     }
 
 
-    public QuantumBinding.Clang.Interop.CXIdxLoc ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxLoc();
-        if(Ptr_data != null)
-        {
-            if (Ptr_data.Length > 2)
-                throw new System.ArgumentOutOfRangeException(nameof(Ptr_data), "Array is out of bounds. Size should not be more than 2");
-
-            for (int i = 0; i < 2; ++i)
-            {
-                _internal.ptr_data[i] = Ptr_data[i];
-            }
-        }
-        _internal.int_data = Int_data;
-        return _internal;
-    }
-
     public static implicit operator QBIdxLoc(QuantumBinding.Clang.Interop.CXIdxLoc q)
     {
-        return new QBIdxLoc(q);
+        return new QBIdxLoc(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxLoc>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc> context)
+    {
+        new CXIdxLocMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxLoc native)
+    {
+        var tmpPtr_data = new nuint[2];
+        for (int i = 0; i < 2; ++i)
+        {
+            tmpPtr_data[i] = native.ptr_data[i];
+        }
+        Ptr_data = tmpPtr_data;
+        Int_data = native.int_data;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxLoc>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxLocMarshaller
+    {
+        public CXIdxLocMarshaller(QuantumBinding.Clang.QBIdxLoc qBIdxLoc, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc> context)
+        {
+            for (int i = 0; i < 2; ++i)
+            {
+                context.Destination[0].ptr_data[i] = qBIdxLoc.Ptr_data.Span[i];
+            }
+
+            context.Destination[0].int_data = qBIdxLoc.Int_data;
+
+        }
+    }
 }
 
 

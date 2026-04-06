@@ -5,99 +5,98 @@ using QuantumBinding.Generator.Types;
 using System.Linq;
 using System.Text;
 
-namespace QuantumBinding.Generator.Processors
+namespace QuantumBinding.Generator.Processors;
+
+public class UpdateWrappedMethodParametersPass : PreGeneratorPass
 {
-    public class UpdateWrappedMethodParametersPass : PreGeneratorPass
+    public UpdateWrappedMethodParametersPass(GeneratorSpecializations specializations)
     {
-        public UpdateWrappedMethodParametersPass(GeneratorSpecializations specializations)
+        Specializations = specializations;
+        Options.VisitClasses = true;
+        Options.VisitMethods = true;
+    }
+
+    public GeneratorSpecializations Specializations { get; }
+
+    public override bool VisitMethod(Method method)
+    {
+        if (IsVisited(method))
         {
-            Specializations = specializations;
-            Options.VisitClasses = true;
-            Options.VisitMethods = true;
+            return false;
         }
 
-        public GeneratorSpecializations Specializations { get; }
+        UpdateReturnType(method);
+        UpdateMethodParameters(method);
 
-        public override bool VisitMethod(Method method)
-        {
-            if (IsVisited(method))
-            {
-                return false;
-            }
-
-            UpdateReturnType(method);
-            UpdateMethodParameters(method);
-
-            return true;
-        }
+        return true;
+    }
         
-        private void UpdateReturnType(Method method)
+    private void UpdateReturnType(Method method)
+    {
+        if (method.ReturnType.Declaration is Class decl)
         {
-            if (method.ReturnType.Declaration is Class decl)
-            {
-                if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return;
+            if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return;
 
-                var declaration = FindDeclaration(method.ReturnType);
+            var declaration = FindDeclaration(method.ReturnType);
 
-                var returnType = (BindingType)method.ReturnType.Clone();
-                returnType.Declaration = declaration;
-                method.ReturnType = returnType;
-            }
+            var returnType = (BindingType)method.ReturnType.Clone();
+            returnType.Declaration = declaration;
+            method.ReturnType = returnType;
         }
+    }
 
-        private void UpdateMethodParameters(Method method)
+    private void UpdateMethodParameters(Method method)
+    {
+        foreach (var parameter in method.Parameters)
         {
-            foreach (var parameter in method.Parameters)
+            var declaration = FindDeclaration(parameter.Type);
+            if (declaration != null)
             {
-                var declaration = FindDeclaration(parameter.Type);
-                if (declaration != null)
-                {
-                    var wrappedType = parameter.Type;
-                    parameter.WrappedType = wrappedType;
-                    parameter.Type = (BindingType)wrappedType.Clone();
-                    parameter.Type.Declaration = declaration;
+                var wrappedType = parameter.Type;
+                parameter.WrappedType = wrappedType;
+                parameter.Type = (BindingType)wrappedType.Clone();
+                parameter.Type.Declaration = declaration;
 
-                    var nativeParameter = method.Function.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
-                    if (nativeParameter != null)
-                    {
-                        nativeParameter.WrappedType = wrappedType;
-                    }
+                var nativeParameter = method.Function.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
+                if (nativeParameter != null)
+                {
+                    nativeParameter.WrappedType = wrappedType;
                 }
             }
         }
+    }
 
-        private Declaration FindDeclaration(BindingType type)
+    private Declaration FindDeclaration(BindingType type)
+    {
+        var decl = type.Declaration as Class;
+        if (decl == null) return null;
+        if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return null;
+
+        if (decl.IsSimpleType)
         {
-            var decl = type.Declaration as Class;
-            if (decl == null) return null;
-            if (decl.ClassType != ClassType.Struct && decl.ClassType != ClassType.Union) return null;
-
-            if (decl.IsSimpleType)
-            {
-                return decl;
-            }
-
-            Class declaration = null;
-            foreach (var unit in AstContext.TranslationUnits)
-            {
-                if (decl.ClassType == ClassType.Struct)
-                {
-                    declaration = unit.StructWrappers.FirstOrDefault(x => x.Id == decl.Id);
-
-                    if (declaration == null)
-                    {
-                        declaration = unit.Classes.FirstOrDefault(x => x.Id == decl.Id);
-                    }
-                }
-                else if (decl.ClassType == ClassType.Union)
-                {
-                    declaration = unit.UnionWrappers.FirstOrDefault(x => x.Id == decl.Id);
-                }
-
-                if (declaration != null) break;
-            }
-
-            return declaration;
+            return decl;
         }
+
+        Class declaration = null;
+        foreach (var unit in AstContext.TranslationUnits)
+        {
+            if (decl.ClassType == ClassType.Struct)
+            {
+                declaration = unit.StructWrappers.FirstOrDefault(x => x.Id == decl.Id);
+
+                if (declaration == null)
+                {
+                    declaration = unit.Classes.FirstOrDefault(x => x.Id == decl.Id);
+                }
+            }
+            else if (decl.ClassType == ClassType.Union)
+            {
+                declaration = unit.UnionWrappers.FirstOrDefault(x => x.Id == decl.Id);
+            }
+
+            if (declaration != null) break;
+        }
+
+        return declaration;
     }
 }

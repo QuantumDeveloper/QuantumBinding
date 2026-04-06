@@ -15,8 +15,8 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXCursorAndRangeVisitor
 {
-    public void* context;
-    public void* visit;
+    public nuint context;
+    public nuint visit;
 }
 
 

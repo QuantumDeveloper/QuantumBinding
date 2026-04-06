@@ -80,9 +80,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
 
         if (!IsSimpleMethod)
         {
-            // WriteLine($"public static {returnType} Invoke(System.Span<byte> mainBuffer, {parametersResult})");
-            // WriteOpenBraceAndIndent();
-            WriteLine($"ref Span<byte> {_spanBufferCursorName} = ref {_spanBufferName};");
+            WriteLine($"ref {SpanClassName}<byte> {_spanBufferCursorName} = ref {_spanBufferName};");
         }
 
         int index = 0;
@@ -153,11 +151,6 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         {
             WriteLine($"return new string(result);");
         }
-
-        // if (!IsSimpleMethod)
-        // {
-        //     UnindentAndWriteCloseBrace();
-        // }
 
         return ToString();
     }
@@ -283,17 +276,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 }
                 else if (classDecl.IsWrapper)
                 {
-                    if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly &&
-                        _currentParameterIndex == 0 &&
-                        _isInstanceMethod)
-                    {
-                        argumentName = $"{ConversionMethodName}";
-                        CreateNativeParameter(parameter, argumentName, classDecl);
-                    }
-                    else
-                    {
-                        WriteWrappedStruct(parameter, argumentName, classDecl);
-                    }
+                    WriteWrappedStruct(parameter, argumentName, classDecl);
                 }
                 else // structs without pointers, simple types
                 {
@@ -345,9 +328,8 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         var ptr = parameter.Type as PointerType;
         var pointerString = GetPointerString(ptr.GetDepth());
         var conversionString = isUnicode ? $"char{pointerString}" : $"sbyte{pointerString}";
-        string parameterName = TargetRuntime == TargetRuntime.Net8Plus ? $"{parameter.Name}.Span" : parameter.Name;
         WriteLine(
-            $"var {argumentName} = {MarshalContextStringArrayToDoublePointer}({parameterName}, ref {_spanBufferCursorName});");
+            $"var {argumentName} = {MarshalContextStringArrayToDoublePointer}({parameter.Name}, ref {_spanBufferCursorName});");
     }
     
     public void MarshalClass(Parameter parameter, string argumentName, Class classDecl)
@@ -561,15 +543,15 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 case ClassType.UnionWrapper:
                     if (_currentParameterIndex == 0 && Method.IsInstanceMethod)
                     {
+                        var parameterName = CurrentParameterIndex == 0 ? "this" : parameter.Name;
                         if (Method.GenerateMarshalContext)
                         {
                             WriteLine(
-                                $"var {argumentName} = {MarshalContextUtilsStructToPointer}<{classDecl.FullName}, {nativeType}>({parameter.Name}, ref {_spanBufferCursorName});");
+                                $"var {argumentName} = {MarshalContextUtilsStructToPointer}<{classDecl.FullName}, {nativeType}>({parameterName}, ref {_spanBufferCursorName});");
                         }
                         else
                         {
                             WriteLine($"{SpanClassName}<byte> {argumentName}Span = {StackAlloc} byte[GetSize()];");
-                            var parameterName = CurrentParameterIndex == 0 ? "this" : parameter.Name;
                             WriteLine(
                                 $"var {argumentName} = {MarshalContextUtilsStructToPointer}<{classDecl.FullName}, {nativeType}>({parameterName}, ref {argumentName}Span);");
                         }
@@ -699,15 +681,6 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             }
             else if (classDecl.ClassType == ClassType.Class || classDecl.IsWrapper)
             {
-                // if (Method.GenerateMarshalContext)
-                // {
-                //     WriteLine(
-                //         $"var {argumentName} = {MarshalContextUtilsAllocatePointerForArray}<{classDecl.NativeStruct.FullName}>((int){arrayLength}, ref {_spanBufferCursorName});");
-                // }
-                // else
-                // {
-                //     
-                // }
                 WriteStackAlloc(argumentName, classDecl.NativeStruct.FullName, arrayLength);
                 PostActions.Enqueue(() => ImplicitTwoWayArrayTypeConversion(parameter, classDecl, argumentName, arrayLength));
             }
@@ -716,9 +689,14 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         {
             if (Method.GenerateMarshalContext)
             {
-                WriteStackAlloc(argumentName, classDecl.NativeStruct.FullName, arrayLength);
-                // WriteLine(
-                //     $"var {argumentName} = {MarshalContextUtilsAllocatePointerForArray}<{classDecl.NativeStruct.FullName}>((int){arrayLength}, ref {_spanBufferCursorName});");
+                if (pointerDepth == 1)
+                {
+                    WriteStackAlloc(argumentName, classDecl.NativeStruct.FullName, arrayLength);
+                }
+                else
+                {
+                    WriteLine($"{classDecl.NativeStruct.FullName}{typeStrResult.TypeSuffix} {argumentName} = {NullPointer};");
+                }
             }
             else
             {
@@ -814,8 +792,15 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
 
         if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly or ParameterKind.Ref)
         {
+            var inputParameterName = parameter.Name;
+            if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly &&
+                _currentParameterIndex == 0 &&
+                _isInstanceMethod)
+            {
+                inputParameterName = "this";
+            }
             WriteLine(
-                $"var {argumentName} = {MarshalContextUtilsStructToNative}({parameter.Name}, ref {_spanBufferCursorName});");
+                $"var {argumentName} = {MarshalContextUtilsStructToNative}<{classDecl.FullName}, {classDecl.InteropNamespace}.{interopType}>({inputParameterName}, ref {_spanBufferCursorName});");
         }
         else if (parameter.ParameterKind == ParameterKind.Out)
         {

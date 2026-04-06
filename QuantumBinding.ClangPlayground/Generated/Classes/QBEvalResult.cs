@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Evaluation result of a cursor
 ///</summary>
-public unsafe partial class QBEvalResult
+public unsafe partial class QBEvalResult : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXEvalResultImpl>
 {
     internal CXEvalResultImpl __Instance;
     public QBEvalResult()
     {
     }
 
-    public QBEvalResult(QuantumBinding.Clang.Interop.CXEvalResultImpl __Instance)
+    public QBEvalResult(in QuantumBinding.Clang.Interop.CXEvalResultImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXEvalResultImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Disposes the created Eval memory.
     ///</summary>
@@ -102,7 +103,7 @@ public unsafe partial class QBEvalResult
 
     public static implicit operator QBEvalResult(QuantumBinding.Clang.Interop.CXEvalResultImpl q)
     {
-        return new QBEvalResult(q);
+        return new QBEvalResult(in q);
     }
 
 }

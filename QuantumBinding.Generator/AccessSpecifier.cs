@@ -1,10 +1,9 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum AccessSpecifier
 {
-    public enum AccessSpecifier
-    {
-        Public,
-        Private,
-        Internal,
-        Protected
-    }
+    Public,
+    Private,
+    Internal,
+    Protected
 }

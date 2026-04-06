@@ -1,11 +1,10 @@
-﻿namespace QuantumBinding.Generator.Types
+﻿namespace QuantumBinding.Generator.Types;
+
+public enum ArraySizeType
 {
-    public enum ArraySizeType
-    {
-        Unknown,
-        Constant,
-        Variable,
-        Dependent,
-        Incomplete
-    }
+    Unknown,
+    Constant,
+    Variable,
+    Dependent,
+    Incomplete
 }

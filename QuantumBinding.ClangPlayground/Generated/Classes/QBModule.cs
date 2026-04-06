@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The functions in this group provide access to information about modules.
 ///</summary>
-public unsafe partial class QBModule
+public unsafe partial class QBModule : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXModuleImpl>
 {
     internal CXModuleImpl __Instance;
     public QBModule()
     {
     }
 
-    public QBModule(QuantumBinding.Clang.Interop.CXModuleImpl __Instance)
+    public QBModule(in QuantumBinding.Clang.Interop.CXModuleImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXModuleImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Returns the module file where the provided module object came from.
     ///</summary>
@@ -77,7 +78,7 @@ public unsafe partial class QBModule
 
     public static implicit operator QBModule(QuantumBinding.Clang.Interop.CXModuleImpl q)
     {
-        return new QBModule(q);
+        return new QBModule(in q);
     }
 
 }

@@ -5,28 +5,22 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxIncludedFileInfo : QBDisposableObject
+public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>
 {
-    private MarshaledString _filename;
-
     public QBIdxIncludedFileInfo()
     {
     }
 
-    public QBIdxIncludedFileInfo(QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo _internal)
+    public QBIdxIncludedFileInfo(in QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo native)
     {
-        HashLoc = new QBIdxLoc(_internal.hashLoc);
-        Filename = new string(_internal.filename);
-        File = new QBFile(_internal.file);
-        IsImport = _internal.isImport;
-        IsAngled = _internal.isAngled;
-        IsModuleImport = _internal.isModuleImport;
+        MarshalFrom(in native);
     }
 
     public QBIdxLoc HashLoc { get; set; }
@@ -36,37 +30,79 @@ public unsafe partial class QBIdxIncludedFileInfo : QBDisposableObject
     public int IsAngled { get; set; }
     public int IsModuleImport { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo();
-        if (HashLoc != null)
-        {
-            _internal.hashLoc = HashLoc.ToNative();
-        }
-        _filename.Dispose();
-        if (Filename != null)
-        {
-            _filename = new MarshaledString(Filename, false);
-            _internal.filename = (sbyte*)_filename;
-        }
-        _internal.file = File;
-        _internal.isImport = IsImport;
-        _internal.isAngled = IsAngled;
-        _internal.isModuleImport = IsModuleImport;
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _filename.Dispose();
-    }
-
-
     public static implicit operator QBIdxIncludedFileInfo(QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo q)
     {
-        return new QBIdxIncludedFileInfo(q);
+        return new QBIdxIncludedFileInfo(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>();
+        if (!string.IsNullOrEmpty(Filename))
+            size += System.Text.Encoding.UTF8.GetByteCount(Filename) + 1;
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo> context)
+    {
+        new CXIdxIncludedFileInfoMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo native)
+    {
+        HashLoc = new QBIdxLoc(native.hashLoc);
+        Filename = new string(native.filename);
+        File = new QBFile(native.file);
+        IsImport = native.isImport;
+        IsAngled = native.isAngled;
+        IsModuleImport = native.isModuleImport;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxIncludedFileInfoMarshaller
+    {
+        public CXIdxIncludedFileInfoMarshaller(QuantumBinding.Clang.QBIdxIncludedFileInfo qBIdxIncludedFileInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo> context)
+        {
+            if (qBIdxIncludedFileInfo.HashLoc != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXIdxLoc* pField = &context.Destination[0].hashLoc)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXIdxLoc>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc>(fieldSpan, context.DataCursor);
+                    qBIdxIncludedFileInfo.HashLoc.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            if (qBIdxIncludedFileInfo.Filename != default)
+            {
+                var byteCount = System.Text.Encoding.UTF8.GetByteCount(qBIdxIncludedFileInfo.Filename);
+                var stringSpan = context.AllocateData(byteCount+1);
+                QuantumBinding.Utils.MarshalingUtils.MarshalStringToFixedUtf8Buffer(qBIdxIncludedFileInfo.Filename, stringSpan);
+                context.Destination[0].filename = (sbyte*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(stringSpan));
+            }
+
+            if (qBIdxIncludedFileInfo.File != default)
+            {
+                context.Destination[0].file = qBIdxIncludedFileInfo.File;
+            }
+
+            context.Destination[0].isImport = qBIdxIncludedFileInfo.IsImport;
+
+            context.Destination[0].isAngled = qBIdxIncludedFileInfo.IsAngled;
+
+            context.Destination[0].isModuleImport = qBIdxIncludedFileInfo.IsModuleImport;
+
+        }
+    }
 }
 
 

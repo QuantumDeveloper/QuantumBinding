@@ -21,29 +21,29 @@ public unsafe partial struct IndexerCallbacks
     ///<summary>
     /// Called periodically to check whether indexing should be aborted. Should return 0 to continue, and non-zero to abort.
     ///</summary>
-    public void* abortQuery;
+    public nuint abortQuery;
     ///<summary>
     /// Called at the end of indexing; passes the complete diagnostic set.
     ///</summary>
-    public void* diagnostic;
-    public void* enteredMainFile;
+    public nuint diagnostic;
+    public nuint enteredMainFile;
     ///<summary>
     /// Called when a file gets #included/#imported.
     ///</summary>
-    public void* ppIncludedFile;
+    public nuint ppIncludedFile;
     ///<summary>
     /// Called when a AST file (PCH or module) gets imported.
     ///</summary>
-    public void* importedASTFile;
+    public nuint importedASTFile;
     ///<summary>
     /// Called at the beginning of indexing a translation unit.
     ///</summary>
-    public void* startedTranslationUnit;
-    public void* indexDeclaration;
+    public nuint startedTranslationUnit;
+    public nuint indexDeclaration;
     ///<summary>
     /// Called to index a reference of an entity.
     ///</summary>
-    public void* indexEntityReference;
+    public nuint indexEntityReference;
 }
 
 

@@ -1,11 +1,10 @@
-﻿namespace QuantumBinding.Generator
+﻿namespace QuantumBinding.Generator;
+
+public enum ParameterKind
 {
-    public enum ParameterKind
-    {
-        Unknown,
-        In,
-        Out,
-        Ref, // ref
-        Readonly // in (analogue of const in C++) => starting from C# 7.2
-    }
+    Unknown,
+    In,
+    Out,
+    Ref, // ref
+    Readonly // in (analogue of const in C++) => starting from C# 7.2
 }

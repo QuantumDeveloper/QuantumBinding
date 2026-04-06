@@ -5,40 +5,68 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBTUResourceUsageEntry
+public unsafe partial class QBTUResourceUsageEntry : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>
 {
     public QBTUResourceUsageEntry()
     {
     }
 
-    public QBTUResourceUsageEntry(QuantumBinding.Clang.Interop.CXTUResourceUsageEntry _internal)
+    public QBTUResourceUsageEntry(in QuantumBinding.Clang.Interop.CXTUResourceUsageEntry native)
     {
-        Kind = _internal.kind;
-        Amount = _internal.amount;
+        MarshalFrom(in native);
     }
 
     public CXTUResourceUsageKind Kind { get; set; }
     public uint Amount { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXTUResourceUsageEntry ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXTUResourceUsageEntry();
-        _internal.kind = Kind;
-        _internal.amount = Amount;
-        return _internal;
-    }
-
     public static implicit operator QBTUResourceUsageEntry(QuantumBinding.Clang.Interop.CXTUResourceUsageEntry q)
     {
-        return new QBTUResourceUsageEntry(q);
+        return new QBTUResourceUsageEntry(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry> context)
+    {
+        new CXTUResourceUsageEntryMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXTUResourceUsageEntry native)
+    {
+        Kind = native.kind;
+        Amount = native.amount;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXTUResourceUsageEntryMarshaller
+    {
+        public CXTUResourceUsageEntryMarshaller(QuantumBinding.Clang.QBTUResourceUsageEntry qBTUResourceUsageEntry, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsageEntry> context)
+        {
+            context.Destination[0].kind = qBTUResourceUsageEntry.Kind;
+
+            context.Destination[0].amount = qBTUResourceUsageEntry.Amount;
+
+        }
+    }
 }
 
 
