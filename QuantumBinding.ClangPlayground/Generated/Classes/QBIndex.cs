@@ -100,7 +100,7 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
             int totalSize = 0;
             if (!string.IsNullOrEmpty(source_filename))
                 totalSize += source_filename.Length * sizeof(byte) + 1;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(clang_command_line_args);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(clang_command_line_args);
             if (unsaved_files != null)
                 totalSize += unsaved_files.GetSize();
             return totalSize;
@@ -195,7 +195,7 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
             int totalSize = 0;
             if (!string.IsNullOrEmpty(source_filename))
                 totalSize += source_filename.Length * sizeof(byte) + 1;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
             if (unsaved_files != null)
                 totalSize += unsaved_files.GetSize();
             return totalSize;
@@ -229,7 +229,7 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
             int totalSize = 0;
             if (!string.IsNullOrEmpty(source_filename))
                 totalSize += source_filename.Length * sizeof(byte) + 1;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
             for (var i = 0U; i < unsaved_files.Length; i++)
             {
                 if(unsaved_files[(int)i] == null)
@@ -275,7 +275,7 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
             int totalSize = 0;
             if (!string.IsNullOrEmpty(source_filename))
                 totalSize += source_filename.Length * sizeof(byte) + 1;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
             if (unsaved_files != null)
                 totalSize += unsaved_files.GetSize();
             return totalSize;

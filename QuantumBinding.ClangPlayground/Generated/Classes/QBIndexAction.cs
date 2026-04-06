@@ -49,7 +49,7 @@ public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Cla
                 totalSize += index_callbacks.GetSize();
             if (!string.IsNullOrEmpty(source_filename))
                 totalSize += source_filename.Length * sizeof(byte) + 1;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
             if (unsaved_files != null)
                 totalSize += unsaved_files.GetSize();
             return totalSize;
@@ -90,7 +90,7 @@ public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Cla
                 totalSize += index_callbacks.GetSize();
             if (!string.IsNullOrEmpty(source_filename))
                 totalSize += source_filename.Length * sizeof(byte) + 1;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(command_line_args);
             if (unsaved_files != null)
                 totalSize += unsaved_files.GetSize();
             return totalSize;

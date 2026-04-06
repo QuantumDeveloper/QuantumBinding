@@ -1192,8 +1192,8 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         int CalculateSize(System.ReadOnlySpan<string> startBuf, System.ReadOnlySpan<string> endBuf)
         {
             int totalSize = 0;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(startBuf);
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(endBuf);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(startBuf);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(endBuf);
             return totalSize;
         }
 

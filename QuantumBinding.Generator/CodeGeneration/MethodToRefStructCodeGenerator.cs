@@ -93,7 +93,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 {
                     if (parameter.Type.IsStringArray())
                     {
-                        WriteLine($"{MarshalContextCalculateSizeForStringArray}({parameter.Name});");
+                        WriteLine($"{totalSizeName} += {MarshalContextCalculateSizeForStringArray}({parameter.Name});");
                     }
                     else
                     {
