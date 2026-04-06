@@ -119,6 +119,7 @@ public class WrapperGenerator : CSharpCodeGenerator
     protected override void GenerateUsings()
     {
         PushBlock(CodeBlockKind.Usings);
+        WriteLine("using System;");
         WriteLine("using System.Runtime.InteropServices;");
         WriteLine($"using {Module.UtilsNamespace};");
         var fullInteropNamespace =  $"{@CurrentTranslationUnit.FullNamespace}.{TranslationUnit.InteropNamespaceExtension.SubNamespace}";
@@ -195,14 +196,14 @@ public class WrapperGenerator : CSharpCodeGenerator
 
     private void GenerateIMarshallableObjectInterface(Class @class)
     {
-        WriteLine($"public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct");
+        WriteLine($"public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct");
         WriteOpenBraceAndIndent();
         WriteLine($"var nativeSpan = context.AllocateNative<{@class.NativeStruct.FullName}>(1);");
         WriteLine($"var dataCursor = context.GetDataCursor();");
         WriteLine($"var internalContext = new MarshallingContext<{@class.NativeStruct.FullName}>(nativeSpan, dataCursor);");
         WriteLine($"this.MarshalTo(ref internalContext);");
         WriteLine($"context.SetDataCursor(internalContext.DataCursor);");
-        WriteLine($"return {UnsafeClassName}.AsPointer(ref nativeSpan[0]);");
+        WriteLine($"return (nuint){UnsafeClassName}.AsPointer(ref nativeSpan[0]);");
         UnindentAndWriteCloseBrace();
     }
 
@@ -386,7 +387,7 @@ public class WrapperGenerator : CSharpCodeGenerator
 
     private void GenerateMarshalFromMethod(Class @class)
     {
-        WriteLine($"public void MarshalFrom(in {@class.NativeStruct.FullName} {@class.NativeStructFieldName})");
+        WriteLine($"public void {MarshalFromMethodName}(in {@class.NativeStruct.FullName} {@class.NativeStructFieldName})");
         WriteOpenBraceAndIndent();
         GenerateNativeToManagedCode(@class);
         UnindentAndWriteCloseBrace();
@@ -442,10 +443,6 @@ public class WrapperGenerator : CSharpCodeGenerator
                 {
                     WriteLine($"{property.Name} = new string({@class.NativeStructFieldName}.{property.Field.Name});");
                 }
-                else if (property.Type.IsPointerToEnum() || property.Type.IsEnum())
-                {
-                    MarshalPointerToEnum(property, @class);
-                }
                 else if (property.Type.IsPointerToArray())
                 {
                     MarshalFromPointerToArray(property, @class, constArrayIndex++);
@@ -460,6 +457,10 @@ public class WrapperGenerator : CSharpCodeGenerator
                          property.Type.IsPointerToSystemType(out var systemType))
                 {
                     WriteLine($"{property.Name} = {@class.NativeStructFieldName}.{property.Field.Name};");
+                }
+                else if (property.Type.IsPointerToEnum() || property.Type.IsEnum())
+                {
+                    MarshalPointerToEnum(property, @class);
                 }
                 else // pointer to struct and pointer to simple types
                 {
@@ -557,17 +558,19 @@ public class WrapperGenerator : CSharpCodeGenerator
                                 $"{contextName}.Destination[0].{property.Field.Name} = marshallable.GetNativePointer(ref {contextName});");
                             UnindentAndWriteCloseBrace();
                             WriteLine($"else if ({@class.InputClassName}.{property.Name} is System.IntPtr ptr)");
-                            WriteOpenBraceAndIndent();
-                            WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (void*)ptr;");
-                            UnindentAndWriteCloseBrace();
                         }
                         else
                         {
                             WriteLine($"if ({@class.InputClassName}.{property.Name} is System.IntPtr ptr)");
-                            WriteOpenBraceAndIndent();
-                            WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (void*)ptr;");
-                            UnindentAndWriteCloseBrace();
                         }
+                        
+                        WriteOpenBraceAndIndent();
+                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (nuint)ptr;");
+                        UnindentAndWriteCloseBrace();
+                        WriteLine($"else if ({@class.InputClassName}.{property.Name} is nuint nPtr)");
+                        WriteOpenBraceAndIndent();
+                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (nuint)nPtr;");
+                        UnindentAndWriteCloseBrace();
 
                         NewLine();
                         continue;
@@ -758,6 +761,7 @@ public class WrapperGenerator : CSharpCodeGenerator
             {
                 index++;
                 var visitResult = TypePrinter.VisitParameter(param);
+                
                 Write($"{visitResult}");
 
                 if (index < ctor.InputParameters.Count)
@@ -775,6 +779,7 @@ public class WrapperGenerator : CSharpCodeGenerator
             foreach (var param in ctor.InputParameters)
             {
                 var visitResult = TypePrinter.VisitParameter(param);
+                
                 if (visitResult.Type == ctor.Class.NativeStruct.FullName)
                 {
                     if (string.IsNullOrEmpty(visitResult.ParameterModifier))
@@ -1127,7 +1132,7 @@ public class WrapperGenerator : CSharpCodeGenerator
             WriteLine($"var {tempArrayName} = new {propertyArrayElementType}[{size}];");
             WriteLine($"for (int i = 0; i < {size}; ++i)");
             WriteOpenBraceAndIndent();
-            WriteLine($"{property.Name}[i] = {parentClass.NativeStructFieldName}.{property.Field.Name}[i];");
+            WriteLine($"{tempArrayName}[i] = {parentClass.NativeStructFieldName}.{property.Field.Name}[i];");
             UnindentAndWriteCloseBrace();
             WriteLine($"{property.Name} = {tempArrayName};");
         }
@@ -1388,9 +1393,10 @@ public class WrapperGenerator : CSharpCodeGenerator
         }
         else if (arrayType.ElementType.IsPurePointer())
         {
+            var arrayName = TargetRuntime == TargetRuntime.Net8Plus ? $"{@class.InputClassName}.{property.Name}.Span" : $"{@class.InputClassName}.{property.Name}";
             WriteLine($"for (int i = 0; i < {size}; ++i)");
             WriteOpenBraceAndIndent();
-            WriteLine($"{contextName}.Destination[0].{property.Field.Name}[i] = {property.Name}[i];");
+            WriteLine($"{contextName}.Destination[0].{property.Field.Name}[i] = {arrayName}[i];");
             UnindentAndWriteCloseBrace();
         }
         else if (arrayType.Declaration is Enumeration @enum)

@@ -34,7 +34,7 @@ public unsafe static class ClangNative
     ///<summary>
     /// free memory allocated by libclang, such as the buffer returned by CXVirtualFileOverlay() or clang_ModuleMapDescriptor_writeToBuffer().
     ///</summary>
-    public static void Free(ref void* buffer)
+    public static void Free(ref nuint buffer)
     {
         QuantumBinding.Clang.Interop.ClangInterop.clang_free(buffer);
     }
@@ -45,6 +45,35 @@ public unsafe static class ClangNative
     public static QBModuleMapDescriptor ModuleMapDescriptor_create(uint options)
     {
         return QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_create(options);
+    }
+
+    ///<summary>
+    /// Prune module files in the module cache directory that haven't been accessed in a long time.
+    ///</summary>
+    public static void ModuleCache_prune(string path, long pruneInterval, long pruneAfter)
+    {
+        int CalculateSize(string path)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(path))
+                totalSize += path.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(path);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(path, ref currentCursor);
+            QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleCache_prune(arg0, pruneInterval, pruneAfter);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -68,12 +97,31 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBDiagnosticSet LoadDiagnostics(string file, out CXLoadDiag_Error error, out QBString errorString)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(file, false);
-        QuantumBinding.Clang.Interop.CXString arg2;
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_loadDiagnostics(arg0, out error, out arg2);
-        NativeUtils.Free(arg0);
-        errorString = new QBString(arg2);
-        return result;
+        int CalculateSize(string file)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(file))
+                totalSize += file.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(file);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(file, ref currentCursor);
+            QuantumBinding.Clang.Interop.CXString arg2;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_loadDiagnostics(arg0, out error, out arg2);
+            errorString = new QBString(arg2);
+            return result;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -98,6 +146,35 @@ public unsafe static class ClangNative
     public static QBIndex CreateIndex(int excludeDeclarationsFromPCH, int displayDiagnostics)
     {
         return QuantumBinding.Clang.Interop.ClangInterop.clang_createIndex(excludeDeclarationsFromPCH, displayDiagnostics);
+    }
+
+    ///<summary>
+    /// Provides a shared context for creating translation units.
+    ///</summary>
+    public static QBIndex CreateIndexWithOptions(in QBIndexOptions options)
+    {
+        int CalculateSize(QBIndexOptions options)
+        {
+            int totalSize = 0;
+            if (options != null)
+                totalSize += options.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(options);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIndexOptions, QuantumBinding.Clang.Interop.CXIndexOptions>(options, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_createIndexWithOptions(arg0);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -206,14 +283,40 @@ public unsafe static class ClangNative
     }
 
     ///<summary>
+    /// Returns a string containing the spelling of the binary operator.
+    ///</summary>
+    public static QBString Cursor_getBinaryOpcodeStr(CX_BinaryOperatorKind op)
+    {
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getBinaryOpcodeStr(op);
+    }
+
+    ///<summary>
     /// Construct a USR for a specified Objective-C class.
     ///</summary>
     public static QBString ConstructUSR_ObjCClass(string class_name)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(class_name, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCClass(arg0);
-        NativeUtils.Free(arg0);
-        return result;
+        int CalculateSize(string class_name)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(class_name))
+                totalSize += class_name.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(class_name);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(class_name, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCClass(arg0);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -221,12 +324,31 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBString ConstructUSR_ObjCCategory(string class_name, string category_name)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(class_name, false);
-        var arg1 = (sbyte*)NativeUtils.StringToPointer(category_name, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCCategory(arg0, arg1);
-        NativeUtils.Free(arg0);
-        NativeUtils.Free(arg1);
-        return result;
+        int CalculateSize(string class_name, string category_name)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(class_name))
+                totalSize += class_name.Length * sizeof(byte) + 1;
+            if (!string.IsNullOrEmpty(category_name))
+                totalSize += category_name.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(class_name, category_name);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(class_name, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(category_name, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCCategory(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -234,10 +356,28 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBString ConstructUSR_ObjCProtocol(string protocol_name)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(protocol_name, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCProtocol(arg0);
-        NativeUtils.Free(arg0);
-        return result;
+        int CalculateSize(string protocol_name)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(protocol_name))
+                totalSize += protocol_name.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(protocol_name);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(protocol_name, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCProtocol(arg0);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -245,12 +385,31 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBString ConstructUSR_ObjCIvar(string name, QBString classUSR)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(name, false);
-        var arg1 = ReferenceEquals(classUSR, null) ? new QuantumBinding.Clang.Interop.CXString() : classUSR.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCIvar(arg0, arg1);
-        NativeUtils.Free(arg0);
-        classUSR?.Dispose();
-        return result;
+        int CalculateSize(string name, QBString classUSR)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(name))
+                totalSize += name.Length * sizeof(byte) + 1;
+            if (classUSR != null)
+                totalSize += classUSR.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(name, classUSR);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(name, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(classUSR, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCIvar(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -258,12 +417,31 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBString ConstructUSR_ObjCMethod(string name, uint isInstanceMethod, QBString classUSR)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(name, false);
-        var arg2 = ReferenceEquals(classUSR, null) ? new QuantumBinding.Clang.Interop.CXString() : classUSR.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCMethod(arg0, isInstanceMethod, arg2);
-        NativeUtils.Free(arg0);
-        classUSR?.Dispose();
-        return result;
+        int CalculateSize(string name, QBString classUSR)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(name))
+                totalSize += name.Length * sizeof(byte) + 1;
+            if (classUSR != null)
+                totalSize += classUSR.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(name, classUSR);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(name, ref currentCursor);
+            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(classUSR, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCMethod(arg0, isInstanceMethod, arg2);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -271,12 +449,31 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBString ConstructUSR_ObjCProperty(string property, QBString classUSR)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(property, false);
-        var arg1 = ReferenceEquals(classUSR, null) ? new QuantumBinding.Clang.Interop.CXString() : classUSR.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCProperty(arg0, arg1);
-        NativeUtils.Free(arg0);
-        classUSR?.Dispose();
-        return result;
+        int CalculateSize(string property, QBString classUSR)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(property))
+                totalSize += property.Length * sizeof(byte) + 1;
+            if (classUSR != null)
+                totalSize += classUSR.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(property, classUSR);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(property, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(classUSR, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_constructUSR_ObjCProperty(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -292,7 +489,7 @@ public unsafe static class ClangNative
         QuantumBinding.Clang.Interop.ClangInterop.clang_enableStackTraces();
     }
 
-    public static void ExecuteOnThread(void* fn, ref void* user_data, uint stack_size)
+    public static void ExecuteOnThread(nuint fn, ref nuint user_data, uint stack_size)
     {
         QuantumBinding.Clang.Interop.ClangInterop.clang_executeOnThread(fn, user_data, stack_size);
     }
@@ -308,168 +505,267 @@ public unsafe static class ClangNative
     ///<summary>
     /// Sort the code-completion results in case-insensitive alphabetical order.
     ///</summary>
-    public static void SortCodeCompletionResults(QBCodeCompleteResults[] results, uint numResults)
+    public static void SortCodeCompletionResults(System.ReadOnlySpan<QBCodeCompleteResults> results, uint numResults)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        QuantumBinding.Clang.Interop.ClangInterop.clang_sortCodeCompletionResults(arg0, numResults);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            QuantumBinding.Clang.Interop.ClangInterop.clang_sortCodeCompletionResults(arg0, numResults);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
         }
     }
 
     ///<summary>
     /// Determine the number of diagnostics produced prior to the location where code completion was performed.
     ///</summary>
-    public static uint CodeCompleteGetNumDiagnostics(params QBCodeCompleteResults[] results)
+    public static uint CodeCompleteGetNumDiagnostics(System.ReadOnlySpan<QBCodeCompleteResults> results)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetNumDiagnostics(arg0);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetNumDiagnostics(arg0);
         }
-        return result;
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Retrieve a diagnostic associated with the given code completion.
     ///</summary>
-    public static QBDiagnostic CodeCompleteGetDiagnostic(QBCodeCompleteResults[] results, uint index)
+    public static QBDiagnostic CodeCompleteGetDiagnostic(System.ReadOnlySpan<QBCodeCompleteResults> results, uint index)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetDiagnostic(arg0, index);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetDiagnostic(arg0, index);
         }
-        return result;
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Determines what completions are appropriate for the context the given code completion.
     ///</summary>
-    public static ulong CodeCompleteGetContexts(params QBCodeCompleteResults[] results)
+    public static ulong CodeCompleteGetContexts(System.ReadOnlySpan<QBCodeCompleteResults> results)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetContexts(arg0);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetContexts(arg0);
         }
-        return result;
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Returns the cursor kind for the container for the current code completion context. The container is only guaranteed to be set for contexts where a container exists (i.e. member accesses or Objective-C message sends); if there is not a container, this function will return CXCursor_InvalidCode.
     ///</summary>
-    public static CXCursorKind CodeCompleteGetContainerKind(QBCodeCompleteResults[] results, out uint isIncomplete)
+    public static CXCursorKind CodeCompleteGetContainerKind(System.ReadOnlySpan<QBCodeCompleteResults> results, out uint isIncomplete)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetContainerKind(arg0, out isIncomplete);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetContainerKind(arg0, out isIncomplete);
         }
-        return result;
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Returns the USR for the container for the current code completion context. If there is not a container for the current context, this function will return the empty string.
     ///</summary>
-    public static QBString CodeCompleteGetContainerUSR(params QBCodeCompleteResults[] results)
+    public static QBString CodeCompleteGetContainerUSR(System.ReadOnlySpan<QBCodeCompleteResults> results)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetContainerUSR(arg0);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetContainerUSR(arg0);
         }
-        return result;
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Returns the currently-entered selector for an Objective-C message send, formatted like "initWithFoo:bar:". Only guaranteed to return a non-empty string for CXCompletionContext_ObjCInstanceMessage and CXCompletionContext_ObjCClassMessage.
     ///</summary>
-    public static QBString CodeCompleteGetObjCSelector(params QBCodeCompleteResults[] results)
+    public static QBString CodeCompleteGetObjCSelector(System.ReadOnlySpan<QBCodeCompleteResults> results)
     {
-        var arg0 = ReferenceEquals(results, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results.Length);
-        if (!ReferenceEquals(results, null))
+        int CalculateSize(System.ReadOnlySpan<QBCodeCompleteResults> results)
         {
-            for (var i = 0U; i < results.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < results.Length; i++)
             {
-                arg0[i] = results[i].ToNative();
+                if(results[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCodeCompleteResults>();
+                else
+                    totalSize += results[(int)i].GetSize();
             }
+            return totalSize;
         }
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetObjCSelector(arg0);
-        if (!ReferenceEquals(results, null))
+
+        var totalSize = CalculateSize(results);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
         {
-            for (var i = 0U; i < results.Length; ++i)
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXCodeCompleteResults* arg0 = null;
+            if (!results.IsEmpty)
             {
-                results[i]?.Dispose();
+                arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBCodeCompleteResults, QuantumBinding.Clang.Interop.CXCodeCompleteResults>(results, ref currentCursor);
             }
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteGetObjCSelector(arg0);
         }
-        return result;
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -488,28 +784,6 @@ public unsafe static class ClangNative
         QuantumBinding.Clang.Interop.ClangInterop.clang_toggleCrashRecovery(isEnabled);
     }
 
-    ///<summary>
-    /// Retrieve a remapping.
-    ///</summary>
-    public static QBRemapping GetRemappings(string path)
-    {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(path, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getRemappings(arg0);
-        NativeUtils.Free(arg0);
-        return result;
-    }
-
-    ///<summary>
-    /// Retrieve a remapping.
-    ///</summary>
-    public static QBRemapping GetRemappingsFromFileList(in string[] filePaths, uint numFiles)
-    {
-        var arg0 = (sbyte**)NativeUtils.StringArrayToPointer(filePaths, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getRemappingsFromFileList(arg0, numFiles);
-        NativeUtils.Free(arg0);
-        return result;
-    }
-
     public static int Index_isEntityObjCContainerKind(CXIdxEntityKind param0)
     {
         return QuantumBinding.Clang.Interop.ClangInterop.clang_index_isEntityObjCContainerKind(param0);
@@ -517,78 +791,205 @@ public unsafe static class ClangNative
 
     public static QBIdxObjCContainerDeclInfo Index_getObjCContainerDeclInfo(in QBIdxDeclInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCContainerDeclInfo(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxObjCContainerDeclInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxDeclInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxDeclInfo, QuantumBinding.Clang.Interop.CXIdxDeclInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCContainerDeclInfo(arg0);
+            var wrappedResult = new QBIdxObjCContainerDeclInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     public static QBIdxObjCInterfaceDeclInfo Index_getObjCInterfaceDeclInfo(in QBIdxDeclInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCInterfaceDeclInfo(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxObjCInterfaceDeclInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxDeclInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxDeclInfo, QuantumBinding.Clang.Interop.CXIdxDeclInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCInterfaceDeclInfo(arg0);
+            var wrappedResult = new QBIdxObjCInterfaceDeclInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     public static QBIdxObjCCategoryDeclInfo Index_getObjCCategoryDeclInfo(in QBIdxDeclInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCCategoryDeclInfo(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxObjCCategoryDeclInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxDeclInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxDeclInfo, QuantumBinding.Clang.Interop.CXIdxDeclInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCCategoryDeclInfo(arg0);
+            var wrappedResult = new QBIdxObjCCategoryDeclInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     public static QBIdxObjCProtocolRefListInfo Index_getObjCProtocolRefListInfo(in QBIdxDeclInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCProtocolRefListInfo(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxObjCProtocolRefListInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxDeclInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxDeclInfo, QuantumBinding.Clang.Interop.CXIdxDeclInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCProtocolRefListInfo(arg0);
+            var wrappedResult = new QBIdxObjCProtocolRefListInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     public static QBIdxObjCPropertyDeclInfo Index_getObjCPropertyDeclInfo(in QBIdxDeclInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCPropertyDeclInfo(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxObjCPropertyDeclInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxDeclInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxDeclInfo, QuantumBinding.Clang.Interop.CXIdxDeclInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getObjCPropertyDeclInfo(arg0);
+            var wrappedResult = new QBIdxObjCPropertyDeclInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     public static QBIdxIBOutletCollectionAttrInfo Index_getIBOutletCollectionAttrInfo(in QBIdxAttrInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getIBOutletCollectionAttrInfo(arg0);
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxIBOutletCollectionAttrInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxAttrInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxAttrInfo, QuantumBinding.Clang.Interop.CXIdxAttrInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getIBOutletCollectionAttrInfo(arg0);
+            var wrappedResult = new QBIdxIBOutletCollectionAttrInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     public static QBIdxCXXClassDeclInfo Index_getCXXClassDeclInfo(in QBIdxDeclInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getCXXClassDeclInfo(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        var wrappedResult = new QBIdxCXXClassDeclInfo(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBIdxDeclInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxDeclInfo, QuantumBinding.Clang.Interop.CXIdxDeclInfo>(param0, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getCXXClassDeclInfo(arg0);
+            var wrappedResult = new QBIdxCXXClassDeclInfo(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -596,21 +997,58 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBIdxClientContainer Index_getClientContainer(in QBIdxContainerInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getClientContainer(arg0);
-        NativeUtils.Free(arg0);
-        return result;
+        int CalculateSize(QBIdxContainerInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxContainerInfo, QuantumBinding.Clang.Interop.CXIdxContainerInfo>(param0, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_index_getClientContainer(arg0);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// For setting a custom CXIdxClientContainer attached to a container.
     ///</summary>
-    public static void Index_setClientContainer(in QBIdxContainerInfo param0, QBIdxClientContainer param1)
+    public static void Index_setClientContainer(in QBIdxContainerInfo param0, QuantumBinding.Clang.QBIdxClientContainer param1)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var arg1 = ReferenceEquals(param1, null) ? new CXIdxClientContainerImpl() : (CXIdxClientContainerImpl)param1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_index_setClientContainer(arg0, arg1);
-        NativeUtils.Free(arg0);
+        int CalculateSize(QBIdxContainerInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxContainerInfo, QuantumBinding.Clang.Interop.CXIdxContainerInfo>(param0, ref currentCursor);
+            var arg1 = param1 == null ? new CXIdxClientContainerImpl() : (CXIdxClientContainerImpl)param1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_index_setClientContainer(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -618,35 +1056,155 @@ public unsafe static class ClangNative
     ///</summary>
     public static QBIdxClientEntity Index_getClientEntity(in QBIdxEntityInfo param0)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_index_getClientEntity(arg0);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
-        return result;
+        int CalculateSize(QBIdxEntityInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxEntityInfo, QuantumBinding.Clang.Interop.CXIdxEntityInfo>(param0, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_index_getClientEntity(arg0);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// For setting a custom CXIdxClientEntity attached to an entity.
     ///</summary>
-    public static void Index_setClientEntity(in QBIdxEntityInfo param0, QBIdxClientEntity param1)
+    public static void Index_setClientEntity(in QBIdxEntityInfo param0, QuantumBinding.Clang.QBIdxClientEntity param1)
     {
-        var arg0 = ReferenceEquals(param0, null) ? null : NativeUtils.StructOrEnumToPointer(param0.ToNative());
-        var arg1 = ReferenceEquals(param1, null) ? new CXIdxClientEntityImpl() : (CXIdxClientEntityImpl)param1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_index_setClientEntity(arg0, arg1);
-        param0?.Dispose();
-        NativeUtils.Free(arg0);
+        int CalculateSize(QBIdxEntityInfo param0)
+        {
+            int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxEntityInfo, QuantumBinding.Clang.Interop.CXIdxEntityInfo>(param0, ref currentCursor);
+            var arg1 = param1 == null ? new CXIdxClientEntityImpl() : (CXIdxClientEntityImpl)param1;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_index_setClientEntity(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
+    }
+
+    ///<summary>
+    /// Retrieve the spelling of a given CXBinaryOperatorKind.
+    ///</summary>
+    public static QBString GetBinaryOperatorKindSpelling(CXBinaryOperatorKind kind)
+    {
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getBinaryOperatorKindSpelling(kind);
+    }
+
+    ///<summary>
+    /// Retrieve the spelling of a given CXUnaryOperatorKind.
+    ///</summary>
+    public static QBString GetUnaryOperatorKindSpelling(CXUnaryOperatorKind kind)
+    {
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getUnaryOperatorKindSpelling(kind);
+    }
+
+    public static QBRemapping GetRemappings(string param0)
+    {
+        int CalculateSize(string param0)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(param0))
+                totalSize += param0.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(param0, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getRemappings(arg0);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
+    }
+
+    public static QBRemapping GetRemappingsFromFileList(System.ReadOnlySpan<string> param0, uint param1)
+    {
+        int CalculateSize(System.ReadOnlySpan<string> param0)
+        {
+            int totalSize = 0;
+            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(param0);
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param0);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(param0, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getRemappingsFromFileList(arg0, param1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Generate a single symbol symbol graph for the given USR. Returns a null string if the associated symbol can not be found in the provided CXAPISet.
     ///</summary>
-    public static QBString GetSymbolGraphForUSR(string usr, QBAPISet api)
+    public static QBString GetSymbolGraphForUSR(string usr, QuantumBinding.Clang.QBAPISet api)
     {
-        var arg0 = (sbyte*)NativeUtils.StringToPointer(usr, false);
-        var arg1 = ReferenceEquals(api, null) ? new CXAPISetImpl() : (CXAPISetImpl)api;
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getSymbolGraphForUSR(arg0, arg1);
-        NativeUtils.Free(arg0);
-        return result;
+        int CalculateSize(string usr)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(usr))
+                totalSize += usr.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(usr);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(usr, ref currentCursor);
+            var arg1 = api == null ? new CXAPISetImpl() : (CXAPISetImpl)api;
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getSymbolGraphForUSR(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
 }

@@ -418,8 +418,6 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         GeneratePinnableReference(@class);
 
         GenerateOverloads(@class);
-            
-        // GenerateMethodMarshalContexts(@class);
 
         UnindentAndWriteCloseBrace();
 
@@ -733,6 +731,9 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
             NewLine();
             WriteStaticInvokeMethodDelegateCompatible(@delegate, @delegateParams, nativeParams, paramsWithoutTypes,
                 returnType);
+            WriteStaticInvokeMethodDelegateForNuintCompatible(@delegate, @delegateParams, nativeParams,
+                paramsWithoutTypes,
+                returnType);
         }
         else
         {
@@ -745,6 +746,8 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
             WriteInvokeMethodDelegatePreview(@delegate, @nativeParams, paramsWithoutTypes, returnType);
             WriteStaticInvokeMethodDelegatePreview(@delegate, @delegateParams, nativeParams, paramsWithoutTypes,
                 returnType);
+            WriteStaticInvokeMethodDelegateForNuintPreview(@delegate, @delegateParams, nativeParams, paramsWithoutTypes,
+                returnType);
         }
 
         NewLine();
@@ -755,6 +758,9 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
 
     private void WriteDelegateWrapperConstructorCompatible(Delegate @delegate, string pointerArg, string delegateParams)
     {
+        WriteLine($"public {@delegate.Name}(nuint {pointerArg}) : this((void*) {pointerArg}) {{ }}");
+        NewLine();
+        
         WriteLine($"public {@delegate.Name}(void* {pointerArg})");
         WriteOpenBraceAndIndent();
             
@@ -775,6 +781,8 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         
     private void WriteDelegateWrapperConstructorPreview(Delegate @delegate, string pointerArg, string delegateParams)
     {
+        WriteLine($"public {@delegate.Name}(nuint {pointerArg}) : this((void*) {pointerArg}) {{ }}");
+        NewLine();
         WriteLine($"public {@delegate.Name}(void* {pointerArg})");
         WriteOpenBraceAndIndent();
         WriteLine($"{DelegateNativePointerName} = {pointerArg};");
@@ -819,8 +827,9 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         
     private void WriteStaticInvokeMethodDelegateCompatible(Delegate @delegate, TypePrinterResult @delegateParams, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
     {
-        @params.Type = string.IsNullOrEmpty(@params.Type) ? "void* ptr" : $"void* ptr, {@params}";
-        WriteLine($"public static {returnType} Invoke({@params})");
+        TypePrinterResult localParams = @params.Type;
+        localParams.Type = string.IsNullOrEmpty(localParams.Type) ? "void* ptr" : $"void* ptr, {localParams}";
+        WriteLine($"public static {returnType} Invoke({localParams})");
         WriteOpenBraceAndIndent();
         string returnKeyword = "return";
         if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
@@ -834,6 +843,28 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         WriteLine("else");
         WriteOpenBraceAndIndent();
         WriteLine($"{returnKeyword} ((delegate* unmanaged[Cdecl]<{delegateParams}>)ptr)({argumentsOnly});");
+        UnindentAndWriteCloseBrace();
+        UnindentAndWriteCloseBrace();
+    }
+    
+    private void WriteStaticInvokeMethodDelegateForNuintCompatible(Delegate @delegate, TypePrinterResult @delegateParams, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
+    {
+        TypePrinterResult localParams = @params.Type;
+        localParams.Type = string.IsNullOrEmpty(@params.Type) ? "nuint ptr" : $"nuint ptr, {localParams}";
+        WriteLine($"public static {returnType} Invoke({localParams})");
+        WriteOpenBraceAndIndent();
+        string returnKeyword = "return";
+        if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
+        {
+            returnKeyword = string.Empty;
+        }
+        WriteCheckForWindowsRuntimeString();
+        WriteOpenBraceAndIndent();
+        WriteLine($"{returnKeyword} ((delegate* unmanaged[Stdcall]<{delegateParams}>)(void*)ptr)({argumentsOnly});");
+        UnindentAndWriteCloseBrace();
+        WriteLine("else");
+        WriteOpenBraceAndIndent();
+        WriteLine($"{returnKeyword} ((delegate* unmanaged[Cdecl]<{delegateParams}>)(void*)ptr)({argumentsOnly});");
         UnindentAndWriteCloseBrace();
         UnindentAndWriteCloseBrace();
     }
@@ -853,8 +884,9 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         
     private void WriteStaticInvokeMethodDelegatePreview(Delegate @delegate, TypePrinterResult @delegateParams, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
     {
-        @params.Type = string.IsNullOrEmpty(@params.Type) ? "void* ptr" : $"void* ptr, {@params}";
-        WriteLine($"public static {returnType} Invoke({@params})");
+        TypePrinterResult localParams = @params.Type;
+        localParams.Type = string.IsNullOrEmpty(@params.Type) ? "void* ptr" : $"void* ptr, {localParams}";
+        WriteLine($"public static {returnType} Invoke({localParams})");
         WriteOpenBraceAndIndent();
         string returnKeyword = "return";
         if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
@@ -864,10 +896,27 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         WriteLine($"{returnKeyword} ((delegate* unmanaged<{delegateParams}>)ptr)({argumentsOnly});");
         UnindentAndWriteCloseBrace();
     }
+    
+    private void WriteStaticInvokeMethodDelegateForNuintPreview(Delegate @delegate, TypePrinterResult @delegateParams, TypePrinterResult @params, TypePrinterResult argumentsOnly, TypePrinterResult returnType)
+    {
+        TypePrinterResult localParams = @params.Type;
+        localParams.Type = string.IsNullOrEmpty(@params.Type) ? "nuint ptr" : $"nuint ptr, {localParams}";
+        WriteLine($"public static {returnType} Invoke({localParams})");
+        WriteOpenBraceAndIndent();
+        string returnKeyword = "return";
+        if (@delegate.ReturnType.IsPrimitiveType(out var t) && t == PrimitiveType.Void)
+        {
+            returnKeyword = string.Empty;
+        }
+        WriteLine($"{returnKeyword} ((delegate* unmanaged<{delegateParams}>)(void*)ptr)({argumentsOnly});");
+        UnindentAndWriteCloseBrace();
+    }
 
     private void WriteImplicitDelegateConversion(Delegate @delegate, string pointerArg)
     {
         WriteLine($"public static explicit operator {@delegate.Name}(void* {pointerArg}) => new({pointerArg});");
+        NewLine();
+        WriteLine($"public static explicit operator {@delegate.Name}(nuint {pointerArg}) => new({pointerArg});");
     }
 
     private void WriteCheckForWindowsRuntimeString()
@@ -997,9 +1046,7 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
             {
                 if (parameter.Type.IsStringArray())
                 {
-                    WriteLine(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name}.Span);"
-                        : $"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name});");
+                    WriteLine($"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name});");
                 }
                 else
                 {

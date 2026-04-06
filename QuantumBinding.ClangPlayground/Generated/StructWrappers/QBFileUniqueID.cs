@@ -5,44 +5,71 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBFileUniqueID
+public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXFileUniqueID>
 {
     public QBFileUniqueID()
     {
     }
 
-    public QBFileUniqueID(QuantumBinding.Clang.Interop.CXFileUniqueID _internal)
+    public QBFileUniqueID(in QuantumBinding.Clang.Interop.CXFileUniqueID native)
     {
-        Data = NativeUtils.PointerToManagedArray(_internal.data, 3);
+        MarshalFrom(in native);
     }
 
-    public IReadOnlyList<ulong> Data { get; set; }
-
-    public QuantumBinding.Clang.Interop.CXFileUniqueID ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXFileUniqueID();
-        if(Data != null)
-        {
-            if (Data.Count > 3)
-                throw new System.ArgumentOutOfRangeException(nameof(Data), "Array is out of bounds. Size should not be more than 3");
-
-            NativeUtils.PrimitiveToFixedArray(_internal.data, 3, Data);
-        }
-        return _internal;
-    }
+    public System.ReadOnlyMemory<ulong> Data { get; set; }
 
     public static implicit operator QBFileUniqueID(QuantumBinding.Clang.Interop.CXFileUniqueID q)
     {
-        return new QBFileUniqueID(q);
+        return new QBFileUniqueID(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXFileUniqueID>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXFileUniqueID> context)
+    {
+        new CXFileUniqueIDMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXFileUniqueID native)
+    {
+        var tmpData = new ulong[3];
+        var pData = (ulong*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in native.data[0]));
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(pData, 3, tmpData);
+        Data = tmpData;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXFileUniqueID>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXFileUniqueID>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXFileUniqueIDMarshaller
+    {
+        public CXFileUniqueIDMarshaller(QuantumBinding.Clang.QBFileUniqueID qBFileUniqueID, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXFileUniqueID> context)
+        {
+            ref var tmpDestination0 = ref context.Destination[0];
+            fixed (ulong* pDest = tmpDestination0.data)
+            {
+                QuantumBinding.Utils.MarshalingUtils.MarshalFixedArrayToPointer(qBFileUniqueID.Data.Span, pDest, 3);
+            }
+
+        }
+    }
 }
 
 

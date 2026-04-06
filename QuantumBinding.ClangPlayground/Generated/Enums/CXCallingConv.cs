@@ -86,6 +86,81 @@ public enum CXCallingConv : uint
     ///<summary>
     /// Alias for compatibility with older versions of API.
     ///</summary>
+    CXCallingConv_M68kRTD = 19,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_PreserveNone = 20,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVectorCall = 21,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_32 = 22,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_64 = 23,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_128 = 24,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_256 = 25,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_512 = 26,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_1024 = 27,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_2048 = 28,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_4096 = 29,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_8192 = 30,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_16384 = 31,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_32768 = 32,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
+    CXCallingConv_RISCVVLSCall_65536 = 33,
+
+    ///<summary>
+    /// Alias for compatibility with older versions of API.
+    ///</summary>
     CXCallingConv_Invalid = 100,
 
     ///<summary>

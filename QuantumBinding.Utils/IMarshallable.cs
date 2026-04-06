@@ -21,7 +21,7 @@ public interface IUnmanagedWrapper<TNative> where TNative : unmanaged
 public interface IMarshallableObject
 {
     int GetSize();
-    unsafe void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct;
+    nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct;
 }
 #endif
 

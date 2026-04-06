@@ -209,9 +209,9 @@ public class NormalizeParametersPass : PreGeneratorPass
             parameter.ParameterKind = ParameterKind.Out;
         }
 
-        if (CodeGenerator.ReservedWords.Contains(parameter.Name))
+        if (CodeGenerator.ReservedWords.Contains(parameter.Name.ToLower()))
         {
-            parameter.Name = "@" + parameter.Name;
+            parameter.Name = "@" + parameter.Name.ToLower();
         }
 
         if (parameter.Type.IsPointer() && !parameter.Type.IsPointerToArray() && parameter.ParameterKind != ParameterKind.Out)

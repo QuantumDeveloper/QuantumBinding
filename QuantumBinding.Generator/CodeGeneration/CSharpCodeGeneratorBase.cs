@@ -230,37 +230,14 @@ public abstract class CSharpCodeGeneratorBase : CodeGenerator
             WriteLine($"public {fieldType.Type} item{i};");
         }
             
-        if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
-        {
-            fieldType.Type = "void*";
-        }
-            
         NewLine();
         // ====== Get only version of implementing Fixed buffers
             
-        /*
-        WriteLine($"public ref {fieldType.Type} this[int index]");
-        WriteOpenBraceAndIndent();
-        WriteLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        WriteLine($"get => MemoryMarshal.CreateSpan(ref item{0}, {fixedStructInfo.Size})[index];");
-        UnindentAndWriteCloseBrace();
-        NewLine();
-        WriteLine("[MethodImpl(MethodImplOptions.AggressiveInlining)]");
-        WriteLine($"public Span<{fieldType.Type}> AsSpan() => MemoryMarshal.CreateSpan(ref item{0}, {fixedStructInfo.Size});");
-        */
-            
         WriteLine($"public {fieldType.Type} this[int index]");
         WriteOpenBraceAndIndent();
-        if (fixedStructInfo.Field.Type.IsPointerToVoidArray())
-        {
-            WriteLine($"get => (void*)Unsafe.Add(ref item0, index);");
-            WriteLine($"set => Unsafe.Add(ref item0, index) = (nuint)value;");
-        }
-        else
-        {
-            WriteLine($"get => Unsafe.Add(ref item0, index);");
-            WriteLine($"set => Unsafe.Add(ref item0, index) = value;");
-        }
+        
+        WriteLine($"get => Unsafe.Add(ref item0, index);");
+        WriteLine($"set => Unsafe.Add(ref item0, index) = value;");
             
         UnindentAndWriteCloseBrace();
             
@@ -294,6 +271,7 @@ public abstract class CSharpCodeGeneratorBase : CodeGenerator
             {
                 index++;
                 var visitResult = TypePrinter.VisitParameter(param);
+                
                 Write($"{visitResult}");
                 if (index < ctor.InputParameters.Count)
                 {

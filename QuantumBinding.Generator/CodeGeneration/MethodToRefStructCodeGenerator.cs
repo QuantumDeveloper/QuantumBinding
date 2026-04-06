@@ -93,9 +93,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 {
                     if (parameter.Type.IsStringArray())
                     {
-                        WriteLine(TargetRuntime == TargetRuntime.Net8Plus
-                            ? $"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name}.Span);"
-                            : $"{totalSizeName} += {TextGenerator.MarshalContextCalculateSizeForStringArray}({parameter.Name});");
+                        WriteLine($"{MarshalContextCalculateSizeForStringArray}({parameter.Name});");
                     }
                     else
                     {
@@ -180,23 +178,11 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 parameters.Insert(0, instanceParameter);
             }
             
-            //var invokeParametersResult = TypePrinter.VisitParameters(parameters, MarshalTypes.SkipParamTypes);
-            //var spanParameterName = "mainBuffer";
-            
             WriteTryFinallyBlock(() =>
             {
                 var contextGenerator = new MarshalContextToFunctionCodeGenerator(Options, CurrentTranslationUnit, ConversionMethodName);
                 var result = contextGenerator.GenerateMarshalBody(method);
                 WriteLine(result.ToString());
-                
-                // if (isVoid)
-                // {
-                //     WriteLine($"{method.MarshalContextName}.Invoke({spanParameterName}, {invokeParametersResult});");
-                // }
-                // else
-                // {
-                //     WriteLine($"return {method.MarshalContextName}.Invoke({spanParameterName}, {invokeParametersResult});");
-                // }
             });
         }
     }

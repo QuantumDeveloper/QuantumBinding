@@ -5,43 +5,72 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBVersion
+public unsafe partial class QBVersion : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXVersion>
 {
     public QBVersion()
     {
     }
 
-    public QBVersion(QuantumBinding.Clang.Interop.CXVersion _internal)
+    public QBVersion(in QuantumBinding.Clang.Interop.CXVersion native)
     {
-        Major = _internal.major;
-        Minor = _internal.minor;
-        Subminor = _internal.subminor;
+        MarshalFrom(in native);
     }
 
     public int Major { get; set; }
     public int Minor { get; set; }
     public int Subminor { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXVersion ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXVersion();
-        _internal.major = Major;
-        _internal.minor = Minor;
-        _internal.subminor = Subminor;
-        return _internal;
-    }
-
     public static implicit operator QBVersion(QuantumBinding.Clang.Interop.CXVersion q)
     {
-        return new QBVersion(q);
+        return new QBVersion(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXVersion>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXVersion> context)
+    {
+        new CXVersionMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXVersion native)
+    {
+        Major = native.major;
+        Minor = native.minor;
+        Subminor = native.subminor;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXVersion>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXVersion>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXVersionMarshaller
+    {
+        public CXVersionMarshaller(QuantumBinding.Clang.QBVersion qBVersion, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXVersion> context)
+        {
+            context.Destination[0].major = qBVersion.Major;
+
+            context.Destination[0].minor = qBVersion.Minor;
+
+            context.Destination[0].subminor = qBVersion.Subminor;
+
+        }
+    }
 }
 
 

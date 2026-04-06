@@ -190,7 +190,7 @@ public class CSharpTypePrinter : TypePrinter
                         break;
                     case not null when pointer.IsPointerToVoid() || pointer.IsPointerToObject():
                     {
-                        result = Result("void", TextGenerator.GetPointerString(depth));
+                        result = Result("nuint");
                     }
                         break;
                     case not null when pointer.IsPointerToIntPtr():
@@ -238,8 +238,9 @@ public class CSharpTypePrinter : TypePrinter
                             : Result(@classDecl.NativeStruct.Name, TextGenerator.GetPointerString(depth));
                         break;
                     default:
-                        var res = pointer.Pointee.Visit(this);
-                        result = Result(res.Type, TextGenerator.GetPointerString(depth));
+                        result = pointer.Pointee.Visit(this);
+                        if (result.Type != "nuint")
+                            result = Result(result.Type, TextGenerator.GetPointerString(depth));
                         break;
                 }
                 break;
@@ -254,7 +255,7 @@ public class CSharpTypePrinter : TypePrinter
                         result = Result("string");
                         break;
                     case not null when pointer.IsStringArray():
-                        if (MarshalType == MarshalTypes.MethodParameter)
+                        if (MarshalType is MarshalTypes.MethodParameter or MarshalTypes.SkipParamModifiers)
                         {
                             result = Parameter.ParameterKind switch
                             {
@@ -278,7 +279,7 @@ public class CSharpTypePrinter : TypePrinter
                         result = Result("object");
                         break;
                     case not null when pointer.IsPointerToVoid():
-                        result = Result("void", TextGenerator.GetPointerString(depth));
+                        result = Result("nuint");
                         break;
                     case not null when pointer.IsPointerToIntPtr():
                         result = Result(IntPtr);
@@ -305,25 +306,15 @@ public class CSharpTypePrinter : TypePrinter
 
                         if (Parameter is { ParameterKind: ParameterKind.Out })
                         {
-                            if (pointee.IsPointerToStructOrUnion())
-                            {
-                                result = Result(printedResult.Type);
-                            }
-                            else
-                            {
-                                result = Result(printedResult.Type, PointerOperator);
-                            }
+                            result = pointee.IsPointerToStructOrUnion()
+                                ? Result(printedResult.Type)
+                                : Result(printedResult.Type, PointerOperator);
                         }
                         else
                         {
-                            if (pointee.IsPointerToBuiltInType(out var primitive))
-                            {
-                                result = Result(printedResult.Type, TextGenerator.GetPointerString(pointerDepth));
-                            }
-                            else
-                            {
-                                result = Result(printedResult.Type);
-                            }
+                            result = pointee.IsPointerToBuiltInType(out var primitive)
+                                ? Result(printedResult.Type, TextGenerator.GetPointerString(pointerDepth))
+                                : Result(printedResult.Type);
                         }
                     }
                         break;
@@ -460,9 +451,7 @@ public class CSharpTypePrinter : TypePrinter
 
         if (customType.TryGetDelegate(out Delegate @delegate))
         {
-            return
-                Result("void",
-                    PointerOperator); // we must return delegates to C++ as void* because in other way we will corrupt memory
+            return Result("nuint"); 
         }
 
         if (customType.TryGetEnum(out Enumeration @enum))
@@ -472,8 +461,8 @@ public class CSharpTypePrinter : TypePrinter
 
         return customType.IsInSystemHeader switch
         {
-            true when MarshalType == MarshalTypes.WrappedProperty => Result("void*"),
-            true when MarshalType == MarshalTypes.NativeField => Result("void"),
+            true when MarshalType == MarshalTypes.WrappedProperty => Result("nuint"),
+            true when MarshalType == MarshalTypes.NativeField => Result("nuint"),
             _ => customType.Name
         };
     }
@@ -560,8 +549,7 @@ public class CSharpTypePrinter : TypePrinter
             {
                 result = parameter.Type.Visit(this);
 
-                if (parameter.Type.Declaration is Class { IsSimpleType: false } decl &&
-                    !Options.PodTypesAsSimpleTypes)
+                if (parameter.Type.Declaration is Class { IsSimpleType: false } decl)
                 {
                     // Will always write full namespaces for structs and classes to avoid various collisions
                     var fullTypeName = $"{decl.Namespace}.{result.Type}";

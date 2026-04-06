@@ -5,64 +5,88 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxObjCProtocolRefListInfo : QBDisposableObject
+public unsafe partial class QBIdxObjCProtocolRefListInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo>
 {
-    private NativeStructArray<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo> _protocols;
-
     public QBIdxObjCProtocolRefListInfo()
     {
     }
 
-    public QBIdxObjCProtocolRefListInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo _internal)
+    public QBIdxObjCProtocolRefListInfo(in QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo native)
     {
-        Protocols = new QBIdxObjCProtocolRefInfo[_internal.numProtocols];
-        var nativeTmpArray0 = NativeUtils.PointerToManagedArray(_internal.protocols, _internal.numProtocols);
-        for (int i = 0; i < nativeTmpArray0.Count; ++i)
-        {
-            Protocols[i] = new QBIdxObjCProtocolRefInfo(nativeTmpArray0[i]);
-        }
-        NativeUtils.Free(_internal.protocols);
-        NumProtocols = _internal.numProtocols;
+        MarshalFrom(in native);
     }
 
-    public QBIdxObjCProtocolRefInfo[] Protocols { get; set; }
+    public System.ReadOnlyMemory<QBIdxObjCProtocolRefInfo> Protocols { get; set; }
     public uint NumProtocols { get; set; }
-
-    public QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo();
-        _protocols.Dispose();
-        if (Protocols != null)
-        {
-            var tmpArray0 = new QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo[Protocols.Length];
-            for (int i = 0; i < Protocols.Length; ++i)
-            {
-                tmpArray0[i] = Protocols[i].ToNative();
-            }
-            _protocols = new NativeStructArray<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo>(tmpArray0);
-            _internal.protocols = _protocols.Handle;
-        }
-        _internal.numProtocols = NumProtocols;
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _protocols.Dispose();
-    }
-
 
     public static implicit operator QBIdxObjCProtocolRefListInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo q)
     {
-        return new QBIdxObjCProtocolRefListInfo(q);
+        return new QBIdxObjCProtocolRefListInfo(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo>();
+        if (!Protocols.IsEmpty)
+        {
+            for (int i = 0; i < Protocols.Length; i++)
+            {
+                if (Protocols.Span[i] == null)
+                    size += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo>();
+                else
+                    size += Protocols.Span[i].GetSize();
+            }
+        }
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo> context)
+    {
+        new CXIdxObjCProtocolRefListInfoMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo native)
+    {
+        var tmpProtocols = new QBIdxObjCProtocolRefInfo[native.numProtocols];
+        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo[native.numProtocols];
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.protocols, native.numProtocols, nativeTmpArray0);
+        for (int i = 0; i < nativeTmpArray0.Length; ++i)
+        {
+            tmpProtocols[i] = new QBIdxObjCProtocolRefInfo(in nativeTmpArray0[i]);
+        }
+        Protocols = tmpProtocols;
+        NumProtocols = native.numProtocols;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxObjCProtocolRefListInfoMarshaller
+    {
+        public CXIdxObjCProtocolRefListInfoMarshaller(QuantumBinding.Clang.QBIdxObjCProtocolRefListInfo qBIdxObjCProtocolRefListInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo> context)
+        {
+            if (!qBIdxObjCProtocolRefListInfo.Protocols.IsEmpty)
+            {
+                context.Destination[0].protocols = QuantumBinding.Utils.MarshalingUtils.MarshalArrayToPointer<QuantumBinding.Clang.QBIdxObjCProtocolRefInfo, QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo, QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo>(qBIdxObjCProtocolRefListInfo.Protocols, ref context);
+            }
+
+            context.Destination[0].numProtocols = qBIdxObjCProtocolRefListInfo.NumProtocols;
+
+        }
+    }
 }
 
 
