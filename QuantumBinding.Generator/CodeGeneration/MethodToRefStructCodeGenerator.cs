@@ -69,11 +69,6 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 .Where(x => x.IsAvailableForContextGeneration())
                 .ToList();
             
-            if (method.Name == "EqualCursors")
-            {
-                int x = 0;
-            }
-            
             if (method.IsInstanceMethod && method.Class.IsWrapper)
             {
                 var firstParameter = (Parameter)method.Function.Parameters.First().Clone();
