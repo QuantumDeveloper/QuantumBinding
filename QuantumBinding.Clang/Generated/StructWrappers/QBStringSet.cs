@@ -5,25 +5,22 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBStringSet : QBDisposableObject
+public unsafe partial class QBStringSet : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXStringSet>
 {
-    private NativeStruct<QuantumBinding.Clang.Interop.CXString> _strings;
-
     public QBStringSet()
     {
     }
 
-    public QBStringSet(QuantumBinding.Clang.Interop.CXStringSet _internal)
+    public QBStringSet(in QuantumBinding.Clang.Interop.CXStringSet native)
     {
-        Strings = new QBString(*_internal.strings);
-        NativeUtils.Free(_internal.strings);
-        Count = _internal.count;
+        MarshalFrom(in native);
     }
 
     public QBString Strings { get; set; }
@@ -33,37 +30,66 @@ public unsafe partial class QBStringSet : QBDisposableObject
     ///</summary>
     public void DisposeStringSet()
     {
-        var arg0 = NativeUtils.StructOrEnumToPointer(ToNative());
+        System.Span<byte> arg0Span = stackalloc byte[GetSize()];
+        var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBStringSet, QuantumBinding.Clang.Interop.CXStringSet>(this, ref arg0Span);
         QuantumBinding.Clang.Interop.ClangInterop.clang_disposeStringSet(arg0);
-        NativeUtils.Free(arg0);
-    }
-
-
-    public QuantumBinding.Clang.Interop.CXStringSet ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXStringSet();
-        _strings.Dispose();
-        if (Strings != null)
-        {
-            var struct0 = Strings.ToNative();
-            _strings = new NativeStruct<QuantumBinding.Clang.Interop.CXString>(struct0);
-            _internal.strings = _strings.Handle;
-        }
-        _internal.count = Count;
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _strings.Dispose();
     }
 
 
     public static implicit operator QBStringSet(QuantumBinding.Clang.Interop.CXStringSet q)
     {
-        return new QBStringSet(q);
+        return new QBStringSet(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXStringSet>();
+        if (Strings != default)
+        {
+            size += Strings.GetSize();
+        }
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXStringSet> context)
+    {
+        new CXStringSetMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXStringSet native)
+    {
+        Strings = new QBString(in *native.strings);
+        NativeUtils.Free(native.strings);
+        Count = native.count;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXStringSet>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXStringSet>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXStringSetMarshaller
+    {
+        public CXStringSetMarshaller(QuantumBinding.Clang.QBStringSet qBStringSet, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXStringSet> context)
+        {
+            if (qBStringSet.Strings != default)
+            {
+                var structSlice0 = context.AllocateData(sizeof(QuantumBinding.Clang.Interop.CXString));
+                var structDestination0 = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, QuantumBinding.Clang.Interop.CXString>(structSlice0).Slice(0, 1);
+                context.Destination[0].strings = (QuantumBinding.Clang.Interop.CXString*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref structDestination0[0]);
+                var childContext = new QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXString>(structDestination0, context.DataCursor);
+                qBStringSet.Strings.MarshalTo(ref childContext);
+                context.DataCursor = childContext.DataCursor;
+            }
+
+            context.Destination[0].count = qBStringSet.Count;
+
+        }
+    }
 }
 
 

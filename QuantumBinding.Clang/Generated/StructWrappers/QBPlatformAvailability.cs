@@ -5,26 +5,22 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBPlatformAvailability
+public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXPlatformAvailability>
 {
     public QBPlatformAvailability()
     {
     }
 
-    public QBPlatformAvailability(QuantumBinding.Clang.Interop.CXPlatformAvailability _internal)
+    public QBPlatformAvailability(in QuantumBinding.Clang.Interop.CXPlatformAvailability native)
     {
-        Platform = new QBString(_internal.platform);
-        Introduced = new QBVersion(_internal.introduced);
-        Deprecated = new QBVersion(_internal.deprecated);
-        Obsoleted = new QBVersion(_internal.obsoleted);
-        Unavailable = _internal.unavailable;
-        Message = new QBString(_internal.message);
+        MarshalFrom(in native);
     }
 
     public QBString Platform { get; set; }
@@ -38,44 +34,110 @@ public unsafe partial class QBPlatformAvailability
     ///</summary>
     public void DisposeCXPlatformAvailability()
     {
-        var arg0 = NativeUtils.StructOrEnumToPointer(ToNative());
+        System.Span<byte> arg0Span = stackalloc byte[GetSize()];
+        var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBPlatformAvailability, QuantumBinding.Clang.Interop.CXPlatformAvailability>(this, ref arg0Span);
         QuantumBinding.Clang.Interop.ClangInterop.clang_disposeCXPlatformAvailability(arg0);
-        NativeUtils.Free(arg0);
     }
 
-
-    public QuantumBinding.Clang.Interop.CXPlatformAvailability ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXPlatformAvailability();
-        if (Platform != null)
-        {
-            _internal.platform = Platform.ToNative();
-        }
-        if (Introduced != null)
-        {
-            _internal.introduced = Introduced.ToNative();
-        }
-        if (Deprecated != null)
-        {
-            _internal.deprecated = Deprecated.ToNative();
-        }
-        if (Obsoleted != null)
-        {
-            _internal.obsoleted = Obsoleted.ToNative();
-        }
-        _internal.unavailable = Unavailable;
-        if (Message != null)
-        {
-            _internal.message = Message.ToNative();
-        }
-        return _internal;
-    }
 
     public static implicit operator QBPlatformAvailability(QuantumBinding.Clang.Interop.CXPlatformAvailability q)
     {
-        return new QBPlatformAvailability(q);
+        return new QBPlatformAvailability(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXPlatformAvailability>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXPlatformAvailability> context)
+    {
+        new CXPlatformAvailabilityMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXPlatformAvailability native)
+    {
+        Platform = new QBString(native.platform);
+        Introduced = new QBVersion(native.introduced);
+        Deprecated = new QBVersion(native.deprecated);
+        Obsoleted = new QBVersion(native.obsoleted);
+        Unavailable = native.unavailable;
+        Message = new QBString(native.message);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXPlatformAvailability>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXPlatformAvailability>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXPlatformAvailabilityMarshaller
+    {
+        public CXPlatformAvailabilityMarshaller(QuantumBinding.Clang.QBPlatformAvailability qBPlatformAvailability, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXPlatformAvailability> context)
+        {
+            if (qBPlatformAvailability.Platform != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXString* pField = &context.Destination[0].platform)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXString>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXString>(fieldSpan, context.DataCursor);
+                    qBPlatformAvailability.Platform.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            if (qBPlatformAvailability.Introduced != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXVersion* pField = &context.Destination[0].introduced)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXVersion>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXVersion>(fieldSpan, context.DataCursor);
+                    qBPlatformAvailability.Introduced.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            if (qBPlatformAvailability.Deprecated != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXVersion* pField = &context.Destination[0].deprecated)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXVersion>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXVersion>(fieldSpan, context.DataCursor);
+                    qBPlatformAvailability.Deprecated.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            if (qBPlatformAvailability.Obsoleted != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXVersion* pField = &context.Destination[0].obsoleted)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXVersion>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXVersion>(fieldSpan, context.DataCursor);
+                    qBPlatformAvailability.Obsoleted.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            context.Destination[0].unavailable = qBPlatformAvailability.Unavailable;
+
+            if (qBPlatformAvailability.Message != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXString* pField = &context.Destination[0].message)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXString>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXString>(fieldSpan, context.DataCursor);
+                    qBPlatformAvailability.Message.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+        }
+    }
 }
 
 

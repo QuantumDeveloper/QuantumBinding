@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Opaque pointer representing client data that will be passed through to various callbacks and visitors.
 ///</summary>
-public unsafe partial class QBClientData
+public unsafe partial class QBClientData : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXClientDataImpl>
 {
     internal CXClientDataImpl __Instance;
     public QBClientData()
     {
     }
 
-    public QBClientData(QuantumBinding.Clang.Interop.CXClientDataImpl __Instance)
+    public QBClientData(in QuantumBinding.Clang.Interop.CXClientDataImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXClientDataImpl GetNativeValue() => __Instance;
     public ref readonly CXClientDataImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXClientDataImpl(QBClientData q)
@@ -37,7 +38,7 @@ public unsafe partial class QBClientData
 
     public static implicit operator QBClientData(QuantumBinding.Clang.Interop.CXClientDataImpl q)
     {
-        return new QBClientData(q);
+        return new QBClientData(in q);
     }
 
 }

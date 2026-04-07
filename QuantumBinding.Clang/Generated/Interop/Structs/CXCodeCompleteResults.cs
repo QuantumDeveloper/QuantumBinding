@@ -20,7 +20,7 @@ public unsafe partial struct CXCodeCompleteResults
     ///<summary>
     /// The code-completion results.
     ///</summary>
-    public CXCompletionResult* results;
+    public QuantumBinding.Clang.Interop.CXCompletionResult* results;
     ///<summary>
     /// The number of code-completion results stored in the Results array.
     ///</summary>

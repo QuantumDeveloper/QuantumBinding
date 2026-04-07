@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A single diagnostic, containing the diagnostic's severity, location, text, source ranges, and fix-it hints.
 ///</summary>
-public unsafe partial class QBDiagnostic
+public unsafe partial class QBDiagnostic : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXDiagnosticImpl>
 {
     internal CXDiagnosticImpl __Instance;
     public QBDiagnostic()
     {
     }
 
-    public QBDiagnostic(QuantumBinding.Clang.Interop.CXDiagnosticImpl __Instance)
+    public QBDiagnostic(in QuantumBinding.Clang.Interop.CXDiagnosticImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXDiagnosticImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Destroy a diagnostic.
     ///</summary>
@@ -73,10 +74,28 @@ public unsafe partial class QBDiagnostic
     ///</summary>
     public QBString GetDiagnosticFixIt(uint fixIt, QBSourceRange replacementRange)
     {
-        var arg2 = ReferenceEquals(replacementRange, null) ? null : NativeUtils.StructOrEnumToPointer(replacementRange.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getDiagnosticFixIt(this, fixIt, arg2);
-        NativeUtils.Free(arg2);
-        return result;
+        int CalculateSize(QBSourceRange replacementRange)
+        {
+            int totalSize = 0;
+            if (replacementRange != null)
+                totalSize += replacementRange.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(replacementRange);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(replacementRange, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getDiagnosticFixIt(this, fixIt, arg2);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -108,11 +127,28 @@ public unsafe partial class QBDiagnostic
     ///</summary>
     public QBString GetDiagnosticOption(QBString disable)
     {
-        var arg1 = ReferenceEquals(disable, null) ? null : NativeUtils.StructOrEnumToPointer(disable.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getDiagnosticOption(this, arg1);
-        disable?.Dispose();
-        NativeUtils.Free(arg1);
-        return result;
+        int CalculateSize(QBString disable)
+        {
+            int totalSize = 0;
+            if (disable != null)
+                totalSize += disable.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(disable);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(disable, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getDiagnosticOption(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -148,7 +184,7 @@ public unsafe partial class QBDiagnostic
 
     public static implicit operator QBDiagnostic(QuantumBinding.Clang.Interop.CXDiagnosticImpl q)
     {
-        return new QBDiagnostic(q);
+        return new QBDiagnostic(in q);
     }
 
 }

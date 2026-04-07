@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// An opaque type representing target information for a given translation unit.
 ///</summary>
-public unsafe partial class QBTargetInfo
+public unsafe partial class QBTargetInfo : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXTargetInfoImpl>
 {
     internal CXTargetInfoImpl __Instance;
     public QBTargetInfo()
     {
     }
 
-    public QBTargetInfo(QuantumBinding.Clang.Interop.CXTargetInfoImpl __Instance)
+    public QBTargetInfo(in QuantumBinding.Clang.Interop.CXTargetInfoImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXTargetInfoImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Destroy the CXTargetInfo object.
     ///</summary>
@@ -61,7 +62,7 @@ public unsafe partial class QBTargetInfo
 
     public static implicit operator QBTargetInfo(QuantumBinding.Clang.Interop.CXTargetInfoImpl q)
     {
-        return new QBTargetInfo(q);
+        return new QBTargetInfo(in q);
     }
 
 }

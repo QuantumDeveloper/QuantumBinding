@@ -5,30 +5,25 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBSourceRange
+public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRange>
 {
     public QBSourceRange()
     {
     }
 
-    public QBSourceRange(QuantumBinding.Clang.Interop.CXSourceRange _internal)
+    public QBSourceRange(in QuantumBinding.Clang.Interop.CXSourceRange native)
     {
-        Ptr_data = new void*[2];
-        for (int i = 0; i < 2; ++i)
-        {
-            Ptr_data[i] = _internal.ptr_data[i];
-        }
-        Begin_int_data = _internal.begin_int_data;
-        End_int_data = _internal.end_int_data;
+        MarshalFrom(in native);
     }
 
-    public void*[] Ptr_data { get; set; }
+    public System.ReadOnlyMemory<nuint> Ptr_data { get; set; }
     public uint Begin_int_data { get; set; }
     public uint End_int_data { get; set; }
     ///<summary>
@@ -36,9 +31,31 @@ public unsafe partial class QBSourceRange
     ///</summary>
     public uint EqualRanges(QBSourceRange range2)
     {
-        var arg1 = ReferenceEquals(range2, null) ? new QuantumBinding.Clang.Interop.CXSourceRange() : range2.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalRanges(ToNative(), arg1);
-        return result;
+        int CalculateSize(QBSourceRange range1, QBSourceRange range2)
+        {
+            int totalSize = 0;
+            if (range1 != null)
+                totalSize += range1.GetSize();
+            if (range2 != null)
+                totalSize += range2.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(this, range2);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(this, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(range2, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_equalRanges(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -46,7 +63,9 @@ public unsafe partial class QBSourceRange
     ///</summary>
     public QBSourceLocation GetRangeEnd()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getRangeEnd(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getRangeEnd(native);
     }
 
     ///<summary>
@@ -54,7 +73,9 @@ public unsafe partial class QBSourceRange
     ///</summary>
     public QBSourceLocation GetRangeStart()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_getRangeStart(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_getRangeStart(native);
     }
 
     ///<summary>
@@ -62,33 +83,64 @@ public unsafe partial class QBSourceRange
     ///</summary>
     public int Range_isNull()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Range_isNull(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Range_isNull(native);
     }
 
-
-    public QuantumBinding.Clang.Interop.CXSourceRange ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXSourceRange();
-        if(Ptr_data != null)
-        {
-            if (Ptr_data.Length > 2)
-                throw new System.ArgumentOutOfRangeException(nameof(Ptr_data), "Array is out of bounds. Size should not be more than 2");
-
-            for (int i = 0; i < 2; ++i)
-            {
-                _internal.ptr_data[i] = Ptr_data[i];
-            }
-        }
-        _internal.begin_int_data = Begin_int_data;
-        _internal.end_int_data = End_int_data;
-        return _internal;
-    }
 
     public static implicit operator QBSourceRange(QuantumBinding.Clang.Interop.CXSourceRange q)
     {
-        return new QBSourceRange(q);
+        return new QBSourceRange(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXSourceRange>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXSourceRange> context)
+    {
+        new CXSourceRangeMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXSourceRange native)
+    {
+        var tmpPtr_data = new nuint[2];
+        for (int i = 0; i < 2; ++i)
+        {
+            tmpPtr_data[i] = native.ptr_data[i];
+        }
+        Ptr_data = tmpPtr_data;
+        Begin_int_data = native.begin_int_data;
+        End_int_data = native.end_int_data;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXSourceRange>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXSourceRange>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXSourceRangeMarshaller
+    {
+        public CXSourceRangeMarshaller(QuantumBinding.Clang.QBSourceRange qBSourceRange, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXSourceRange> context)
+        {
+            for (int i = 0; i < 2; ++i)
+            {
+                context.Destination[0].ptr_data[i] = qBSourceRange.Ptr_data.Span[i];
+            }
+
+            context.Destination[0].begin_int_data = qBSourceRange.Begin_int_data;
+
+            context.Destination[0].end_int_data = qBSourceRange.End_int_data;
+
+        }
+    }
 }
 
 

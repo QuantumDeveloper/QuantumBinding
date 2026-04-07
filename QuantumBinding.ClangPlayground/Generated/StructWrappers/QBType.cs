@@ -30,15 +30,17 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     ///</summary>
     public uint EqualTypes(QBType b)
     {
-        int CalculateSize(QBType b)
+        int CalculateSize(QBType a, QBType b)
         {
             int totalSize = 0;
+            if (a != null)
+                totalSize += a.GetSize();
             if (b != null)
                 totalSize += b.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(b);
+        var totalSize = CalculateSize(this, b);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -432,15 +434,17 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     ///</summary>
     public long Type_getOffsetOf(string s)
     {
-        int CalculateSize(string s)
+        int CalculateSize(QBType t, string s)
         {
             int totalSize = 0;
+            if (t != null)
+                totalSize += t.GetSize();
             if (!string.IsNullOrEmpty(s))
                 totalSize += s.Length * sizeof(byte) + 1;
             return totalSize;
         }
 
-        var totalSize = CalculateSize(s);
+        var totalSize = CalculateSize(this, s);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try

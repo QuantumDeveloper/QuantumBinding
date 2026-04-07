@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A group of CXDiagnostics.
 ///</summary>
-public unsafe partial class QBDiagnosticSet
+public unsafe partial class QBDiagnosticSet : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXDiagnosticSetImpl>
 {
     internal CXDiagnosticSetImpl __Instance;
     public QBDiagnosticSet()
     {
     }
 
-    public QBDiagnosticSet(QuantumBinding.Clang.Interop.CXDiagnosticSetImpl __Instance)
+    public QBDiagnosticSet(in QuantumBinding.Clang.Interop.CXDiagnosticSetImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXDiagnosticSetImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Release a CXDiagnosticSet and all of its contained diagnostics.
     ///</summary>
@@ -61,7 +62,7 @@ public unsafe partial class QBDiagnosticSet
 
     public static implicit operator QBDiagnosticSet(QuantumBinding.Clang.Interop.CXDiagnosticSetImpl q)
     {
-        return new QBDiagnosticSet(q);
+        return new QBDiagnosticSet(in q);
     }
 
 }

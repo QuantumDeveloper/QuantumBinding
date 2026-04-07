@@ -40,15 +40,17 @@ public unsafe partial class QBCodeCompleteResults : IMarshallableObject, IMarsha
     ///</summary>
     public QBString GetCompletionFixIt(uint completion_index, uint fixit_index, QBSourceRange replacement_range)
     {
-        int CalculateSize(QBSourceRange replacement_range)
+        int CalculateSize(QBCodeCompleteResults results, QBSourceRange replacement_range)
         {
             int totalSize = 0;
+            if (results != null)
+                totalSize += results.GetSize();
             if (replacement_range != null)
                 totalSize += replacement_range.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(replacement_range);
+        var totalSize = CalculateSize(this, replacement_range);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try

@@ -16,18 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Opaque pointer representing a policy that controls pretty printing for clang_getCursorPrettyPrinted.
 ///</summary>
-public unsafe partial class QBPrintingPolicy
+public unsafe partial class QBPrintingPolicy : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXPrintingPolicyImpl>
 {
     internal CXPrintingPolicyImpl __Instance;
     public QBPrintingPolicy()
     {
     }
 
-    public QBPrintingPolicy(QuantumBinding.Clang.Interop.CXPrintingPolicyImpl __Instance)
+    public QBPrintingPolicy(in QuantumBinding.Clang.Interop.CXPrintingPolicyImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXPrintingPolicyImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Release a printing policy.
     ///</summary>
@@ -61,7 +62,7 @@ public unsafe partial class QBPrintingPolicy
 
     public static implicit operator QBPrintingPolicy(QuantumBinding.Clang.Interop.CXPrintingPolicyImpl q)
     {
-        return new QBPrintingPolicy(q);
+        return new QBPrintingPolicy(in q);
     }
 
 }

@@ -29,10 +29,10 @@ public unsafe partial struct CXCursor
         public nuint item1;
         public nuint item2;
 
-        public void* this[int index]
+        public nuint this[int index]
         {
-            get => (void*)Unsafe.Add(ref item0, index);
-            set => Unsafe.Add(ref item0, index) = (nuint)value;
+            get => Unsafe.Add(ref item0, index);
+            set => Unsafe.Add(ref item0, index) = value;
         }
     }
 }

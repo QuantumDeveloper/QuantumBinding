@@ -16,45 +16,60 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A single translation unit, which resides in an index.
 ///</summary>
-public unsafe partial class QBTranslationUnit
+public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXTranslationUnitImpl>
 {
     internal CXTranslationUnitImpl __Instance;
     public QBTranslationUnit()
     {
     }
 
-    public QBTranslationUnit(QuantumBinding.Clang.Interop.CXTranslationUnitImpl __Instance)
+    public QBTranslationUnit(in QuantumBinding.Clang.Interop.CXTranslationUnitImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXTranslationUnitImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Annotate the given set of tokens by providing cursors for each token that can be mapped to a specific entity within the abstract syntax tree.
     ///</summary>
-    public void AnnotateTokens(QBToken[] tokens, uint numTokens, out QBCursor[] cursors)
+    public void AnnotateTokens(System.ReadOnlySpan<QBToken> tokens, uint numTokens, out QBCursor[] cursors)
     {
-        var arg1 = ReferenceEquals(tokens, null) ? null : NativeUtils.GetPointerToManagedArray<QuantumBinding.Clang.Interop.CXToken>(tokens.Length);
-        if (!ReferenceEquals(tokens, null))
+        int CalculateSize(System.ReadOnlySpan<QBToken> tokens)
         {
-            for (var i = 0U; i < tokens.Length; ++i)
+            int totalSize = 0;
+            for (var i = 0U; i < tokens.Length; i++)
             {
-                arg1[i] = tokens[i].ToNative();
+                if(tokens[(int)i] == null)
+                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXToken>();
+                else
+                    totalSize += tokens[(int)i].GetSize();
+            }
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(tokens);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            QuantumBinding.Clang.Interop.CXToken* arg1 = null;
+            if (!tokens.IsEmpty)
+            {
+                arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBToken, QuantumBinding.Clang.Interop.CXToken>(tokens, ref currentCursor);
+            }
+            var arg3 = stackalloc QuantumBinding.Clang.Interop.CXCursor[(int)numTokens];
+            QuantumBinding.Clang.Interop.ClangInterop.clang_annotateTokens(this, arg1, numTokens, arg3);
+            cursors = new QuantumBinding.Clang.QBCursor[numTokens];
+            for (var i = 0U; i < numTokens; ++i)
+            {
+                cursors[i] = new QuantumBinding.Clang.QBCursor(arg3[i]);
             }
         }
-        QuantumBinding.Clang.Interop.CXCursor* arg3 = null;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_annotateTokens(this, arg1, numTokens, arg3);
-        if (!ReferenceEquals(tokens, null))
+        finally
         {
-            for (var i = 0U; i < tokens.Length; ++i)
-            {
-                tokens[i]?.Dispose();
-            }
-        }
-        var _cursors = NativeUtils.PointerToManagedArray(arg3, (long)numTokens);
-        cursors = new QuantumBinding.Clang.QBCursor[numTokens];
-        for (var i = 0; i< numTokens; ++i)
-        {
-            cursors[i] = new QuantumBinding.Clang.QBCursor(_cursors[i]);
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
         }
     }
 
@@ -63,21 +78,40 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBCodeCompleteResults CodeCompleteAt(string complete_filename, uint complete_line, uint complete_column, QBUnsavedFile unsaved_files, uint num_unsaved_files, uint options)
     {
-        var arg1 = (sbyte*)NativeUtils.StringToPointer(complete_filename, false);
-        var arg4 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteAt(this, arg1, complete_line, complete_column, arg4, num_unsaved_files, options);
-        NativeUtils.Free(arg1);
-        unsaved_files?.Dispose();
-        NativeUtils.Free(arg4);
-        var wrappedResult = new QBCodeCompleteResults(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(string complete_filename, QBUnsavedFile unsaved_files)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(complete_filename))
+                totalSize += complete_filename.Length * sizeof(byte) + 1;
+            if (unsaved_files != null)
+                totalSize += unsaved_files.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(complete_filename, unsaved_files);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(complete_filename, ref currentCursor);
+            var arg4 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBUnsavedFile, QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_codeCompleteAt(this, arg1, complete_line, complete_column, arg4, num_unsaved_files, options);
+            var wrappedResult = new QBCodeCompleteResults(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Traverses the translation unit to create a CXAPISet.
     ///</summary>
-    public CXErrorCode CreateAPISet(out QBAPISet out_api)
+    public CXErrorCode CreateAPISet(out QuantumBinding.Clang.QBAPISet out_api)
     {
         CXAPISetImpl arg1;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createAPISet(this, out arg1);
@@ -106,10 +140,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public void DisposeTokens(QBToken tokens, uint numTokens)
     {
-        var arg1 = ReferenceEquals(tokens, null) ? null : NativeUtils.StructOrEnumToPointer(tokens.ToNative());
-        QuantumBinding.Clang.Interop.ClangInterop.clang_disposeTokens(this, arg1, numTokens);
-        tokens?.Dispose();
-        NativeUtils.Free(arg1);
+        int CalculateSize(QBToken tokens)
+        {
+            int totalSize = 0;
+            if (tokens != null)
+                totalSize += tokens.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(tokens);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBToken, QuantumBinding.Clang.Interop.CXToken>(tokens, ref currentCursor);
+            QuantumBinding.Clang.Interop.ClangInterop.clang_disposeTokens(this, arg1, numTokens);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -123,13 +175,38 @@ public unsafe partial class QBTranslationUnit
     ///<summary>
     /// Find #import/#include directives in a specific file.
     ///</summary>
-    public CXResult FindIncludesInFile(QBFile file, QBCursorAndRangeVisitor visitor)
+    public CXResult FindIncludesInFile(QuantumBinding.Clang.QBFile file, QBCursorAndRangeVisitor visitor)
     {
-        var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
-        var arg2 = ReferenceEquals(visitor, null) ? new QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor() : visitor.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_findIncludesInFile(this, arg1, arg2);
-        visitor?.Dispose();
-        return result;
+        int CalculateSize(QBCursorAndRangeVisitor visitor)
+        {
+            int totalSize = 0;
+            if (visitor != null)
+                totalSize += visitor.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(visitor);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursorAndRangeVisitor, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(visitor, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_findIncludesInFile(this, arg1, arg2);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
+    }
+
+    public CXResult FindIncludesInFileWithBlock(QuantumBinding.Clang.QBFile param1, QuantumBinding.Clang.QBCursorAndRangeVisitorBlock param2)
+    {
+        var arg1 = param1 == null ? new CXFileImpl() : (CXFileImpl)param1;
+        var arg2 = param2 == null ? new _CXCursorAndRangeVisitorBlock() : (_CXCursorAndRangeVisitorBlock)param2;
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_findIncludesInFileWithBlock(this, arg1, arg2);
     }
 
     ///<summary>
@@ -148,9 +225,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBCursor GetCursor(QBSourceLocation param1)
     {
-        var arg1 = ReferenceEquals(param1, null) ? new QuantumBinding.Clang.Interop.CXSourceLocation() : param1.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCursor(this, arg1);
-        return result;
+        int CalculateSize(QBSourceLocation param1)
+        {
+            int totalSize = 0;
+            if (param1 != null)
+                totalSize += param1.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param1);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(param1, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursor(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -182,18 +278,36 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBFile GetFile(string file_name)
     {
-        var arg1 = (sbyte*)NativeUtils.StringToPointer(file_name, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getFile(this, arg1);
-        NativeUtils.Free(arg1);
-        return result;
+        int CalculateSize(string file_name)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(file_name))
+                totalSize += file_name.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(file_name);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(file_name, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getFile(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Retrieve the buffer associated with the given file.
     ///</summary>
-    public string GetFileContents(QBFile file, out ulong size)
+    public string GetFileContents(QuantumBinding.Clang.QBFile file, out ulong size)
     {
-        var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getFileContents(this, arg1, out size);
         return new string(result);
     }
@@ -201,36 +315,36 @@ public unsafe partial class QBTranslationUnit
     ///<summary>
     /// Visit the set of preprocessor inclusions in a translation unit. The visitor function is called with the provided data for every included file. This does not include headers included by the PCH file (unless one is inspecting the inclusions in the PCH file itself).
     ///</summary>
-    public void GetInclusions(void* visitor, QBClientData client_data)
+    public void GetInclusions(nuint visitor, QuantumBinding.Clang.QBClientData client_data)
     {
-        var arg2 = ReferenceEquals(client_data, null) ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
         QuantumBinding.Clang.Interop.ClangInterop.clang_getInclusions(this, visitor, arg2);
     }
 
     ///<summary>
     /// Retrieves the source location associated with a given file/line/column in a particular translation unit.
     ///</summary>
-    public QBSourceLocation GetLocation(QBFile file, uint line, uint column)
+    public QBSourceLocation GetLocation(QuantumBinding.Clang.QBFile file, uint line, uint column)
     {
-        var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getLocation(this, arg1, line, column);
     }
 
     ///<summary>
     /// Retrieves the source location associated with a given character offset in a particular translation unit.
     ///</summary>
-    public QBSourceLocation GetLocationForOffset(QBFile file, uint offset)
+    public QBSourceLocation GetLocationForOffset(QuantumBinding.Clang.QBFile file, uint offset)
     {
-        var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getLocationForOffset(this, arg1, offset);
     }
 
     ///<summary>
     /// Given a CXFile header file, return the module that contains it, if one exists.
     ///</summary>
-    public QBModule GetModuleForFile(QBFile param1)
+    public QBModule GetModuleForFile(QuantumBinding.Clang.QBFile param1)
     {
-        var arg1 = ReferenceEquals(param1, null) ? new CXFileImpl() : (CXFileImpl)param1;
+        var arg1 = param1 == null ? new CXFileImpl() : (CXFileImpl)param1;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getModuleForFile(this, arg1);
     }
 
@@ -245,9 +359,9 @@ public unsafe partial class QBTranslationUnit
     ///<summary>
     /// Retrieve all ranges that were skipped by the preprocessor.
     ///</summary>
-    public QBSourceRangeList GetSkippedRanges(QBFile file)
+    public QBSourceRangeList GetSkippedRanges(QuantumBinding.Clang.QBFile file)
     {
-        var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getSkippedRanges(this, arg1);
         var wrappedResult = new QBSourceRangeList(*result);
         NativeUtils.Free(result);
@@ -259,11 +373,31 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBToken GetToken(QBSourceLocation location)
     {
-        var arg1 = ReferenceEquals(location, null) ? new QuantumBinding.Clang.Interop.CXSourceLocation() : location.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getToken(this, arg1);
-        var wrappedResult = new QBToken(*result);
-        NativeUtils.Free(result);
-        return wrappedResult;
+        int CalculateSize(QBSourceLocation location)
+        {
+            int totalSize = 0;
+            if (location != null)
+                totalSize += location.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(location);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(location, ref currentCursor);
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getToken(this, arg1);
+            var wrappedResult = new QBToken(*result);
+            NativeUtils.Free(result);
+            return wrappedResult;
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -271,10 +405,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBSourceRange GetTokenExtent(QBToken param1)
     {
-        var arg1 = ReferenceEquals(param1, null) ? new QuantumBinding.Clang.Interop.CXToken() : param1.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenExtent(this, arg1);
-        param1?.Dispose();
-        return result;
+        int CalculateSize(QBToken param1)
+        {
+            int totalSize = 0;
+            if (param1 != null)
+                totalSize += param1.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param1);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBToken, QuantumBinding.Clang.Interop.CXToken>(param1, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenExtent(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -282,10 +434,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBSourceLocation GetTokenLocation(QBToken param1)
     {
-        var arg1 = ReferenceEquals(param1, null) ? new QuantumBinding.Clang.Interop.CXToken() : param1.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenLocation(this, arg1);
-        param1?.Dispose();
-        return result;
+        int CalculateSize(QBToken param1)
+        {
+            int totalSize = 0;
+            if (param1 != null)
+                totalSize += param1.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param1);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBToken, QuantumBinding.Clang.Interop.CXToken>(param1, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenLocation(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -293,10 +463,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public QBString GetTokenSpelling(QBToken param1)
     {
-        var arg1 = ReferenceEquals(param1, null) ? new QuantumBinding.Clang.Interop.CXToken() : param1.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenSpelling(this, arg1);
-        param1?.Dispose();
-        return result;
+        int CalculateSize(QBToken param1)
+        {
+            int totalSize = 0;
+            if (param1 != null)
+                totalSize += param1.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param1);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBToken, QuantumBinding.Clang.Interop.CXToken>(param1, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getTokenSpelling(this, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -326,27 +514,27 @@ public unsafe partial class QBTranslationUnit
     ///<summary>
     /// Determine whether the given header is guarded against multiple inclusions, either with the conventional #ifndef/#define/#endif macro guards or with #pragma once.
     ///</summary>
-    public uint IsFileMultipleIncludeGuarded(QBFile file)
+    public uint IsFileMultipleIncludeGuarded(QuantumBinding.Clang.QBFile file)
     {
-        var arg1 = ReferenceEquals(file, null) ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_isFileMultipleIncludeGuarded(this, arg1);
     }
 
     ///<summary>
     /// Returns the number of top level headers associated with this module.
     ///</summary>
-    public uint Module_getNumTopLevelHeaders(QBModule module)
+    public uint Module_getNumTopLevelHeaders(QuantumBinding.Clang.QBModule module)
     {
-        var arg1 = ReferenceEquals(module, null) ? new CXModuleImpl() : (CXModuleImpl)module;
+        var arg1 = module == null ? new CXModuleImpl() : (CXModuleImpl)module;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Module_getNumTopLevelHeaders(this, arg1);
     }
 
     ///<summary>
     /// Returns the specified top level header associated with the module.
     ///</summary>
-    public QBFile Module_getTopLevelHeader(QBModule module, uint index)
+    public QBFile Module_getTopLevelHeader(QuantumBinding.Clang.QBModule module, uint index)
     {
-        var arg1 = ReferenceEquals(module, null) ? new CXModuleImpl() : (CXModuleImpl)module;
+        var arg1 = module == null ? new CXModuleImpl() : (CXModuleImpl)module;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Module_getTopLevelHeader(this, arg1, index);
     }
 
@@ -355,11 +543,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public int ReparseTranslationUnit(uint num_unsaved_files, QBUnsavedFile unsaved_files, uint options)
     {
-        var arg2 = ReferenceEquals(unsaved_files, null) ? null : NativeUtils.StructOrEnumToPointer(unsaved_files.ToNative());
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_reparseTranslationUnit(this, num_unsaved_files, arg2, options);
-        unsaved_files?.Dispose();
-        NativeUtils.Free(arg2);
-        return result;
+        int CalculateSize(QBUnsavedFile unsaved_files)
+        {
+            int totalSize = 0;
+            if (unsaved_files != null)
+                totalSize += unsaved_files.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(unsaved_files);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBUnsavedFile, QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_reparseTranslationUnit(this, num_unsaved_files, arg2, options);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -367,10 +572,28 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public int SaveTranslationUnit(string fileName, uint options)
     {
-        var arg1 = (sbyte*)NativeUtils.StringToPointer(fileName, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_saveTranslationUnit(this, arg1, options);
-        NativeUtils.Free(arg1);
-        return result;
+        int CalculateSize(string fileName)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(fileName))
+                totalSize += fileName.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(fileName);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(fileName, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_saveTranslationUnit(this, arg1, options);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -386,14 +609,33 @@ public unsafe partial class QBTranslationUnit
     ///</summary>
     public void Tokenize(QBSourceRange range, out QBToken[] tokens, out uint numTokens)
     {
-        var arg1 = ReferenceEquals(range, null) ? new QuantumBinding.Clang.Interop.CXSourceRange() : range.ToNative();
-        QuantumBinding.Clang.Interop.CXToken* arg2 = null;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(this, arg1, out arg2, out numTokens);
-        var _tokens = NativeUtils.PointerToManagedArray(arg2, (long)numTokens);
-        tokens = new QuantumBinding.Clang.QBToken[numTokens];
-        for (var i = 0; i< numTokens; ++i)
+        int CalculateSize(QBSourceRange range)
         {
-            tokens[i] = new QuantumBinding.Clang.QBToken(_tokens[i]);
+            int totalSize = 0;
+            if (range != null)
+                totalSize += range.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(range);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(range, ref currentCursor);
+            QuantumBinding.Clang.Interop.CXToken* arg2 = null;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_tokenize(this, arg1, out arg2, out numTokens);
+            tokens = new QuantumBinding.Clang.QBToken[numTokens];
+            for (var i = 0U; i < numTokens; ++i)
+            {
+                tokens[i] = new QuantumBinding.Clang.QBToken(arg2[i]);
+            }
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
         }
     }
 
@@ -406,7 +648,7 @@ public unsafe partial class QBTranslationUnit
 
     public static implicit operator QBTranslationUnit(QuantumBinding.Clang.Interop.CXTranslationUnitImpl q)
     {
-        return new QBTranslationUnit(q);
+        return new QBTranslationUnit(in q);
     }
 
 }

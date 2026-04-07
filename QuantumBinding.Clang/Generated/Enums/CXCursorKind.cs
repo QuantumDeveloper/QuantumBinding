@@ -548,9 +548,9 @@ public enum CXCursorKind : uint
     CXCursor_ObjCSelfExpr = 146,
 
     ///<summary>
-    /// OpenMP 5.0 [2.1.5, Array Section].
+    /// OpenMP 5.0 [2.1.5, Array Section]. OpenACC 3.3 [2.7.1, Data Specification for Data Clauses (Sub Arrays)]
     ///</summary>
-    CXCursor_OMPArraySectionExpr = 147,
+    CXCursor_ArraySectionExpr = 147,
 
     ///<summary>
     /// Represents an (...) check.
@@ -583,7 +583,7 @@ public enum CXCursorKind : uint
     CXCursor_ConceptSpecializationExpr = 153,
 
     ///<summary>
-    /// Expression that references a C++20 concept.
+    /// Expression that references a C++20 requires expression.
     ///</summary>
     CXCursor_RequiresExpr = 154,
 
@@ -593,9 +593,14 @@ public enum CXCursorKind : uint
     CXCursor_CXXParenListInitExpr = 155,
 
     ///<summary>
-    /// Expression that references a C++20 parenthesized list aggregate initializer.
+    /// Represents a C++26 pack indexing expression.
     ///</summary>
-    CXCursor_LastExpr = 155,
+    CXCursor_PackIndexingExpr = 156,
+
+    ///<summary>
+    /// Represents a C++26 pack indexing expression.
+    ///</summary>
+    CXCursor_LastExpr = 156,
 
     ///<summary>
     /// Statements
@@ -1138,9 +1143,109 @@ public enum CXCursorKind : uint
     CXCursor_OMPErrorDirective = 305,
 
     ///<summary>
-    /// OpenMP error directive.
+    /// OpenMP scope directive.
     ///</summary>
-    CXCursor_LastStmt = 305,
+    CXCursor_OMPScopeDirective = 306,
+
+    ///<summary>
+    /// OpenMP reverse directive.
+    ///</summary>
+    CXCursor_OMPReverseDirective = 307,
+
+    ///<summary>
+    /// OpenMP interchange directive.
+    ///</summary>
+    CXCursor_OMPInterchangeDirective = 308,
+
+    ///<summary>
+    /// OpenMP assume directive.
+    ///</summary>
+    CXCursor_OMPAssumeDirective = 309,
+
+    ///<summary>
+    /// OpenMP assume directive.
+    ///</summary>
+    CXCursor_OMPStripeDirective = 310,
+
+    ///<summary>
+    /// OpenMP fuse directive
+    ///</summary>
+    CXCursor_OMPFuseDirective = 311,
+
+    ///<summary>
+    /// OpenACC Compute Construct.
+    ///</summary>
+    CXCursor_OpenACCComputeConstruct = 320,
+
+    ///<summary>
+    /// OpenACC Loop Construct.
+    ///</summary>
+    CXCursor_OpenACCLoopConstruct = 321,
+
+    ///<summary>
+    /// OpenACC Combined Constructs.
+    ///</summary>
+    CXCursor_OpenACCCombinedConstruct = 322,
+
+    ///<summary>
+    /// OpenACC data Construct.
+    ///</summary>
+    CXCursor_OpenACCDataConstruct = 323,
+
+    ///<summary>
+    /// OpenACC enter data Construct.
+    ///</summary>
+    CXCursor_OpenACCEnterDataConstruct = 324,
+
+    ///<summary>
+    /// OpenACC exit data Construct.
+    ///</summary>
+    CXCursor_OpenACCExitDataConstruct = 325,
+
+    ///<summary>
+    /// OpenACC host_data Construct.
+    ///</summary>
+    CXCursor_OpenACCHostDataConstruct = 326,
+
+    ///<summary>
+    /// OpenACC wait Construct.
+    ///</summary>
+    CXCursor_OpenACCWaitConstruct = 327,
+
+    ///<summary>
+    /// OpenACC init Construct.
+    ///</summary>
+    CXCursor_OpenACCInitConstruct = 328,
+
+    ///<summary>
+    /// OpenACC shutdown Construct.
+    ///</summary>
+    CXCursor_OpenACCShutdownConstruct = 329,
+
+    ///<summary>
+    /// OpenACC set Construct.
+    ///</summary>
+    CXCursor_OpenACCSetConstruct = 330,
+
+    ///<summary>
+    /// OpenACC update Construct.
+    ///</summary>
+    CXCursor_OpenACCUpdateConstruct = 331,
+
+    ///<summary>
+    /// OpenACC atomic Construct.
+    ///</summary>
+    CXCursor_OpenACCAtomicConstruct = 332,
+
+    ///<summary>
+    /// OpenACC cache Construct.
+    ///</summary>
+    CXCursor_OpenACCCacheConstruct = 333,
+
+    ///<summary>
+    /// OpenACC cache Construct.
+    ///</summary>
+    CXCursor_LastStmt = 333,
 
     ///<summary>
     /// Cursor that represents the translation unit itself.

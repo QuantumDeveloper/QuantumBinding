@@ -18,7 +18,7 @@ namespace QuantumBinding.Clang.Interop;
 public unsafe partial struct CXToken
 {
     public unsafe fixed uint int_data[4];
-    public void* ptr_data;
+    public nuint ptr_data;
 }
 
 

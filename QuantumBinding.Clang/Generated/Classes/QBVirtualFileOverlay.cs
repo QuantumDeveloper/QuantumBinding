@@ -16,29 +16,49 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Object encapsulating information about overlaying virtual file/directories over the real file system.
 ///</summary>
-public unsafe partial class QBVirtualFileOverlay
+public unsafe partial class QBVirtualFileOverlay : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl>
 {
     internal CXVirtualFileOverlayImpl __Instance;
     public QBVirtualFileOverlay()
     {
     }
 
-    public QBVirtualFileOverlay(QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl __Instance)
+    public QBVirtualFileOverlay(in QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
+    public QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl GetNativeValue() => __Instance;
     ///<summary>
     /// Map an absolute virtual file path to an absolute real one. The virtual path must be canonicalized (not contain "."/"..").
     ///</summary>
     public CXErrorCode VirtualFileOverlay_addFileMapping(string virtualPath, string realPath)
     {
-        var arg1 = (sbyte*)NativeUtils.StringToPointer(virtualPath, false);
-        var arg2 = (sbyte*)NativeUtils.StringToPointer(realPath, false);
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_addFileMapping(this, arg1, arg2);
-        NativeUtils.Free(arg1);
-        NativeUtils.Free(arg2);
-        return result;
+        int CalculateSize(string virtualPath, string realPath)
+        {
+            int totalSize = 0;
+            if (!string.IsNullOrEmpty(virtualPath))
+                totalSize += virtualPath.Length * sizeof(byte) + 1;
+            if (!string.IsNullOrEmpty(realPath))
+                totalSize += realPath.Length * sizeof(byte) + 1;
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(virtualPath, realPath);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(virtualPath, ref currentCursor);
+            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(realPath, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_addFileMapping(this, arg1, arg2);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -74,7 +94,7 @@ public unsafe partial class QBVirtualFileOverlay
 
     public static implicit operator QBVirtualFileOverlay(QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl q)
     {
-        return new QBVirtualFileOverlay(q);
+        return new QBVirtualFileOverlay(in q);
     }
 
 }

@@ -5,64 +5,103 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxObjCProtocolRefInfo : QBDisposableObject
+public unsafe partial class QBIdxObjCProtocolRefInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo>
 {
-    private NativeStruct<QuantumBinding.Clang.Interop.CXIdxEntityInfo> _protocol;
-
     public QBIdxObjCProtocolRefInfo()
     {
     }
 
-    public QBIdxObjCProtocolRefInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo _internal)
+    public QBIdxObjCProtocolRefInfo(in QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo native)
     {
-        Protocol = new QBIdxEntityInfo(*_internal.protocol);
-        NativeUtils.Free(_internal.protocol);
-        Cursor = new QBCursor(_internal.cursor);
-        Loc = new QBIdxLoc(_internal.loc);
+        MarshalFrom(in native);
     }
 
     public QBIdxEntityInfo Protocol { get; set; }
     public QBCursor Cursor { get; set; }
     public QBIdxLoc Loc { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo();
-        _protocol.Dispose();
-        if (Protocol != null)
-        {
-            var struct0 = Protocol.ToNative();
-            _protocol = new NativeStruct<QuantumBinding.Clang.Interop.CXIdxEntityInfo>(struct0);
-            _internal.protocol = _protocol.Handle;
-        }
-        if (Cursor != null)
-        {
-            _internal.cursor = Cursor.ToNative();
-        }
-        if (Loc != null)
-        {
-            _internal.loc = Loc.ToNative();
-        }
-        return _internal;
-    }
-
-    protected override void UnmanagedDisposeOverride()
-    {
-        _protocol.Dispose();
-    }
-
-
     public static implicit operator QBIdxObjCProtocolRefInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo q)
     {
-        return new QBIdxObjCProtocolRefInfo(q);
+        return new QBIdxObjCProtocolRefInfo(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo>();
+        if (Protocol != default)
+        {
+            size += Protocol.GetSize();
+        }
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo> context)
+    {
+        new CXIdxObjCProtocolRefInfoMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo native)
+    {
+        Protocol = new QBIdxEntityInfo(in *native.protocol);
+        NativeUtils.Free(native.protocol);
+        Cursor = new QBCursor(native.cursor);
+        Loc = new QBIdxLoc(native.loc);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXIdxObjCProtocolRefInfoMarshaller
+    {
+        public CXIdxObjCProtocolRefInfoMarshaller(QuantumBinding.Clang.QBIdxObjCProtocolRefInfo qBIdxObjCProtocolRefInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo> context)
+        {
+            if (qBIdxObjCProtocolRefInfo.Protocol != default)
+            {
+                var structSlice0 = context.AllocateData(sizeof(QuantumBinding.Clang.Interop.CXIdxEntityInfo));
+                var structDestination0 = System.Runtime.InteropServices.MemoryMarshal.Cast<byte, QuantumBinding.Clang.Interop.CXIdxEntityInfo>(structSlice0).Slice(0, 1);
+                context.Destination[0].protocol = (QuantumBinding.Clang.Interop.CXIdxEntityInfo*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref structDestination0[0]);
+                var childContext = new QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxEntityInfo>(structDestination0, context.DataCursor);
+                qBIdxObjCProtocolRefInfo.Protocol.MarshalTo(ref childContext);
+                context.DataCursor = childContext.DataCursor;
+            }
+
+            if (qBIdxObjCProtocolRefInfo.Cursor != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXCursor* pField = &context.Destination[0].cursor)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXCursor>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCursor>(fieldSpan, context.DataCursor);
+                    qBIdxObjCProtocolRefInfo.Cursor.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+            if (qBIdxObjCProtocolRefInfo.Loc != default)
+            {
+                fixed (QuantumBinding.Clang.Interop.CXIdxLoc* pField = &context.Destination[0].loc)
+                {
+                    var fieldSpan = new System.Span<QuantumBinding.Clang.Interop.CXIdxLoc>(pField, 1);
+                    var childContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc>(fieldSpan, context.DataCursor);
+                    qBIdxObjCProtocolRefInfo.Loc.MarshalTo(ref childContext);
+                    context.DataCursor = childContext.DataCursor;
+                }
+            }
+
+        }
+    }
 }
 
 
