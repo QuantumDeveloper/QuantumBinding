@@ -14,12 +14,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXClientDataImpl
 {
-    public void* pointer;
-    public CXClientDataImpl(void* pointer)
-    {
-        this.pointer = pointer;
-    }
-
+    public nuint pointer;
 }
 
 

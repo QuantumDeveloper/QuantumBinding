@@ -68,6 +68,14 @@ public class MethodToRefStructCodeGenerator : TextGenerator
             var parameters = method.Parameters
                 .Where(x => x.IsAvailableForContextGeneration())
                 .ToList();
+            
+            if (method.IsInstanceMethod && method.Class.IsWrapper)
+            {
+                var firstParameter = (Parameter)method.Function.Parameters.First().Clone();
+                firstParameter.Type.Declaration = method.Class;
+                parameters.Insert(0, firstParameter);
+            }
+            
             var parametersResult =
                 TypePrinter.VisitParameters(parameters, MarshalTypes.SkipParamModifiers, method.IsExtensionMethod);
 
@@ -93,7 +101,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 {
                     if (parameter.Type.IsStringArray())
                     {
-                        WriteLine($"{MarshalContextCalculateSizeForStringArray}({parameter.Name});");
+                        WriteLine($"{totalSizeName} += {MarshalContextCalculateSizeForStringArray}({parameter.Name});");
                     }
                     else
                     {
@@ -166,6 +174,11 @@ public class MethodToRefStructCodeGenerator : TextGenerator
 
             GenerateCalculateSizeMethod(method);
             NewLine();
+
+            if (method.IsInstanceMethod && method.Class.IsWrapper)
+            {
+                parametersResult.Type = $"this, {parametersResult.Type}";
+            }
             
             WriteLine($"var totalSize = CalculateSize({parametersResult});");
 

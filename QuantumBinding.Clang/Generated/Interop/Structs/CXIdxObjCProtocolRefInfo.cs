@@ -14,7 +14,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXIdxObjCProtocolRefInfo
 {
-    public CXIdxEntityInfo* protocol;
+    public QuantumBinding.Clang.Interop.CXIdxEntityInfo* protocol;
     public CXCursor cursor;
     public CXIdxLoc loc;
 }

@@ -19,26 +19,34 @@ namespace QuantumBinding.Clang.Interop;
 ///</summary>
 public unsafe struct CXInclusionVisitor
 {
+    public CXInclusionVisitor(nuint ptr) : this((void*) ptr) { }
+
     public CXInclusionVisitor(void* ptr)
     {
         NativePointer = ptr;
-        InvokeFunc = (delegate* unmanaged<CXFileImpl, CXSourceLocation*, uint, CXClientDataImpl, void>)ptr;
+        InvokeFunc = (delegate* unmanaged<QuantumBinding.Clang.Interop.CXFileImpl, QuantumBinding.Clang.Interop.CXSourceLocation*, uint, QuantumBinding.Clang.Interop.CXClientDataImpl, void>)ptr;
     }
 
-    private delegate* unmanaged<CXFileImpl, CXSourceLocation*, uint, CXClientDataImpl, void> InvokeFunc;
+    private delegate* unmanaged<QuantumBinding.Clang.Interop.CXFileImpl, QuantumBinding.Clang.Interop.CXSourceLocation*, uint, QuantumBinding.Clang.Interop.CXClientDataImpl, void> InvokeFunc;
 
     public void* NativePointer { get; }
 
-    public void Invoke(CXFileImpl included_file, CXSourceLocation* inclusion_stack, uint include_len, CXClientDataImpl client_data)
+    public void Invoke(QuantumBinding.Clang.Interop.CXFileImpl included_file, QuantumBinding.Clang.Interop.CXSourceLocation* inclusion_stack, uint include_len, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
     {
          InvokeFunc(included_file, inclusion_stack, include_len, client_data);
     }
-    public static void Invoke(void* ptr, CXFileImpl included_file, CXSourceLocation* inclusion_stack, uint include_len, CXClientDataImpl client_data)
+    public static void Invoke(void* ptr, QuantumBinding.Clang.Interop.CXFileImpl included_file, QuantumBinding.Clang.Interop.CXSourceLocation* inclusion_stack, uint include_len, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
     {
-         ((delegate* unmanaged<CXFileImpl, CXSourceLocation*, uint, CXClientDataImpl, void>)ptr)(included_file, inclusion_stack, include_len, client_data);
+         ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXFileImpl, QuantumBinding.Clang.Interop.CXSourceLocation*, uint, QuantumBinding.Clang.Interop.CXClientDataImpl, void>)ptr)(included_file, inclusion_stack, include_len, client_data);
+    }
+    public static void Invoke(nuint ptr, QuantumBinding.Clang.Interop.CXFileImpl included_file, QuantumBinding.Clang.Interop.CXSourceLocation* inclusion_stack, uint include_len, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
+    {
+         ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXFileImpl, QuantumBinding.Clang.Interop.CXSourceLocation*, uint, QuantumBinding.Clang.Interop.CXClientDataImpl, void>)(void*)ptr)(included_file, inclusion_stack, include_len, client_data);
     }
 
     public static explicit operator CXInclusionVisitor(void* ptr) => new(ptr);
+
+    public static explicit operator CXInclusionVisitor(nuint ptr) => new(ptr);
 }
 
 

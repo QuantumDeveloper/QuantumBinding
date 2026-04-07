@@ -1157,7 +1157,7 @@ public unsafe static class ClangNative
         int CalculateSize(System.ReadOnlySpan<string> param0)
         {
             int totalSize = 0;
-            QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(param0);
+            totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(param0);
             return totalSize;
         }
 

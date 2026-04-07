@@ -17,7 +17,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXString
 {
-    public void* data;
+    public nuint data;
     public uint private_flags;
 }
 

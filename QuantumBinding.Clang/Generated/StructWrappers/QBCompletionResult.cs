@@ -5,40 +5,71 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBCompletionResult
+public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCompletionResult>
 {
     public QBCompletionResult()
     {
     }
 
-    public QBCompletionResult(QuantumBinding.Clang.Interop.CXCompletionResult _internal)
+    public QBCompletionResult(in QuantumBinding.Clang.Interop.CXCompletionResult native)
     {
-        CursorKind = _internal.cursorKind;
-        CompletionString = new QBCompletionString(_internal.completionString);
+        MarshalFrom(in native);
     }
 
     public CXCursorKind CursorKind { get; set; }
     public QBCompletionString CompletionString { get; set; }
 
-    public QuantumBinding.Clang.Interop.CXCompletionResult ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXCompletionResult();
-        _internal.cursorKind = CursorKind;
-        _internal.completionString = CompletionString;
-        return _internal;
-    }
-
     public static implicit operator QBCompletionResult(QuantumBinding.Clang.Interop.CXCompletionResult q)
     {
-        return new QBCompletionResult(q);
+        return new QBCompletionResult(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCompletionResult>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXCompletionResult> context)
+    {
+        new CXCompletionResultMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXCompletionResult native)
+    {
+        CursorKind = native.cursorKind;
+        CompletionString = new QBCompletionString(native.completionString);
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXCompletionResult>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCompletionResult>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXCompletionResultMarshaller
+    {
+        public CXCompletionResultMarshaller(QuantumBinding.Clang.QBCompletionResult qBCompletionResult, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXCompletionResult> context)
+        {
+            context.Destination[0].cursorKind = qBCompletionResult.CursorKind;
+
+            if (qBCompletionResult.CompletionString != default)
+            {
+                context.Destination[0].completionString = qBCompletionResult.CompletionString;
+            }
+
+        }
+    }
 }
 
 

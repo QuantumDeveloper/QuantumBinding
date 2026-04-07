@@ -14,8 +14,8 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXIdxCXXClassDeclInfo
 {
-    public CXIdxDeclInfo* declInfo;
-    public CXIdxBaseClassInfo* bases;
+    public QuantumBinding.Clang.Interop.CXIdxDeclInfo* declInfo;
+    public QuantumBinding.Clang.Interop.CXIdxBaseClassInfo* bases;
     public uint numBases;
 }
 
