@@ -14,43 +14,55 @@ using QuantumBinding.Clang.Interop;
 namespace QuantumBinding.Clang;
 
 ///<summary>
-/// A remapping of original source files and their translated files.
+/// CINDEX_DEPRECATED - disabled to silence MSVC deprecation warnings
 ///</summary>
-public unsafe partial class QBRemapping
+public unsafe partial class QBRemapping : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXRemappingImpl>
 {
     internal CXRemappingImpl __Instance;
     public QBRemapping()
     {
     }
 
-    public QBRemapping(QuantumBinding.Clang.Interop.CXRemappingImpl __Instance)
+    public QBRemapping(in QuantumBinding.Clang.Interop.CXRemappingImpl __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    ///<summary>
-    /// Dispose the remapping.
-    ///</summary>
+    public QuantumBinding.Clang.Interop.CXRemappingImpl GetNativeValue() => __Instance;
     public void Remap_dispose()
     {
         QuantumBinding.Clang.Interop.ClangInterop.clang_remap_dispose(this);
     }
 
-    ///<summary>
-    /// Get the original and the associated filename from the remapping.
-    ///</summary>
-    public void Remap_getFilenames(uint index, out QBString original, out QBString transformed)
+    public void Remap_getFilenames(uint param1, QBString param2, QBString param3)
     {
-        QuantumBinding.Clang.Interop.CXString arg2;
-        QuantumBinding.Clang.Interop.CXString arg3;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getFilenames(this, index, out arg2, out arg3);
-        original = new QBString(arg2);
-        transformed = new QBString(arg3);
+        int CalculateSize(QBString param2, QBString param3)
+        {
+            int totalSize = 0;
+            if (param2 != null)
+                totalSize += param2.GetSize();
+            if (param3 != null)
+                totalSize += param3.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(param2, param3);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(param2, ref currentCursor);
+            var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(param3, ref currentCursor);
+            QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getFilenames(this, param1, arg2, arg3);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
-    ///<summary>
-    /// Determine the number of remappings.
-    ///</summary>
     public uint Remap_getNumFiles()
     {
         return QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getNumFiles(this);
@@ -65,7 +77,7 @@ public unsafe partial class QBRemapping
 
     public static implicit operator QBRemapping(QuantumBinding.Clang.Interop.CXRemappingImpl q)
     {
-        return new QBRemapping(q);
+        return new QBRemapping(in q);
     }
 
 }

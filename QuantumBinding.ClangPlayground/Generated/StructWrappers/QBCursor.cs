@@ -104,9 +104,11 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public uint Cursor_getGCCAssemblyInput(uint index, QBString constraint, QBCursor expr)
     {
-        int CalculateSize(QBString constraint, QBCursor expr)
+        int CalculateSize(QBCursor cursor, QBString constraint, QBCursor expr)
         {
             int totalSize = 0;
+            if (cursor != null)
+                totalSize += cursor.GetSize();
             if (constraint != null)
                 totalSize += constraint.GetSize();
             if (expr != null)
@@ -114,7 +116,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             return totalSize;
         }
 
-        var totalSize = CalculateSize(constraint, expr);
+        var totalSize = CalculateSize(this, constraint, expr);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -167,9 +169,11 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public uint Cursor_getGCCAssemblyOutput(uint index, QBString constraint, QBCursor expr)
     {
-        int CalculateSize(QBString constraint, QBCursor expr)
+        int CalculateSize(QBCursor cursor, QBString constraint, QBCursor expr)
         {
             int totalSize = 0;
+            if (cursor != null)
+                totalSize += cursor.GetSize();
             if (constraint != null)
                 totalSize += constraint.GetSize();
             if (expr != null)
@@ -177,7 +181,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             return totalSize;
         }
 
-        var totalSize = CalculateSize(constraint, expr);
+        var totalSize = CalculateSize(this, constraint, expr);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -503,9 +507,11 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public uint Cursor_isExternalSymbol(QBString language, QBString definedIn, ref uint isGenerated)
     {
-        int CalculateSize(QBString language, QBString definedIn)
+        int CalculateSize(QBCursor c, QBString language, QBString definedIn)
         {
             int totalSize = 0;
+            if (c != null)
+                totalSize += c.GetSize();
             if (language != null)
                 totalSize += language.GetSize();
             if (definedIn != null)
@@ -513,7 +519,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             return totalSize;
         }
 
-        var totalSize = CalculateSize(language, definedIn);
+        var totalSize = CalculateSize(this, language, definedIn);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -800,15 +806,17 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public uint EqualCursors(QBCursor param1)
     {
-        int CalculateSize(QBCursor param1)
+        int CalculateSize(QBCursor param0, QBCursor param1)
         {
             int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
             if (param1 != null)
                 totalSize += param1.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(param1);
+        var totalSize = CalculateSize(this, param1);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -830,15 +838,17 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public CXResult FindReferencesInFile(QuantumBinding.Clang.QBFile file, QBCursorAndRangeVisitor visitor)
     {
-        int CalculateSize(QBCursorAndRangeVisitor visitor)
+        int CalculateSize(QBCursor cursor, QBCursorAndRangeVisitor visitor)
         {
             int totalSize = 0;
+            if (cursor != null)
+                totalSize += cursor.GetSize();
             if (visitor != null)
                 totalSize += visitor.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(visitor);
+        var totalSize = CalculateSize(this, visitor);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -1000,9 +1010,11 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public int GetCursorPlatformAvailability(int always_deprecated, QBString deprecated_message, ref int always_unavailable, QBString unavailable_message, System.ReadOnlySpan<QBPlatformAvailability> availability, int availability_size)
     {
-        int CalculateSize(QBString deprecated_message, QBString unavailable_message, System.ReadOnlySpan<QBPlatformAvailability> availability)
+        int CalculateSize(QBCursor cursor, QBString deprecated_message, QBString unavailable_message, System.ReadOnlySpan<QBPlatformAvailability> availability)
         {
             int totalSize = 0;
+            if (cursor != null)
+                totalSize += cursor.GetSize();
             if (deprecated_message != null)
                 totalSize += deprecated_message.GetSize();
             if (unavailable_message != null)
@@ -1017,7 +1029,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             return totalSize;
         }
 
-        var totalSize = CalculateSize(deprecated_message, unavailable_message, availability);
+        var totalSize = CalculateSize(this, deprecated_message, unavailable_message, availability);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -1189,15 +1201,17 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
 
     public void GetDefinitionSpellingAndExtent(System.ReadOnlySpan<string> startBuf, System.ReadOnlySpan<string> endBuf, ref uint startLine, ref uint startColumn, ref uint endLine, ref uint endColumn)
     {
-        int CalculateSize(System.ReadOnlySpan<string> startBuf, System.ReadOnlySpan<string> endBuf)
+        int CalculateSize(QBCursor param0, System.ReadOnlySpan<string> startBuf, System.ReadOnlySpan<string> endBuf)
         {
             int totalSize = 0;
+            if (param0 != null)
+                totalSize += param0.GetSize();
             totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(startBuf);
             totalSize += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray(endBuf);
             return totalSize;
         }
 
-        var totalSize = CalculateSize(startBuf, endBuf);
+        var totalSize = CalculateSize(this, startBuf, endBuf);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -1302,15 +1316,17 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     ///</summary>
     public long GetOffsetOfBase(QBCursor @base)
     {
-        int CalculateSize(QBCursor @base)
+        int CalculateSize(QBCursor parent, QBCursor @base)
         {
             int totalSize = 0;
+            if (parent != null)
+                totalSize += parent.GetSize();
             if (@base != null)
                 totalSize += @base.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(@base);
+        var totalSize = CalculateSize(this, @base);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try

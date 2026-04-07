@@ -30,15 +30,17 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     ///</summary>
     public uint EqualLocations(QBSourceLocation loc2)
     {
-        int CalculateSize(QBSourceLocation loc2)
+        int CalculateSize(QBSourceLocation loc1, QBSourceLocation loc2)
         {
             int totalSize = 0;
+            if (loc1 != null)
+                totalSize += loc1.GetSize();
             if (loc2 != null)
                 totalSize += loc2.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(loc2);
+        var totalSize = CalculateSize(this, loc2);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -108,15 +110,17 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     ///</summary>
     public QBSourceRange GetRange(QBSourceLocation end)
     {
-        int CalculateSize(QBSourceLocation end)
+        int CalculateSize(QBSourceLocation begin, QBSourceLocation end)
         {
             int totalSize = 0;
+            if (begin != null)
+                totalSize += begin.GetSize();
             if (end != null)
                 totalSize += end.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(end);
+        var totalSize = CalculateSize(this, end);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try
@@ -150,15 +154,17 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     ///</summary>
     public uint IsBeforeInTranslationUnit(QBSourceLocation loc2)
     {
-        int CalculateSize(QBSourceLocation loc2)
+        int CalculateSize(QBSourceLocation loc1, QBSourceLocation loc2)
         {
             int totalSize = 0;
+            if (loc1 != null)
+                totalSize += loc1.GetSize();
             if (loc2 != null)
                 totalSize += loc2.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(loc2);
+        var totalSize = CalculateSize(this, loc2);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try

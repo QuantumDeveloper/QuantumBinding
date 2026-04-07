@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 namespace QuantumBinding.Clang;
 
 ///<summary>
-/// List the possible error codes for clang_Type_getSizeOf, clang_Type_getAlignOf, clang_Type_getOffsetOf and clang_Cursor_getOffsetOf.
+/// List the possible error codes for clang_Type_getSizeOf, clang_Type_getAlignOf, clang_Type_getOffsetOf, clang_Cursor_getOffsetOf, and clang_getOffsetOfBase.
 ///</summary>
 public enum CXTypeLayoutError : int
 {

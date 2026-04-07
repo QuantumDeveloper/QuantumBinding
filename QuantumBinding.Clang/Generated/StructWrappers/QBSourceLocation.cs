@@ -5,67 +5,91 @@
 // </auto-generated>
 // ----------------------------------------------------------------------------------------------
 
+using System;
 using System.Runtime.InteropServices;
 using QuantumBinding.Utils;
 using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBSourceLocation
+public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceLocation>
 {
     public QBSourceLocation()
     {
     }
 
-    public QBSourceLocation(QuantumBinding.Clang.Interop.CXSourceLocation _internal)
+    public QBSourceLocation(in QuantumBinding.Clang.Interop.CXSourceLocation native)
     {
-        Ptr_data = new void*[2];
-        for (int i = 0; i < 2; ++i)
-        {
-            Ptr_data[i] = _internal.ptr_data[i];
-        }
-        Int_data = _internal.int_data;
+        MarshalFrom(in native);
     }
 
-    public void*[] Ptr_data { get; set; }
+    public System.ReadOnlyMemory<nuint> Ptr_data { get; set; }
     public uint Int_data { get; set; }
     ///<summary>
     /// Determine whether two source locations, which must refer into the same translation unit, refer to exactly the same point in the source code.
     ///</summary>
     public uint EqualLocations(QBSourceLocation loc2)
     {
-        var arg1 = ReferenceEquals(loc2, null) ? new QuantumBinding.Clang.Interop.CXSourceLocation() : loc2.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_equalLocations(ToNative(), arg1);
-        return result;
+        int CalculateSize(QBSourceLocation loc1, QBSourceLocation loc2)
+        {
+            int totalSize = 0;
+            if (loc1 != null)
+                totalSize += loc1.GetSize();
+            if (loc2 != null)
+                totalSize += loc2.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(this, loc2);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(this, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(loc2, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_equalLocations(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
-    public void GetExpansionLocation(out QBFile file, out uint line, out uint column, out uint offset)
+    public void GetExpansionLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
     {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
         CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getExpansionLocation(ToNative(), out arg1, out line, out column, out offset);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getExpansionLocation(native, out arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 
     ///<summary>
     /// Retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
-    public void GetFileLocation(out QBFile file, out uint line, out uint column, out uint offset)
+    public void GetFileLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
     {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
         CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getFileLocation(ToNative(), out arg1, out line, out column, out offset);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getFileLocation(native, out arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 
     ///<summary>
     /// Legacy API to retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
-    public void GetInstantiationLocation(out QBFile file, out uint line, out uint column, out uint offset)
+    public void GetInstantiationLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
     {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
         CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getInstantiationLocation(ToNative(), out arg1, out line, out column, out offset);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getInstantiationLocation(native, out arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 
@@ -74,8 +98,10 @@ public unsafe partial class QBSourceLocation
     ///</summary>
     public void GetPresumedLocation(out QBString filename, out uint line, out uint column)
     {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
         QuantumBinding.Clang.Interop.CXString arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getPresumedLocation(ToNative(), out arg1, out line, out column);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getPresumedLocation(native, out arg1, out line, out column);
         filename = new QBString(arg1);
     }
 
@@ -84,19 +110,75 @@ public unsafe partial class QBSourceLocation
     ///</summary>
     public QBSourceRange GetRange(QBSourceLocation end)
     {
-        var arg1 = ReferenceEquals(end, null) ? new QuantumBinding.Clang.Interop.CXSourceLocation() : end.ToNative();
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getRange(ToNative(), arg1);
-        return result;
+        int CalculateSize(QBSourceLocation begin, QBSourceLocation end)
+        {
+            int totalSize = 0;
+            if (begin != null)
+                totalSize += begin.GetSize();
+            if (end != null)
+                totalSize += end.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(this, end);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(this, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(end, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getRange(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
     /// Retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
-    public void GetSpellingLocation(out QBFile file, out uint line, out uint column, out uint offset)
+    public void GetSpellingLocation(out QuantumBinding.Clang.QBFile file, out uint line, out uint column, out uint offset)
     {
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
         CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getSpellingLocation(ToNative(), out arg1, out line, out column, out offset);
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getSpellingLocation(native, out arg1, out line, out column, out offset);
         file = new QBFile(arg1);
+    }
+
+    ///<summary>
+    /// Determine for two source locations if the first comes strictly before the second one in the source code.
+    ///</summary>
+    public uint IsBeforeInTranslationUnit(QBSourceLocation loc2)
+    {
+        int CalculateSize(QBSourceLocation loc1, QBSourceLocation loc2)
+        {
+            int totalSize = 0;
+            if (loc1 != null)
+                totalSize += loc1.GetSize();
+            if (loc2 != null)
+                totalSize += loc2.GetSize();
+            return totalSize;
+        }
+
+        var totalSize = CalculateSize(this, loc2);
+        byte[] rentedArray = null;
+        var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
+        try
+        {
+            ref System.Span<byte> currentCursor = ref mainBuffer;
+            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(this, ref currentCursor);
+            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceLocation, QuantumBinding.Clang.Interop.CXSourceLocation>(loc2, ref currentCursor);
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_isBeforeInTranslationUnit(arg0, arg1);
+        }
+        finally
+        {
+            if (rentedArray != null)
+                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+        }
     }
 
     ///<summary>
@@ -104,7 +186,9 @@ public unsafe partial class QBSourceLocation
     ///</summary>
     public int Location_isFromMainFile()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isFromMainFile(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isFromMainFile(native);
     }
 
     ///<summary>
@@ -112,32 +196,61 @@ public unsafe partial class QBSourceLocation
     ///</summary>
     public int Location_isInSystemHeader()
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isInSystemHeader(ToNative());
+        using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
+        var native = this.MarshalToNative(ctx);
+        return QuantumBinding.Clang.Interop.ClangInterop.clang_Location_isInSystemHeader(native);
     }
 
-
-    public QuantumBinding.Clang.Interop.CXSourceLocation ToNative()
-    {
-        var _internal = new QuantumBinding.Clang.Interop.CXSourceLocation();
-        if(Ptr_data != null)
-        {
-            if (Ptr_data.Length > 2)
-                throw new System.ArgumentOutOfRangeException(nameof(Ptr_data), "Array is out of bounds. Size should not be more than 2");
-
-            for (int i = 0; i < 2; ++i)
-            {
-                _internal.ptr_data[i] = Ptr_data[i];
-            }
-        }
-        _internal.int_data = Int_data;
-        return _internal;
-    }
 
     public static implicit operator QBSourceLocation(QuantumBinding.Clang.Interop.CXSourceLocation q)
     {
-        return new QBSourceLocation(q);
+        return new QBSourceLocation(in q);
     }
 
+    public int GetSize()
+    {
+        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXSourceLocation>();
+        return size;
+    }
+
+    public void MarshalTo(ref MarshallingContext<QuantumBinding.Clang.Interop.CXSourceLocation> context)
+    {
+        new CXSourceLocationMarshaller(this, ref context);
+    }
+
+    public void MarshalFrom(in QuantumBinding.Clang.Interop.CXSourceLocation native)
+    {
+        var tmpPtr_data = new nuint[2];
+        for (int i = 0; i < 2; ++i)
+        {
+            tmpPtr_data[i] = native.ptr_data[i];
+        }
+        Ptr_data = tmpPtr_data;
+        Int_data = native.int_data;
+
+    }
+    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    {
+        var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXSourceLocation>(1);
+        var dataCursor = context.GetDataCursor();
+        var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXSourceLocation>(nativeSpan, dataCursor);
+        this.MarshalTo(ref internalContext);
+        context.SetDataCursor(internalContext.DataCursor);
+        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+    private ref struct CXSourceLocationMarshaller
+    {
+        public CXSourceLocationMarshaller(QuantumBinding.Clang.QBSourceLocation qBSourceLocation, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXSourceLocation> context)
+        {
+            for (int i = 0; i < 2; ++i)
+            {
+                context.Destination[0].ptr_data[i] = qBSourceLocation.Ptr_data.Span[i];
+            }
+
+            context.Destination[0].int_data = qBSourceLocation.Int_data;
+
+        }
+    }
 }
 
 

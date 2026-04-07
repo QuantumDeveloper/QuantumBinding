@@ -31,15 +31,17 @@ public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<Q
     ///</summary>
     public uint EqualRanges(QBSourceRange range2)
     {
-        int CalculateSize(QBSourceRange range2)
+        int CalculateSize(QBSourceRange range1, QBSourceRange range2)
         {
             int totalSize = 0;
+            if (range1 != null)
+                totalSize += range1.GetSize();
             if (range2 != null)
                 totalSize += range2.GetSize();
             return totalSize;
         }
 
-        var totalSize = CalculateSize(range2);
+        var totalSize = CalculateSize(this, range2);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
         try

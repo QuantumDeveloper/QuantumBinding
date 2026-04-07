@@ -68,8 +68,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
 
             _visitor = VisitDelegate;
 
-            //_translationUnit.GetTranslationUnitCursor().VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_visitor).ToPointer() , new QBClientData());
-            _translationUnit.GetTranslationUnitCursor().VisitChildren(Marshal.GetFunctionPointerForDelegate(_visitor).ToPointer() , new QBClientData());
+            _translationUnit.GetTranslationUnitCursor().VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_visitor).ToPointer() , new QBClientData());
+            //_translationUnit.GetTranslationUnitCursor().VisitChildren(Marshal.GetFunctionPointerForDelegate(_visitor).ToPointer() , new QBClientData());
 
             parseResult = (ParseResult)translationUnitResult;
         }
@@ -152,8 +152,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         if (string.IsNullOrEmpty(enumName))
         {
             var forwardDeclaringVisitor = new ForwardDeclarationVisitor(cursor);
-            //cursor.GetCursorLexicalParent().VisitChildren((nuint)forwardDeclaringVisitor.VisitorPtr.ToPointer(), data);
-            cursor.GetCursorLexicalParent().VisitChildren(forwardDeclaringVisitor.VisitorPtr.ToPointer(), data);
+            cursor.GetCursorLexicalParent().VisitChildren((nuint)forwardDeclaringVisitor.VisitorPtr.ToPointer(), data);
+            //cursor.GetCursorLexicalParent().VisitChildren(forwardDeclaringVisitor.VisitorPtr.ToPointer(), data);
             enumName = forwardDeclaringVisitor.ForwardDeclarationCursor.GetCursorSpelling().ToString();
 
             if (string.IsNullOrEmpty(enumName))
@@ -184,8 +184,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         _functionPtr = VisitEnumItemsDelegate;
 
         // visit all the enum values
-        //cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-        cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
+        cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
+        //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
         CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
         {
@@ -264,10 +264,10 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         if (string.IsNullOrEmpty(structName))
         {
             var forwardDeclaringVisitor = new ForwardDeclarationVisitor(cursor);
-            // cursor.GetCursorSemanticParent().VisitChildren((nuint)forwardDeclaringVisitor.VisitorPtr.ToPointer(),
-            //     new QBClientData());
-            cursor.GetCursorSemanticParent().VisitChildren(forwardDeclaringVisitor.VisitorPtr.ToPointer(),
+            cursor.GetCursorSemanticParent().VisitChildren((nuint)forwardDeclaringVisitor.VisitorPtr.ToPointer(),
                 new QBClientData());
+            // cursor.GetCursorSemanticParent().VisitChildren(forwardDeclaringVisitor.VisitorPtr.ToPointer(),
+            //     new QBClientData());
             structName = forwardDeclaringVisitor.ForwardDeclarationCursor.GetCursorSpelling().ToString();
 
             if (string.IsNullOrEmpty(structName))
@@ -298,8 +298,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
 
         _functionPtr = VisitStructFieldsNative;
 
-        //cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-        cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
+        cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
+        //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
         CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
         {
@@ -529,8 +529,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
 
                 _functionPtr = VisitFunctionProtoNative;
 
-                //cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-                cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
+                cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
+                //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
                 CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientDataImpl clientData)
                 {
