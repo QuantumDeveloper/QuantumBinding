@@ -29,5 +29,6 @@ public enum CodeBlockKind
     Delegate,
     Macro,
     DebugInfo,
-    Utils
+    Utils,
+    DispatchTable
 }

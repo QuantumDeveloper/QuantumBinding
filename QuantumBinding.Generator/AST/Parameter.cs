@@ -25,6 +25,7 @@ public class Parameter : Declaration
         Id = parameter.Id;
         Parent = Parent;
         IsOverload = parameter.IsOverload;
+        IsOptional = parameter.IsOptional;
     }
         
     public bool IsOverload { get; set; }
@@ -42,6 +43,8 @@ public class Parameter : Declaration
     public bool HasDefaultValue => !string.IsNullOrEmpty(DefaultValue);
 
     public string DefaultValue { get; set; }
+    
+    public bool IsOptional { get; set; }
 
     public override string ToString()
     {

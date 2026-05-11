@@ -1,7 +1,4 @@
 ﻿using QuantumBinding.Generator.Types;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml.Serialization;
 
 namespace QuantumBinding.Generator.BindingsMapping;
@@ -21,6 +18,9 @@ public class ArrayTypeMap : BindingTypeMap
 
     [XmlAttribute]
     public string ArraySizeSource { get; set; }
+    
+    [XmlAttribute]
+    public string MathExpression { get; set; }
 
     public override BindingType ToBindingType()
     {
@@ -30,7 +30,8 @@ public class ArrayTypeMap : BindingTypeMap
             SizeType = SizeType,
             Size = Size,
             ElementSize = ElementSize,
-            ArraySizeSource = ArraySizeSource
+            ArraySizeSource = ArraySizeSource,
+            MathExpression = MathExpression,
         };
     }
 }

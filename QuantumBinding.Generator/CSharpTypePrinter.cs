@@ -143,6 +143,10 @@ public class CSharpTypePrinter : TypePrinter
                 return Result($"{visitResult}", "[]");
             case MarshalTypes.MethodParameter:
             case MarshalTypes.SkipParamModifiers:
+                if (visitResult == "void")
+                {
+                    visitResult = PrimitiveType.Nuint.GetDisplayName();
+                }
                 return Parameter.ParameterKind switch
                 {
                     ParameterKind.Out => Result($"{visitResult}", "[]"),
@@ -151,6 +155,10 @@ public class CSharpTypePrinter : TypePrinter
                 };
             case MarshalTypes.Property:
             case MarshalTypes.WrappedProperty:
+                if (visitResult == "void")
+                {
+                    visitResult = PrimitiveType.Nuint.GetDisplayName();
+                }
                 return Module.TargetRuntime == TargetRuntime.Net8Plus
                     ? Result($"{visitResult}", "", wrapperType: ReadOnlyMemoryName)
                     : Result($"{visitResult}", "[]");
@@ -165,7 +173,7 @@ public class CSharpTypePrinter : TypePrinter
         TypePrinterResult result = null;
             
         var depth = pointerDepth;
-        if (pointerDepth > 0 && Parameter is { ParameterKind: ParameterKind.Out })
+        if (pointerDepth > 1 && Parameter is { ParameterKind: ParameterKind.Out })
         {
             depth--;
         }
@@ -188,9 +196,9 @@ public class CSharpTypePrinter : TypePrinter
                     case not null when pointer.IsStringArray(out var isUnicode):
                         result = Result(isUnicode ? "char" : "sbyte", DoublePointerOperator);
                         break;
-                    case not null when pointer.IsPointerToVoid() || pointer.IsPointerToObject():
+                    case not null when pointer.IsPointerToVoid(out _) || pointer.IsPointerToObject():
                     {
-                        result = Result("nuint");
+                        result = Result("void", TextGenerator.GetPointerString(depth));
                     }
                         break;
                     case not null when pointer.IsPointerToIntPtr():
@@ -209,7 +217,7 @@ public class CSharpTypePrinter : TypePrinter
                     {
                         pointer.Pointee.Declaration = pointer.Declaration;
                         var printedType = pointer.Pointee.Visit(this);
-                            
+
                         result = Result($"{printedType.Type}", TextGenerator.GetPointerString(depthCount));
                     }
                         break;
@@ -233,9 +241,10 @@ public class CSharpTypePrinter : TypePrinter
                         break;
                     case not null when pointer.IsPointerToClass(out var @classDecl) &&
                                        @classDecl.NativeStruct != null:
-                        result = Parameter is { ParameterKind: ParameterKind.Out }
-                            ? Result(@classDecl.NativeStruct.Name)
-                            : Result(@classDecl.NativeStruct.Name, TextGenerator.GetPointerString(depth));
+                        // result = Parameter is { ParameterKind: ParameterKind.Out }
+                        //     ? Result(@classDecl.NativeStruct.Name)
+                        //     : Result(@classDecl.NativeStruct.Name, TextGenerator.GetPointerString(depth));
+                        result = Result(@classDecl.NativeStruct.Name, TextGenerator.GetPointerString(depth));
                         break;
                     default:
                         result = pointer.Pointee.Visit(this);
@@ -278,7 +287,7 @@ public class CSharpTypePrinter : TypePrinter
                     case not null when pointer.IsPointerToObject():
                         result = Result("object");
                         break;
-                    case not null when pointer.IsPointerToVoid():
+                    case not null when pointer.IsPointerToVoid(out _):
                         result = Result("nuint");
                         break;
                     case not null when pointer.IsPointerToIntPtr():
@@ -366,6 +375,8 @@ public class CSharpTypePrinter : TypePrinter
                 return "byte";
             case PrimitiveType.Byte:
                 return "byte";
+            case PrimitiveType.Sbyte:
+                return "sbyte";
             case PrimitiveType.SChar:
                 if (Module.CharAsBoolForMethods &&
                     MarshalType is MarshalTypes.NativeParameter 
@@ -405,6 +416,8 @@ public class CSharpTypePrinter : TypePrinter
                 return "void";
             case PrimitiveType.String:
                 return "string";
+            case PrimitiveType.Nuint:
+                return builtin.Type.GetDisplayName();
             default:
                 return "Unknown";
         }
@@ -502,6 +515,19 @@ public class CSharpTypePrinter : TypePrinter
         return dependentNameType.Identifier;
     }
 
+    public override TypePrinterResult VisitDispatchTableType(DispatchTableType dispatchTableType)
+    {
+        return dispatchTableType.Declaration.FullName;
+    }
+
+    public override TypePrinterResult VisitDispatchTable(DispatchTable dispatchTable)
+    {
+        var sb = new StringBuilder();
+        sb.Append($"{dispatchTable.Name}");
+        
+        return sb.ToString();
+    }
+
     public override TypePrinterResult VisitParameters(IEnumerable<Parameter> @params, MarshalTypes marshalType,
         bool isExtensionMethod = false)
     {
@@ -578,12 +604,12 @@ public class CSharpTypePrinter : TypePrinter
                     }
                 }
 
-                if (parameter.ParameterKind == ParameterKind.Out && 
-                    !parameter.Type.IsPointerToArray() &&
-                    !parameter.Type.IsDoublePointer())
-                {
-                    result.TypeSuffix = string.Empty;
-                }
+                // if (parameter.ParameterKind == ParameterKind.Out && 
+                //     !parameter.Type.IsPointerToArray(out var arrayType, out var depthCount) &&
+                //     !parameter.Type.IsPurePointer())
+                // {
+                //     result.TypeSuffix = string.Empty;
+                // }
 
                 if (MarshalType == MarshalTypes.DelegateType)
                 {
@@ -650,9 +676,24 @@ public class CSharpTypePrinter : TypePrinter
         return $"{item.Name} = {item.Value}";
     }
 
+    public override TypePrinterResult VisitGlobalUsings(GlobalUsings globalUsings)
+    {
+        var sb = new StringBuilder();
+        foreach (var usingItem in globalUsings.Usings)
+        {
+            sb.AppendLine(usingItem.Visit(this).ToString());
+        }
+        return sb.ToString();
+    }
+
+    public override TypePrinterResult VisitGlobalUsingItem(GlobalUsingItem item)
+    {
+        return $"global using {item.Alias.FullName} = {item.Source.FullName}";
+    }
+
     public override TypePrinterResult VisitClass(Class @class)
     {
-        StringBuilder builder = new StringBuilder();
+        var builder = new StringBuilder();
 
         builder.Append($"{GetAccessSpecifier(@class.AccessSpecifier)} unsafe ");
         builder.Append("partial ");
@@ -678,7 +719,7 @@ public class CSharpTypePrinter : TypePrinter
         if (field.Type == null)
         {
             string result = string.Empty;
-            if (MarshalType != MarshalTypes.MethodParameter)
+            if (MarshalType != MarshalTypes.MethodParameter && MarshalType != MarshalTypes.SkipParamTypesAndModifiers)
             {
                 result = $"{GetAccessSpecifier(field.AccessSpecifier)} ";
             }
@@ -686,7 +727,7 @@ public class CSharpTypePrinter : TypePrinter
             return result += field.Name;
         }
 
-        StringBuilder builder = new StringBuilder();
+        var builder = new StringBuilder();
         PushField(field);
         var fieldResult = field.Type.Visit(this);
         if (field.Type.IsPointerToStructOrUnion())
@@ -694,9 +735,14 @@ public class CSharpTypePrinter : TypePrinter
             fieldResult = $"{field.Type.Declaration.InteropNamespace}.{fieldResult}";
         }
         PopField();
-        if (MarshalType != MarshalTypes.MethodParameter)
+        if (MarshalType != MarshalTypes.MethodParameter && MarshalType != MarshalTypes.SkipParamTypesAndModifiers)
         {
             builder.Append($"{GetAccessSpecifier(field.AccessSpecifier)} ");
+        }
+
+        if (MarshalType == MarshalTypes.SkipParamTypesAndModifiers)
+        {
+            return fieldResult;
         }
 
         builder.Append($"{fieldResult} ");
@@ -775,13 +821,13 @@ public class CSharpTypePrinter : TypePrinter
         if (MarshalType is MarshalTypes.SkipParamTypes or MarshalTypes.DelegateType
             or MarshalTypes.DelegateParameter)
         {
-            if (param.ParameterKind == ParameterKind.Ref && !(param.Type.IsPurePointer()))
-            {
-                modifier = "ref";
-                return true;
-            }
+            // if (param.ParameterKind == ParameterKind.Ref && !(param.Type.IsPurePointer()))
+            // {
+            //     modifier = "ref";
+            //     return true;
+            // }
 
-            if (param.ParameterKind == ParameterKind.Out)
+            if (param.ParameterKind == ParameterKind.Out && (param.Type.IsPointerToVoid(out var depth) && depth > 1))
             {
                 modifier = "out";
                 return true;
@@ -815,19 +861,11 @@ public class CSharpTypePrinter : TypePrinter
         {
             switch (param.ParameterKind)
             {
-                case ParameterKind.Ref:
-                    if (param.Type.IsPointerToIntPtr())
-                    {
-                        attribute = "[In, Out]";
-                    }
-
-                    break;
                 case ParameterKind.Out:
-                    if (!param.Type.IsPointerToArray())
+                    if (param.Type.IsPointerToVoid(out var depth) && depth > 1)
                     {
                         modifier = "out";
                     }
-
                     break;
             }
         }

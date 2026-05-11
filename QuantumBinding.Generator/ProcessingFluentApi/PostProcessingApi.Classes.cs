@@ -448,7 +448,7 @@ public partial class PostProcessingApi : IClassParameters, ISetField, ISetProper
 
     public ISetField InterpretAsDelegateType(IEnumerable<Parameter> parameters, string name)
     {
-        _currentField.Type = new DelegateType() { Name = name, Parameters = new List<Parameter>(parameters)};
+        _currentField.Type = new DelegateType() { Name = name, Parameters = [..parameters] };
         return this;
     }
 

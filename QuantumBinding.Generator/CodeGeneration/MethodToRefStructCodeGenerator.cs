@@ -117,7 +117,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 }
                 else if (parameter.Type.IsPointerToArrayOfPrimitiveTypes(out var elementType))
                 {
-                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({elementType.Type});");
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({elementType.Type.GetDisplayName()});");
                 }
                 else if (parameter.Type.IsPointerToArrayOfEnums())
                 {
@@ -142,6 +142,14 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                                 PopIndent();
                             }
                         });
+                }
+                else if (parameter.Type.IsPointerToArray(out var arrayType, out var depth))
+                {
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({PrimitiveType.Nuint.GetDisplayName()});");
+                }
+                else if (parameter.Type.IsDoublePointer())
+                {
+                    WriteLine($"{totalSizeName} += sizeof({PrimitiveType.Nuint.GetDisplayName()});");
                 }
                 else if (parameter.Type.IsWrapper())
                 {
@@ -208,9 +216,9 @@ public class MethodToRefStructCodeGenerator : TextGenerator
         WriteOpenBraceAndIndent();
         action?.Invoke();
         UnindentAndWriteCloseBrace();
-        WriteLine($"finally");
+        WriteLine("finally");
         WriteOpenBraceAndIndent();
-        WriteLine($"if (rentedArray != null)");
+        WriteLine("if (rentedArray != null)");
         PushIndent();
         WriteLine($"System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);");
         PopIndent();

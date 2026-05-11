@@ -39,6 +39,16 @@ public class PointerType : BindingType, IEquatable<PointerType>
 
         return depth;
     }
+    
+    public BindingType GetBindingType()
+    {
+        var pointee = Pointee;
+        while (pointee is PointerType pointer)
+        {
+            pointee = pointer.Pointee;
+        }
+        return pointee;
+    }
 
     public BindingType GetPointee()
     {

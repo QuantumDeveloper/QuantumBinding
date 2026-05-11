@@ -32,7 +32,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
     private Delegates.CXCursorVisitor _visitor;
     private Delegates.CXCursorVisitor _functionPtr;
 
-    public ParseResult Parse(TranslationUnit unit, string filePath)
+    public ParseResult Parse(TranslationUnit unit, string vulkanFile)
     {
         _unit = unit;
         var arguments = GetArguments();
@@ -43,7 +43,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         {
             QBUnsavedFile[] unsavedFile = Array.Empty<QBUnsavedFile>();
             var translationUnitResult = _index.ParseTranslationUnit2(
-                filePath,
+                vulkanFile,
                 arguments.ToArray(),
                 arguments.Count,
                 unsavedFile,
@@ -299,7 +299,6 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         _functionPtr = VisitStructFieldsNative;
 
         cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-        //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
         CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
         {
@@ -530,7 +529,6 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                 _functionPtr = VisitFunctionProtoNative;
 
                 cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-                //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
                 CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientDataImpl clientData)
                 {
@@ -614,12 +612,12 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
     {
         var functionName = cursor.GetCursorSpelling().ToString();
 
-        if (this._visitedFunctions.Contains(functionName))
+        if (_visitedFunctions.Contains(functionName))
         {
             return CXChildVisitResult.CXChildVisit_Continue;
         }
 
-        this._visitedFunctions.Add(functionName);
+        _visitedFunctions.Add(functionName);
         var function = ClangUtils.GetFunctionInfo(cursor);
         function.Comment = GetComment(cursor);
         function.Location = ClangUtils.GetCurrentCursorLocation(cursor);

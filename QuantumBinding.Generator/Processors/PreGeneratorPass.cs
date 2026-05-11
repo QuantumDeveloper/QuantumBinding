@@ -71,7 +71,6 @@ public abstract class PreGeneratorPass : IPreGeneratorPass
             ParentDeclaration = null;
         }
 
-
         var classes = @namespace.AllClasses.ToArray();
         foreach (var @class in classes)
         {
@@ -136,7 +135,6 @@ public abstract class PreGeneratorPass : IPreGeneratorPass
             ParentDeclaration = null;
         }
 
-
         foreach (var function in @namespace.Functions)
         {
             ParentDeclaration = function;
@@ -186,11 +184,48 @@ public abstract class PreGeneratorPass : IPreGeneratorPass
 
             ParentDeclaration = null;
         }
+        
+        if (Options.VisitDispatchTables)
+        {
+            foreach (var dispatchTable in @namespace.DispatchTables)
+            {
+                ParentDeclaration = dispatchTable;
+                dispatchTable.Visit(this);
+            }
+
+            ParentDeclaration = null;
+        }
 
         return true;
     }
 
     public virtual bool VisitMacro(Macro macro)
+    {
+        return true;
+    }
+
+    public bool VisitGlobalUsings(GlobalUsings globalUsings)
+    {
+        if (Options.VisitEnumItems)
+        {
+            foreach (var item in globalUsings.Usings)
+            {
+                if (IsVisited(item))
+                    continue;
+
+                VisitGlobalUsingItem(item);
+            }
+        }
+
+        return true;
+    }
+
+    public virtual bool VisitGlobalUsingItem(GlobalUsingItem item)
+    {
+        return true;
+    }
+
+    public virtual bool VisitDispatchTable(DispatchTable dispatchTable)
     {
         return true;
     }

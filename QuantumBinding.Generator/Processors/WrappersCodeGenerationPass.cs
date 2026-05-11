@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
-using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors;
 
-public class WrappersGenerationPass : CodeGeneratorPass
+public class WrappersCodeGenerationPass : CodeGeneratorPass
 {
-    public WrappersGenerationPass()
+    public WrappersCodeGenerationPass()
     {
         CodeGeneratorPassKind = ExecutionPassKind.PerTranslationUnit;
         GeneratorSpecializations = GeneratorSpecializations.StructWrappers | GeneratorSpecializations.UnionWrappers;

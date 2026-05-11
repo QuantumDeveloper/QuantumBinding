@@ -114,6 +114,9 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 Write("var result = ");
                 PostActions.Enqueue(ConvertReturnType);
                 break;
+            case false when method.ReturnType.IsPointerToVoid(out var depth):
+                Write("var result = ");
+                break;
             case false when PostActions.Count == 0:
                 Write("return ");
                 break;
@@ -124,9 +127,18 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
 
         var @namespace = method.Function.Namespace;
 
-        var functionCall =
-            $"{@namespace}.{CurrentTranslationUnit.Module.InteropClassName}.{method.Function.Name}({TypePrinter.VisitParameters(NativeParameters, MarshalTypes.NativeFunctionCall)});";
-        Write(functionCall);
+        if (method.IsInstanceMethod && method.Class.IsDispatchable && method.Class.DispatchTable != null && !method.Class.DispatchTable.FunctionsToIgnore.Contains(method.Function.Name))
+        {
+            var parametersSting = TypePrinter.VisitParameters(NativeParameters, MarshalTypes.NativeFunctionCall);
+            Write($"{method.Class.DispatchFieldName}.{method.Function.Name}({parametersSting});");
+        }
+        else
+        {
+            var functionCall =
+                $"{@namespace}.{CurrentTranslationUnit.Module.InteropClassName}.{method.Function.Name}({TypePrinter.VisitParameters(NativeParameters, MarshalTypes.NativeFunctionCall)});";
+            Write(functionCall);
+        }
+        
         NewLine();
 
         var hasPostActions = PostActions.Count > 0;
@@ -146,6 +158,10 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             {
                 WriteLine("return result;");
             }
+        }
+        else if (method.ReturnType.IsPointerToVoid(out var depth))
+        {
+            WriteLine($"return ({PrimitiveType.Nuint.GetDisplayName()})result;");
         }
         else if (method.ReturnType.IsString())
         {
@@ -202,30 +218,45 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         else if (parameter.Type.IsPointerToBuiltInType(out var prim) && !parameter.Type.IsPurePointer())
         {
             WritePointerToPrimitiveType(parameter, argumentName);
-            var nativeParam = new Parameter()
-            {
-                ParameterKind = parameter.ParameterKind, Type = parameter.Type
-            };
-            switch (parameter.ParameterKind)
-            {
-                case ParameterKind.Out:
-                    nativeParam.Name = parameter.Name;
-                    break;
-                default:
-                    nativeParam.Name = argumentName;
-                    break;
-            }
-            
-            NativeParameters.Add(nativeParam);
+            CreateNativeParameter(parameter, argumentName, null);
         }
         // The input parameter is void*, so we need to just pass it as is without any conversion
-        else if (parameter.Type.IsPointerToIntPtr() || parameter.Type.IsPurePointer())
+        else if (parameter.Type.IsPurePointer())
         {
-            NativeParameters.Add(parameter);
+            WritePointerToVoid(parameter, argumentName);
         }
         else if (parameter.Type.Declaration == null || !parameter.Type.IsPointer())
         {
             NativeParameters.Add(parameter);
+        }
+    }
+
+    private void WritePointerToVoid(Parameter parameter, string argumentName)
+    {
+        var pointerType = parameter.Type as PointerType;
+        var depth = pointerType.GetDepth();
+        
+        if (parameter.ParameterKind is ParameterKind.Out or ParameterKind.Ref)
+        {
+            if (parameter.ParameterKind == ParameterKind.Out)
+            {
+                WriteLine($"void{GetPointerString(depth)} {argumentName} = null;");
+            }
+            else
+            {
+                WriteLine($"void{GetPointerString(depth)} {argumentName} = (void{GetPointerString(depth)}){parameter.Name};");
+            }
+            
+            CreateNativeParameter(parameter, argumentName, parameter.Type.Declaration);
+            PostActions.Enqueue(() =>
+            {
+                WriteLine($"{parameter.Name} = (nuint){argumentName};");
+            });
+        }
+        else
+        {
+            WriteLine($"void{GetPointerString(depth)} {argumentName} = (void{GetPointerString(depth)}){parameter.Name};");
+            CreateNativeParameter(parameter, argumentName, parameter.Type.Declaration);
         }
     }
 
@@ -426,8 +457,10 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             var argumentType = parameter.Type.Visit(TypePrinter);
             TypePrinter.PopParameter();
             TypePrinter.PopMarshalType();
-            WriteLine($"{argumentType} {argumentName};");
-            PostActions.Enqueue(() => ConvertOutStructToClass(parameter, argumentName, classDecl));
+            WriteLine($"{argumentType.Type} {argumentName} = {Default};");
+            var argName = argumentName;
+            PostActions.Enqueue(() => ConvertOutStructToClass(parameter, argName, classDecl));
+            argumentName = $"&{argumentName}";
         }
         
         CreateNativeParameter(parameter, argumentName, classDecl);
@@ -493,6 +526,11 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             else
             {
                 WriteLine($"{parameter.Name}[i] = {argumentName}[i];");
+                
+                if (classDecl.ClassType == ClassType.Class && classDecl.IsDispatchable && !classDecl.IsDispatchTableOwner)
+                {
+                    WriteLine($"{parameter.Name}[i].{classDecl.DispatchFieldName} = this.{classDecl.DispatchFieldName};");
+                }
             }
             UnindentAndWriteCloseBrace();
         }
@@ -577,14 +615,17 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             {
                 PostActions.Enqueue(() => ConvertPointerToClassOrStruct(parameter, argumentName, classDecl));
             }
+            CreateNativeParameter(parameter, argumentName, classDecl);
         }
         else if (parameter.ParameterKind == ParameterKind.Out)
         {
-            WriteLine($"{interopType} {argumentName};");
+            var ptrType = parameter.Type as PointerType;
+            var ptrDepth = ptrType.GetDepth();
+            ptrDepth--;
+            WriteLine($"{nativeType}{GetPointerString(ptrDepth)} {argumentName} = {Default};");
             PostActions.Enqueue(() => ConvertOutStructToClass(parameter, argumentName, classDecl));
+            CreateNativeParameter(parameter, $"&{argumentName}", classDecl);
         }
-        
-        CreateNativeParameter(parameter, argumentName, classDecl);
     }
     
     protected void WritePointerToSimpleType(Parameter parameter, string argumentName, Class classDecl)
@@ -618,8 +659,10 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             }
             else if (classDecl.IsSimpleType)
             {
-                WriteLine($"{nativeType} {argumentName};");
-                PostActions.Enqueue(() => ConvertOutStructToClass(parameter, argumentName, classDecl));
+                WriteLine($"{nativeType.Type} {argumentName} = {Default};");
+                var argName = argumentName;
+                PostActions.Enqueue(() => ConvertOutStructToClass(parameter, argName, classDecl));
+                argumentName = $"&{argumentName}";
             }
             else
             {
@@ -654,7 +697,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             if (classDecl.ClassType == ClassType.Class)
             {
                 WriteLine($"{classDecl.NativeStruct.Namespace}.{typeStrResult} {argumentName} = null;");
-                WriteLine($"{SpanClassName}<{classDecl.NativeStruct.FullName}> {argumentName}Span = default;");
+                WriteLine($"{SpanClassName}<{classDecl.NativeStruct.FullName}> {argumentName}Span = {Default};");
                 ImplicitTwoWayArrayTypeConversion(parameter, classDecl, argumentName, arrayLength);
             }
             else
@@ -778,6 +821,10 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 WriteLine(classType == ClassType.Class
                     ? $"{parameter.Name}[i] = {argumentName}[i];"
                     : $"{parameter.Name}[i] = new {type}({argumentName}[i]);");
+                if (classType == ClassType.Class && classDecl.IsDispatchable && !classDecl.IsDispatchTableOwner)
+                {
+                    WriteLine($"{parameter.Name}[i].{classDecl.DispatchFieldName} = this.{classDecl.DispatchFieldName};");
+                }
             }
 
             UnindentAndWriteCloseBrace();
@@ -833,7 +880,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         {
             WriteLine("else");
             PushIndent();
-            WriteLine($"{parameter.Name} = default;");
+            WriteLine($"{parameter.Name} = {Default};");
             PopIndent();
         }
     }
@@ -850,14 +897,27 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
         TypePrinter.PushParameter(parameter);
         var typeStrResult = parameter.Type.Visit(TypePrinter);
+        var originalTypeStr = typeStrResult;
+        if (typeStrResult.Type == "void")
+        {
+            typeStrResult = PrimitiveType.Nuint.GetDisplayName();
+        }
         
         TypePrinter.PopParameter();
         TypePrinter.PopMarshalType();
         if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly)
         {
-            WriteLine(
-                $"var {argumentName} = {MarshalContextUtilsBlittableArray}<{typeStrResult.Type}>({parameter.Name}, ref {_spanBufferCursorName});");
-            
+            if (pointerDepth == 1)
+            {
+                WriteLine(
+                    $"var {argumentName} = {MarshalContextUtilsBlittableArray}<{typeStrResult.Type}>({parameter.Name}, ref {_spanBufferCursorName});");
+            }
+            else
+            {
+                WriteLine(
+                    $"var {argumentName} = ({originalTypeStr}){MarshalContextUtilsBlittableArray}<{typeStrResult.Type}>({parameter.Name}, ref {_spanBufferCursorName});");
+            }
+
         }
         else if (parameter.ParameterKind == ParameterKind.Ref)
         {
@@ -881,26 +941,90 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             WriteLine($"{parameter.Name} = new {typeStrResult}[{arrayLength}];");
         }
 
-        WriteLine($"{parameter.Name} = {MarshalContextUtilsUnmarshalBlittableArray}({argumentName}, {arrayLength});");
+        WriteLine($"{parameter.Name} = {MarshalContextUtilsUnmarshalBlittableArray}({argumentName}, (long){arrayLength});");
     }
     
     protected void WritePointerToPrimitiveType(Parameter parameter, string argumentName)
     {
-        if (parameter.ParameterKind is not ParameterKind.Out)
+        TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+        TypePrinter.PushParameter(parameter);
+        var interopType = parameter.Type.Visit(TypePrinter);
+        TypePrinter.PopParameter();
+        TypePrinter.PopMarshalType();
+        WriteLine($"var {argumentName} = {StackAlloc} {interopType.Type}[1];");
+        if (parameter.ParameterKind != ParameterKind.Out)
+        {
+            WriteLine($"*{argumentName} = {parameter.Name};");
+        }
+
+        if (parameter.ParameterKind is ParameterKind.Ref or ParameterKind.Out)
+        {
+            PostActions.Enqueue(() => ConvertOutPrimitiveTypePointerToValue(parameter, argumentName));
+        }
+    }
+    
+    protected void WritePointerToArrayOfPrimitiveTypes(Parameter parameter, ArrayType arrayType, string argumentName)
+    {
+        if (parameter.ParameterKind is ParameterKind.Out)
         {
             TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
             TypePrinter.PushParameter(parameter);
             var interopType = parameter.Type.Visit(TypePrinter);
             TypePrinter.PopParameter();
             TypePrinter.PopMarshalType();
-            WriteLine($"var {argumentName} = {StackAlloc} {interopType.Type}[1];");
-            WriteLine($"*{argumentName} = {parameter.Name};");
+            var arrayLength = arrayType.Size.ToString();
+            if (arrayType.ArraySizeSource != null)
+            {
+                arrayLength = arrayType.ArraySizeSource;
+            }
+            
+            WriteLine($"{interopType} {argumentName} = null;");
+            WriteLine($"if ({arrayLength} < {StackAllocThresholdPropertyName})");
+            WriteOpenBraceAndIndent();
+            WriteLine($"{interopType} {argumentName}1 = {StackAlloc} {interopType.Type}[(int){arrayLength}];");
+            WriteLine($"{argumentName} = {argumentName}1;");
+            UnindentAndWriteCloseBrace();
+            WriteLine($"else");
+            WriteOpenBraceAndIndent();
+            WriteLine($"{argumentName} = ({interopType})NativeMemory.Alloc((nuint){arrayLength});");
+            UnindentAndWriteCloseBrace();
+
+            PostActions.Enqueue(() => ConvertOutPointerToArrayOfPrimitiveTypes(parameter, argumentName, arrayType));
         }
 
         if (parameter.ParameterKind is ParameterKind.Ref)
         {
             PostActions.Enqueue(() => ConvertOutPrimitiveTypePointerToValue(parameter, argumentName));
         }
+    }
+
+    void ConvertOutPointerToArrayOfPrimitiveTypes(Parameter parameter, string argumentName, ArrayType arrayType)
+    {
+        TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
+        TypePrinter.PushParameter(parameter);
+        var parameterType = parameter.Type.Visit(TypePrinter);
+        TypePrinter.PopParameter();
+        TypePrinter.PopMarshalType();
+        
+        TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+        TypePrinter.PushParameter(parameter);
+        var interopType = parameter.Type.Visit(TypePrinter);
+        TypePrinter.PopParameter();
+        TypePrinter.PopMarshalType();
+        
+        var arrayLength = arrayType.Size.ToString();
+        if (arrayType.ArraySizeSource != null)
+        {
+            arrayLength = arrayType.ArraySizeSource;
+        }
+        
+        WriteLine($"{parameter.Name} = new {parameterType.Type}[{arrayLength}];");
+        WriteLine($"{UnsafeClassName}.CopyBlock(ref {parameter.Name}[0], ref {argumentName}[0], (uint){arrayLength});");
+        
+        WriteLine($"if ({arrayLength}  > {StackAllocThresholdPropertyName})");
+        PushIndent();
+        FreeNativePointer(argumentName);
+        PopIndent();
     }
     
     void ConvertOutPrimitiveTypePointerToValue(Parameter parameter, string argumentName)
@@ -930,12 +1054,23 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             UnindentAndWriteCloseBrace();
             WriteLine($"else");
             WriteOpenBraceAndIndent();
-            WriteLine($"{parameter.Name} = (default);");
+            WriteLine($"{parameter.Name} = {Default};");
             UnindentAndWriteCloseBrace();
         }
         else
         {
-            WriteLine($"{parameter.Name} = new {wrapperType}({argumentName});");
+            if (classDecl.ClassType == ClassType.Class || classDecl.IsWrapper)
+            {
+                WriteLine($"{parameter.Name} = new {wrapperType}({argumentName});");
+                if (classDecl.ClassType == ClassType.Class && classDecl.IsDispatchable && !classDecl.IsDispatchTableOwner)
+                {
+                    WriteLine($"{parameter.Name}.{classDecl.DispatchFieldName} = this.{classDecl.DispatchFieldName};");
+                }
+            }
+            else if (classDecl.IsSimpleType)
+            {
+                WriteLine($"{parameter.Name} = {argumentName};");
+            }
         }
     }
     
@@ -988,18 +1123,14 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             }
             else
             {
-                if (parameter.ParameterKind is not ParameterKind.Out)
+                WriteLine($"var {argumentName} = {StackAlloc} {enumeration.FullName}[1];");
+                if (parameter.ParameterKind != ParameterKind.Out)
                 {
-                    WriteLine($"var {argumentName} = {StackAlloc} {enumeration.FullName}[1];");
                     WriteLine($"*{argumentName} = {parameter.Name};");
-                }
-                else
-                {
-                    argumentName = parameter.Name;
                 }
             }
             
-            if (parameter.ParameterKind is ParameterKind.Ref)
+            if (parameter.ParameterKind is ParameterKind.Ref or ParameterKind.Out)
             {
                 PostActions.Enqueue(() => ConvertPointerToEnum(parameter, argumentName));
             }
@@ -1030,7 +1161,10 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         WriteLine($"var {argumentName}SourceSpan = new {ReadonlySpanClassName}<{enumeration.FullName}>({argumentName}, (int){arrayLength});");
         if (parameter.ParameterKind is ParameterKind.Ref)
         {
+            WriteLine($"if(!{parameter.Name}.IsEmpty)");
+            PushIndent();
             WriteLine($"{argumentName}SourceSpan.CopyTo({parameter.Name});");
+            PopIndent();
         }
         else
         {
@@ -1061,18 +1195,20 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
         var wrappedType = Method.ReturnType.Visit(TypePrinter);
         TypePrinter.PopMarshalType();
-        var classDecl = Method.ReturnType.Declaration as Class;
-        if (classDecl is { IsWrapper: true })
+        if (Method.ReturnType.Declaration is Class classDecl)
         {
-            WriteLine($"var wrappedResult = new {wrappedType.Type}(*result);");
-            FreeNativePointer("result");
-            WriteLine("return wrappedResult;");
-        }
-        else if (classDecl.ClassType == ClassType.Class)
-        {
-            WriteLine($"var classResult = *result;");
-            FreeNativePointer("result");
-            WriteLine("return classResult;");
+            if (classDecl is { IsWrapper: true })
+            {
+                WriteLine($"var wrappedResult = new {wrappedType.Type}(*result);");
+                FreeNativePointer("result");
+                WriteLine("return wrappedResult;");
+            }
+            else if (classDecl.ClassType == ClassType.Class)
+            {
+                WriteLine($"var classResult = *result;");
+                FreeNativePointer("result");
+                WriteLine("return classResult;");
+            }
         }
     }
     

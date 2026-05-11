@@ -283,9 +283,14 @@ public abstract class CSharpCodeGeneratorBase : CodeGenerator
             Write(")");
             NewLine();
             WriteOpenBraceAndIndent();
+            var @class = ctor.Class; 
             foreach (var param in ctor.InputParameters)
             {
                 WriteLine($"this.{param.Name} = {param.Name};");
+            }
+            if (@class.ClassType == ClassType.Class && @class.IsDispatchTableOwner)
+            {
+                WriteLine($"this.{@class.DispatchFieldName} = new {@class.DispatchTable.Name}(this);");
             }
             UnindentAndWriteCloseBrace();
         }

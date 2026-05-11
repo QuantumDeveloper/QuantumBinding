@@ -12,8 +12,16 @@ public class FileLocation
 
     public uint Column { get; set; }
 
+    public bool IsFakeFileName => !string.IsNullOrEmpty(RealFileName);
+    
+    public string RealFileName { get; set; }
+
     public override string ToString()
     {
+        if (IsFakeFileName)
+        {
+            return $"File: {RealFileName} Line: {LineNumber} Column: {Column}";
+        }
         return $"File: {FileName} Line: {LineNumber} Column: {Column}";
     }
 }

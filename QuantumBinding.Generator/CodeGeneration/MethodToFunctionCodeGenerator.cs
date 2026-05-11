@@ -131,30 +131,44 @@ public class MethodToFunctionCodeGenerator : MarshalContextToFunctionCodeGenerat
                     });
                 }
             }
+            else if (parameter.Type.IsPointerToArray(out var arrayType, out var depth))
+            {
+                WritePointerToArrayOfPrimitiveTypes(parameter, arrayType, argumentName);
+                
+                CreateNativeParameter(parameter, argumentName, null);
+            }
             else if (parameter.Type.IsPointerToBuiltInType(out var prim) && !parameter.Type.IsPurePointer())
             {
                 WritePointerToPrimitiveType(parameter, argumentName);
-
-                var nativeParam = new Parameter()
-                {
-                    ParameterKind = parameter.ParameterKind, Type = parameter.Type
-                };
-                switch (parameter.ParameterKind)
-                {
-                    case ParameterKind.Out:
-                        nativeParam.Name = parameter.Name;
-                        break;
-                    default:
-                        nativeParam.Name = argumentName;
-                        break;
-                }
-
-                NativeParameters.Add(nativeParam);
+                
+                CreateNativeParameter(parameter, argumentName, null);
             }
             // The input parameter is void*, so we need to just pass it as is without any conversion
             else if (parameter.Type.IsPointerToIntPtr() || parameter.Type.IsPurePointer())
             {
-                NativeParameters.Add(parameter);
+                TypePrinter.PushParameter(parameter);
+                TypePrinter.PushMarshalType(MarshalTypes.NativeParameter);
+                var pointerType = parameter.Type.Visit(TypePrinter);
+                TypePrinter.PopMarshalType();
+                TypePrinter.PopParameter();
+                if (parameter.ParameterKind == ParameterKind.Out)
+                {
+                    WriteLine($"{pointerType} {argumentName} = null;");
+                }
+                else
+                {
+                    WriteLine($"var {argumentName} = ({pointerType}){parameter.Name};");
+                }
+
+                if (parameter.ParameterKind is ParameterKind.Out or ParameterKind.Ref)
+                {
+                    PostActions.Enqueue(() =>
+                    {
+                        WriteLine($"{parameter.Name} = ({PrimitiveType.Nuint.GetDisplayName()}){argumentName};");
+                    });
+                }
+
+                CreateNativeParameter(parameter, argumentName, null);
             }
             else if (parameter.Type.Declaration == null || !parameter.Type.IsPointer())
             {

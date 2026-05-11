@@ -18,7 +18,7 @@ public abstract class QuantumBindingGenerator
         OnSetup(options);
         if (File.Exists(options.PathToBindingsFile))
         {
-            processingCtx.AddPreGeneratorPass(new LoadBindingsFromFilePass(options.PathToBindingsFile), ExecutionPassKind.PerTranslationUnit);
+            //processingCtx.AddPreGeneratorPass(new LoadBindingsFromFilePass(options.PathToBindingsFile), ExecutionPassKind.PerTranslationUnit);
         }
         OnBeforeSetupPasses(processingCtx);
         BeforeSetupPassesInternal(processingCtx);
@@ -180,7 +180,7 @@ public abstract class QuantumBindingGenerator
                 processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
                 processingCtx.AddPreGeneratorPass(new ContextGenerationAnalyzerPass(), ExecutionPassKind.PerTranslationUnit, module);
 
-                processingCtx.AddCodeGenerationPass(new WrappersGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
+                processingCtx.AddCodeGenerationPass(new WrappersCodeGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
             }
         }
     }

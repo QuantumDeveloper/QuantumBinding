@@ -8,5 +8,5 @@ public interface ITypeVisitor<out T>
     T VisitCustomType(CustomType customType);
     T VisitDelegateType(DelegateType delegateType);
     T VisitDependentNameType(DependentNameType dependentNameType);
-        
+    T VisitDispatchTableType(DispatchTableType dispatchTableType);
 }
