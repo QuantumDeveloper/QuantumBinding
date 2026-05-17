@@ -204,13 +204,6 @@ public abstract class DeclarationUnit : Declaration
                         break;
                 }
                 break;
-            case Function function:
-                decl = Functions.FirstOrDefault(x => x.Name == declaration.Name);
-                break;
-            
-            case Delegate @delegate:
-                decl = Delegates.FirstOrDefault(x => x.Name == declaration.Name);
-                break;
             
             case GlobalUsings globalUsings:
                 decl = GlobalUsings.FirstOrDefault(x => x.Name == declaration.Name);

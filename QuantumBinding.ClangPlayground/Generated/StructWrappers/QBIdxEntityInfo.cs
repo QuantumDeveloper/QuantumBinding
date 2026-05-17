@@ -70,9 +70,10 @@ public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallable
         Name = new string(native.name);
         USR = new string(native.uSR);
         Cursor = new QBCursor(native.cursor);
-        var tmpAttributes = new QBIdxAttrInfo[native.numAttributes];
-        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxAttrInfo[native.numAttributes];
-        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.attributes, native.numAttributes, nativeTmpArray0);
+        var arrayLengthAttributes = native.numAttributes;
+        var tmpAttributes = new QBIdxAttrInfo[arrayLengthAttributes];
+        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxAttrInfo[arrayLengthAttributes];
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.attributes, arrayLengthAttributes, nativeTmpArray0);
         for (int i = 0; i < nativeTmpArray0.Length; ++i)
         {
             tmpAttributes[i] = new QBIdxAttrInfo(in nativeTmpArray0[i]);

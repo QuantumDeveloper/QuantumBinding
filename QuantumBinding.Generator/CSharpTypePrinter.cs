@@ -173,7 +173,7 @@ public class CSharpTypePrinter : TypePrinter
         TypePrinterResult result = null;
             
         var depth = pointerDepth;
-        if (pointerDepth > 1 && Parameter is { ParameterKind: ParameterKind.Out })
+        if (pointerDepth > 1 && Parameter is { ParameterKind: ParameterKind.Out } /*&& MarshalType != MarshalTypes.NativeParameter*/)
         {
             depth--;
         }
@@ -241,9 +241,6 @@ public class CSharpTypePrinter : TypePrinter
                         break;
                     case not null when pointer.IsPointerToClass(out var @classDecl) &&
                                        @classDecl.NativeStruct != null:
-                        // result = Parameter is { ParameterKind: ParameterKind.Out }
-                        //     ? Result(@classDecl.NativeStruct.Name)
-                        //     : Result(@classDecl.NativeStruct.Name, TextGenerator.GetPointerString(depth));
                         result = Result(@classDecl.NativeStruct.Name, TextGenerator.GetPointerString(depth));
                         break;
                     default:
@@ -317,12 +314,12 @@ public class CSharpTypePrinter : TypePrinter
                         {
                             result = pointee.IsPointerToStructOrUnion()
                                 ? Result(printedResult.Type)
-                                : Result(printedResult.Type, PointerOperator);
+                                : Result(PrimitiveType.Nuint.GetDisplayName()); //Result(printedResult.Type, PointerOperator);
                         }
                         else
                         {
                             result = pointee.IsPointerToBuiltInType(out var primitive)
-                                ? Result(printedResult.Type, TextGenerator.GetPointerString(pointerDepth))
+                                ? Result(PrimitiveType.Nuint.GetDisplayName())//Result(printedResult.Type, TextGenerator.GetPointerString(pointerDepth))
                                 : Result(printedResult.Type);
                         }
                     }
@@ -560,8 +557,18 @@ public class CSharpTypePrinter : TypePrinter
 
     public override TypePrinterResult VisitParameter(Parameter parameter)
     {
-        PushParameter(parameter);
-        var hasModifier = ContainsModifiers(parameter, out var attribute, out var modifier);
+        Parameter currentParameter = parameter;
+        if (parameter.IsOverload && MarshalType == MarshalTypes.NativeFunctionCall)
+        {
+            currentParameter = parameter.OriginalParameter;
+            PushParameter(parameter.OriginalParameter);
+        }
+        else
+        {
+            PushParameter(currentParameter);
+        }
+        
+        var hasModifier = ContainsModifiers(currentParameter, out var attribute, out var modifier);
         TypePrinterResult result;
         switch (MarshalType)
         {
@@ -573,9 +580,9 @@ public class CSharpTypePrinter : TypePrinter
                 break;
             default:
             {
-                result = parameter.Type.Visit(this);
+                result = currentParameter.Type.Visit(this);
 
-                if (parameter.Type.Declaration is Class { IsSimpleType: false } decl)
+                if (currentParameter.Type.Declaration is Class { IsSimpleType: false } decl)
                 {
                     // Will always write full namespaces for structs and classes to avoid various collisions
                     var fullTypeName = $"{decl.Namespace}.{result.Type}";
@@ -604,6 +611,12 @@ public class CSharpTypePrinter : TypePrinter
                     }
                 }
 
+                if (currentParameter.ParameterKind is ParameterKind.Out or ParameterKind.Ref &&
+                    currentParameter.Type.IsPointerToBuiltInType(out var prim))
+                {
+                    result.TypeSuffix = string.Empty;
+                }
+
                 // if (parameter.ParameterKind == ParameterKind.Out && 
                 //     !parameter.Type.IsPointerToArray(out var arrayType, out var depthCount) &&
                 //     !parameter.Type.IsPurePointer())
@@ -616,8 +629,8 @@ public class CSharpTypePrinter : TypePrinter
                     result.ParameterName = string.Empty;
                 }
                 else if (MarshalType != MarshalTypes.DelegateType &&
-                         parameter.ParameterKind == ParameterKind.Ref
-                         && !parameter.Type.IsPointer())
+                         currentParameter.ParameterKind == ParameterKind.Ref
+                         && !currentParameter.Type.IsPointer())
                 {
                     result.ParameterName = parameter.Name;
                 }
@@ -637,11 +650,11 @@ public class CSharpTypePrinter : TypePrinter
 
         if (Parameter.ParameterKind == ParameterKind.Ref)
         {
-            if (MarshalType is MarshalTypes.NativeParameter)
+            /*if (MarshalType is MarshalTypes.NativeParameter)
             {
                 hasModifier = false;
             }
-            else if(parameter.Type.IsPointerToArray())
+            else*/ if(currentParameter.Type.IsPointerToArray())
             {
                 hasModifier = false;
             }
@@ -818,16 +831,28 @@ public class CSharpTypePrinter : TypePrinter
         if (MarshalType is MarshalTypes.SkipParamModifiers)
             return false;
 
-        if (MarshalType is MarshalTypes.SkipParamTypes or MarshalTypes.DelegateType
+        if (MarshalType is MarshalTypes.NativeParameter 
+            or MarshalTypes.SkipParamTypes 
+            or MarshalTypes.DelegateType
             or MarshalTypes.DelegateParameter)
         {
-            // if (param.ParameterKind == ParameterKind.Ref && !(param.Type.IsPurePointer()))
-            // {
-            //     modifier = "ref";
-            //     return true;
-            // }
+            uint depth = 0;
+            if (param.Type is PointerType pointerType)
+            {
+                depth = pointerType.GetDepth();
+            }
+            
+            if (param.ParameterKind is ParameterKind.Ref or ParameterKind.Out && param.Type.IsPointerToBuiltInType(out var type))
+            {
+                modifier = "ref";
+                if (param.ParameterKind is ParameterKind.Out)
+                {
+                    modifier = "out";
+                }
+                return true;
+            }
 
-            if (param.ParameterKind == ParameterKind.Out && (param.Type.IsPointerToVoid(out var depth) && depth > 1))
+            if (param.ParameterKind == ParameterKind.Out && /*(param.Type.IsPointerToVoid(out var depth) &&*/ depth > 1)
             {
                 modifier = "out";
                 return true;
@@ -859,13 +884,27 @@ public class CSharpTypePrinter : TypePrinter
         }
         else if (MarshalType is MarshalTypes.NativeParameter or MarshalTypes.NativeFunctionCall)
         {
+            uint pointerDepth = 0;
+            if (param.Type is PointerType pointerType)
+            {
+                pointerDepth = pointerType.GetDepth();
+            }
             switch (param.ParameterKind)
             {
+                case ParameterKind.Ref:
+                    if (param.Type.IsPointerToBuiltInType(out var type))
+                    {
+                        modifier = "ref";
+                    }
+                    break;
                 case ParameterKind.Out:
-                    if (param.Type.IsPointerToVoid(out var depth) && depth > 1)
+                    if (param.Type.IsPointerToBuiltInType(out var type1) 
+                        || param.Type.IsPointerToVoid(out var depth) && depth > 1
+                        || pointerDepth > 1)
                     {
                         modifier = "out";
                     }
+
                     break;
             }
         }

@@ -84,7 +84,7 @@ public static class TypeUtil
             }
         } while (pointer.Pointee is PointerType);
             
-        return primitive == PrimitiveType.Void;
+        return primitive is PrimitiveType.Void or PrimitiveType.Nuint;
     }
         
     public static bool IsPointerToObject(this BindingType type)
@@ -116,7 +116,7 @@ public static class TypeUtil
         var isPrimitive = IsPointerToPrimitiveType(type, out primitive);
             
         if (isPrimitive &&
-            (primitive is PrimitiveType.IntPtr or PrimitiveType.UintPtr or PrimitiveType.Void))
+            (primitive is PrimitiveType.IntPtr or PrimitiveType.UintPtr or PrimitiveType.Void or PrimitiveType.Nuint))
         {
             return false;
         }
@@ -139,7 +139,7 @@ public static class TypeUtil
             return false;
         }
 
-        if (pointer.Declaration is Class classDecl && classDecl.IsSimpleType) return true;
+        if (pointer.Declaration is Class { IsSimpleType: true }) return true;
 
         return false;
     }

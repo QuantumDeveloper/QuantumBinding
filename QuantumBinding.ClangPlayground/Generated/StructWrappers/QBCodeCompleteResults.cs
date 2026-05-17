@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Contains the results of code-completion.
+///</summary>
 public unsafe partial class QBCodeCompleteResults : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCodeCompleteResults>
 {
     public QBCodeCompleteResults()

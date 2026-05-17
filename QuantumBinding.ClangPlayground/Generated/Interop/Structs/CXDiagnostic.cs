@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// A single diagnostic, containing the diagnostic's severity, location, text, source ranges, and fix-it hints.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXIdxClientEntityImpl
+public unsafe partial struct CXDiagnostic
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

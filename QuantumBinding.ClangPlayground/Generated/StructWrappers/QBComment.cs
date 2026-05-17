@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// A parsed comment.
+///</summary>
 public unsafe partial class QBComment : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXComment>
 {
     public QBComment()
@@ -374,7 +377,7 @@ public unsafe partial class QBComment : IMarshallableObject, IMarshallable<Quant
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXComment native)
     {
-        ASTNode = native.aSTNode;
+        ASTNode = (nuint)native.aSTNode;
         TranslationUnit = new QBTranslationUnit(native.translationUnit);
 
     }
@@ -391,7 +394,10 @@ public unsafe partial class QBComment : IMarshallableObject, IMarshallable<Quant
     {
         public CXCommentMarshaller(QuantumBinding.Clang.QBComment qBComment, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXComment> context)
         {
-            context.Destination[0].aSTNode = qBComment.ASTNode;
+            if (qBComment.ASTNode != default)
+            {
+                context.Destination[0].aSTNode = (void*)qBComment.ASTNode;
+            }
 
             if (qBComment.TranslationUnit != default)
             {

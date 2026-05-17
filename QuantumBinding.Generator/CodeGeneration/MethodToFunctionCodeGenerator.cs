@@ -110,7 +110,7 @@ public class MethodToFunctionCodeGenerator : MarshalContextToFunctionCodeGenerat
                     var t = parameter.Type.Visit(TypePrinter);
                     TypePrinter.PopMarshalType();
                     TypePrinter.PopParameter();
-                    WriteLine($"{t} p{parameter.Name};");
+                    WriteLine($"{t} p{parameter.Name} = {Default};");
                     CreateNativeParameter(parameter, $"p{parameter.Name}", null);
 
                     string arraySizeSource = string.Empty;
@@ -140,7 +140,11 @@ public class MethodToFunctionCodeGenerator : MarshalContextToFunctionCodeGenerat
             else if (parameter.Type.IsPointerToBuiltInType(out var prim) && !parameter.Type.IsPurePointer())
             {
                 WritePointerToPrimitiveType(parameter, argumentName);
-                
+                if (parameter.ParameterKind is ParameterKind.Ref or ParameterKind.Out && !parameter.IsOverload)
+                {
+                    argumentName = parameter.Name;
+                }
+
                 CreateNativeParameter(parameter, argumentName, null);
             }
             // The input parameter is void*, so we need to just pass it as is without any conversion

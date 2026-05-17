@@ -218,6 +218,11 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         else if (parameter.Type.IsPointerToBuiltInType(out var prim) && !parameter.Type.IsPurePointer())
         {
             WritePointerToPrimitiveType(parameter, argumentName);
+            if (parameter.ParameterKind is ParameterKind.Out or ParameterKind.Ref && !parameter.IsOverload)
+            {
+                argumentName = parameter.Name;
+            }
+        
             CreateNativeParameter(parameter, argumentName, null);
         }
         // The input parameter is void*, so we need to just pass it as is without any conversion
@@ -624,7 +629,14 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             ptrDepth--;
             WriteLine($"{nativeType}{GetPointerString(ptrDepth)} {argumentName} = {Default};");
             PostActions.Enqueue(() => ConvertOutStructToClass(parameter, argumentName, classDecl));
-            CreateNativeParameter(parameter, $"&{argumentName}", classDecl);
+            if (ptrDepth >= 1)
+            {
+                CreateNativeParameter(parameter, argumentName, classDecl);
+            }
+            else
+            {
+                CreateNativeParameter(parameter, $"&{argumentName}", classDecl);
+            }
         }
     }
     
@@ -745,13 +757,12 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             {
                 if (classDecl.IsSimpleType)
                 {
-                    WriteLine($"{classDecl.FullName}* {argumentName} = {NullPointer};");
+                    WriteLine($"{classDecl.FullName}{typeStrResult.TypeSuffix} {argumentName} = {Default};");
                 }
                 else
                 {
-                    WriteLine($"{classDecl.NativeStruct.FullName}* {argumentName} = {NullPointer};");
+                    WriteLine($"{classDecl.NativeStruct.FullName}{typeStrResult.TypeSuffix} {argumentName} = {Default};");
                 }
-                
             }
             
             if (classDecl.IsWrapper)
@@ -763,7 +774,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 PostActions.Enqueue(() => ConvertPointerToArray(parameter, argumentName, classDecl, arrayType));
             }
         }
-        
+
         CreateNativeParameter(parameter, argumentName, classDecl);
     }
 
@@ -951,13 +962,16 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         var interopType = parameter.Type.Visit(TypePrinter);
         TypePrinter.PopParameter();
         TypePrinter.PopMarshalType();
-        WriteLine($"var {argumentName} = {StackAlloc} {interopType.Type}[1];");
-        if (parameter.ParameterKind != ParameterKind.Out)
+        if (parameter.ParameterKind is ParameterKind.In or ParameterKind.Readonly || parameter.Type.IsPointerToSimpleType() || parameter.IsOverload)
         {
-            WriteLine($"*{argumentName} = {parameter.Name};");
+            WriteLine($"var {argumentName} = {StackAlloc} {interopType.Type}[1];");
+            if (parameter.ParameterKind != ParameterKind.Out)
+            {
+                WriteLine($"*{argumentName} = {parameter.Name};");
+            }
         }
 
-        if (parameter.ParameterKind is ParameterKind.Ref or ParameterKind.Out)
+        if (parameter.ParameterKind is ParameterKind.Ref or ParameterKind.Out && (parameter.Type.IsPointerToSimpleType() || parameter.IsOverload))
         {
             PostActions.Enqueue(() => ConvertOutPrimitiveTypePointerToValue(parameter, argumentName));
         }
@@ -1180,14 +1194,20 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         UnindentAndWriteCloseBrace();
         WriteDefaultOutParameterInitialization(parameter);
     }
-    
+
     protected void CreateNativeParameter(Parameter parameter, string argumentName, Declaration decl)
     {
         var clonedType = (BindingType)parameter.Type.Clone();
         clonedType.Declaration = decl;
-        
+
         NativeParameters.Add(new Parameter()
-            { Name = argumentName, IsOverload = parameter.IsOverload, ParameterKind = parameter.ParameterKind, Type = clonedType });
+        {
+            Name = argumentName, 
+            IsOverload = parameter.IsOverload, 
+            ParameterKind = parameter.ParameterKind,
+            OriginalParameter = parameter.OriginalParameter,
+            Type = clonedType
+        });
     }
 
     private void ConvertReturnType()

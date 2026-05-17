@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// A group of CXDiagnostics.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXModuleImpl
+public unsafe partial struct CXDiagnosticSet
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

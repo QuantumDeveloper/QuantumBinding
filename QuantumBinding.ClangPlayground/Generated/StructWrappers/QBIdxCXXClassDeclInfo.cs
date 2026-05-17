@@ -61,9 +61,10 @@ public unsafe partial class QBIdxCXXClassDeclInfo : IMarshallableObject, IMarsha
     {
         DeclInfo = new QBIdxDeclInfo(in *native.declInfo);
         NativeUtils.Free(native.declInfo);
-        var tmpBases = new QBIdxBaseClassInfo[native.numBases];
-        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxBaseClassInfo[native.numBases];
-        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.bases, native.numBases, nativeTmpArray0);
+        var arrayLengthBases = native.numBases;
+        var tmpBases = new QBIdxBaseClassInfo[arrayLengthBases];
+        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxBaseClassInfo[arrayLengthBases];
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.bases, arrayLengthBases, nativeTmpArray0);
         for (int i = 0; i < nativeTmpArray0.Length; ++i)
         {
             tmpBases[i] = new QBIdxBaseClassInfo(in nativeTmpArray0[i]);

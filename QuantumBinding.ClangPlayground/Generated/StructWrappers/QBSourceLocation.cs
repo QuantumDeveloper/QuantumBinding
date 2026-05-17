@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Identifies a specific source location within a translation unit.
+///</summary>
 public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceLocation>
 {
     public QBSourceLocation()
@@ -64,8 +67,8 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getExpansionLocation(native, out arg1, out line, out column, out offset);
+        CXFile arg1 = default;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getExpansionLocation(native, &arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 
@@ -76,8 +79,8 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getFileLocation(native, out arg1, out line, out column, out offset);
+        CXFile arg1 = default;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getFileLocation(native, &arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 
@@ -88,8 +91,8 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getInstantiationLocation(native, out arg1, out line, out column, out offset);
+        CXFile arg1 = default;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getInstantiationLocation(native, &arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 
@@ -100,8 +103,8 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        QuantumBinding.Clang.Interop.CXString arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getPresumedLocation(native, out arg1, out line, out column);
+        QuantumBinding.Clang.Interop.CXString arg1 = default;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getPresumedLocation(native, &arg1, out line, out column);
         filename = new QBString(arg1);
     }
 
@@ -144,8 +147,8 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        CXFileImpl arg1;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_getSpellingLocation(native, out arg1, out line, out column, out offset);
+        CXFile arg1 = default;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_getSpellingLocation(native, &arg1, out line, out column, out offset);
         file = new QBFile(arg1);
     }
 

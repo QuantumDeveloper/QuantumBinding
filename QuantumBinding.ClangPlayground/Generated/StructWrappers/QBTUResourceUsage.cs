@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// The memory usage of a CXTranslationUnit, broken into categories.
+///</summary>
 public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXTUResourceUsage>
 {
     public QBTUResourceUsage()
@@ -56,7 +59,7 @@ public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallab
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXTUResourceUsage native)
     {
-        Data = native.data;
+        Data = (nuint)native.data;
         NumEntries = native.numEntries;
         Entries = new QBTUResourceUsageEntry(in *native.entries);
         NativeUtils.Free(native.entries);
@@ -75,7 +78,10 @@ public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallab
     {
         public CXTUResourceUsageMarshaller(QuantumBinding.Clang.QBTUResourceUsage qBTUResourceUsage, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsage> context)
         {
-            context.Destination[0].data = qBTUResourceUsage.Data;
+            if (qBTUResourceUsage.Data != default)
+            {
+                context.Destination[0].data = (void*)qBTUResourceUsage.Data;
+            }
 
             context.Destination[0].numEntries = qBTUResourceUsage.NumEntries;
 

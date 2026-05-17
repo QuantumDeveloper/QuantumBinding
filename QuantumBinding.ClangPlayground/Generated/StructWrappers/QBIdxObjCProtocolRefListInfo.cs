@@ -54,9 +54,10 @@ public unsafe partial class QBIdxObjCProtocolRefListInfo : IMarshallableObject, 
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo native)
     {
-        var tmpProtocols = new QBIdxObjCProtocolRefInfo[native.numProtocols];
-        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo[native.numProtocols];
-        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.protocols, native.numProtocols, nativeTmpArray0);
+        var arrayLengthProtocols = native.numProtocols;
+        var tmpProtocols = new QBIdxObjCProtocolRefInfo[arrayLengthProtocols];
+        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo[arrayLengthProtocols];
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.protocols, arrayLengthProtocols, nativeTmpArray0);
         for (int i = 0; i < nativeTmpArray0.Length; ++i)
         {
             tmpProtocols[i] = new QBIdxObjCProtocolRefInfo(in nativeTmpArray0[i]);

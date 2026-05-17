@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// The client's data object that is associated with an AST file (PCH or module).
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXIndexActionImpl
+public unsafe partial struct CXIdxClientASTFile
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

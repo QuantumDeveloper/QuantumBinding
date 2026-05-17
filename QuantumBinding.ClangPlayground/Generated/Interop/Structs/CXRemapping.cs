@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// CINDEX_DEPRECATED - disabled to silence MSVC deprecation warnings
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXIdxClientContainerImpl
+public unsafe partial struct CXRemapping
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

@@ -71,10 +71,6 @@ public class Function : DeclarationUnit
             Id = Id
         };
         func.Parameters.AddRange(Parameters);
-        if (Comment != null)
-        {
-            func.Comment = (Comment) Comment.Clone();
-        }
 
         return func;
     }

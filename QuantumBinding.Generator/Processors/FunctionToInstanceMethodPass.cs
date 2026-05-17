@@ -9,22 +9,17 @@ namespace QuantumBinding.Generator.Processors;
 
 public class FunctionToInstanceMethodPass : PreGeneratorPass
 {
-    private List<string> skipOverloadList;
+    private readonly List<string> _skipOverloadList;
 
     public FunctionToInstanceMethodPass()
     {
-        skipOverloadList = new List<string>();
+        _skipOverloadList = new List<string>();
         Options.VisitFunctions = true;
-    }
-
-    public void SkipOverloadForFunction(string name)
-    {
-        skipOverloadList.Add(name);
     }
 
     public void SkipOverloadForFunctions(params string[] names)
     {
-        skipOverloadList.AddRange(names);
+        _skipOverloadList.AddRange(names);
     }
 
     public override bool VisitFunction(Function function)
@@ -57,7 +52,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
 
             CurrentNamespace.AddDeclaration(globalMethod);
 
-            if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !skipOverloadList.Contains(function.Name))
+            if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !_skipOverloadList.Contains(function.Name))
             {
                 var overload = GenerateMethodOverload(globalMethod);
 
@@ -151,7 +146,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
         method.Class = @class;
         @class.AddMethod(method);
 
-        if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !skipOverloadList.Contains(function.Name))
+        if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !_skipOverloadList.Contains(function.Name))
         {
             var overloadMethod = GenerateMethodOverload(method);
             @class.AddMethods(overloadMethod);
@@ -209,9 +204,10 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
 
             parametersList.Add(param);
 
-            var overloadedMethod = (Method)method.Clone();
-            overloadedMethod.Parameters.Clear();
-            overloadedMethod.IsOverload = true;
+            var methodOverload = (Method)method.Clone();
+            methodOverload.Parameters.Clear();
+            methodOverload.IsOverload = true;
+            
             for (var index = 0; index < method.Parameters.Count; index++)
             {
                 var parameter = method.Parameters[index];
@@ -231,24 +227,25 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
                     {
                         var funcParamClone = (Parameter)parameterClone.Clone();
                         funcParamClone.IsOverload = true;
-                        overloadedMethod.Function.Parameters[(int)functionParameter.Index] = funcParamClone;
+                        funcParamClone.OriginalParameter = functionParameter;
+                        methodOverload.Function.Parameters[(int)functionParameter.Index] = funcParamClone;
                     }
                 }
 
                 parameterClone.IsOverload = true;
-                overloadedMethod.Parameters.Add(parameterClone);
-
+                methodOverload.Parameters.Add(parameterClone);
             }
 
-            methods.Add(overloadedMethod);
+            methods.Add(methodOverload);
         }
 
         // Create last overload where all array parameters will be replaced to a single one
         // This is valid only if method contains more than 1 array parameter
         if (parametersList.Count > 1)
         {
-            var overloadedMethod = (Method)method.Clone();
-            overloadedMethod.IsOverload = true;
+            var methodOverload = (Method)method.Clone();
+            methodOverload.IsOverload = true;
+            
             for (var index = 0; index < method.Parameters.Count; index++)
             {
                 var parameter = method.Parameters[index];
@@ -266,14 +263,15 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
                     {
                         var funcParamClone = (Parameter)parameterClone.Clone();
                         funcParamClone.IsOverload = true;
-                        overloadedMethod.Function.Parameters[(int)functionParameter.Index] = funcParamClone;
+                        funcParamClone.OriginalParameter = functionParameter;
+                        methodOverload.Function.Parameters[(int)functionParameter.Index] = funcParamClone;
                     }
         
                     parameterClone.IsOverload = true;
-                    overloadedMethod.Parameters[index] = parameterClone;
+                    methodOverload.Parameters[index] = parameterClone;
                 }
             }
-            methods.Add(overloadedMethod);
+            methods.Add(methodOverload);
         }
 
         return methods;

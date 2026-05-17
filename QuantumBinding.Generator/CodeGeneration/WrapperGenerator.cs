@@ -1215,7 +1215,9 @@ public class WrapperGenerator : CSharpCodeGenerator
         }
         else if (arrayType.ElementType.IsPurePointer())
         {
+            TypePrinter.PushMarshalType(MarshalTypes.Property);
             var propertyArrayElementType = arrayType.ElementType.Visit(TypePrinter);
+            TypePrinter.PopMarshalType();
             string tempArrayName = $"tmp{property.Name}";
             WriteLine($"var {tempArrayName} = new {propertyArrayElementType}[{size}];");
             WriteLine($"for (int i = 0; i < {size}; ++i)");

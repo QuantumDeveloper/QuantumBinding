@@ -89,7 +89,7 @@ public class NormalizeParametersPass : PreGeneratorPass
             var field = new Field("pointer");
             field.AccessSpecifier = AccessSpecifier.Public;
             field.Name = "pointer";
-            field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Nuint) };
+            field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
             @class.NativeStruct.AddField(field);
         }
 

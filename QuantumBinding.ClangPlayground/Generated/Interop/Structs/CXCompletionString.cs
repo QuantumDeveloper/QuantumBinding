@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// A semantic string that describes a code-completion result.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXIdxClientASTFileImpl
+public unsafe partial struct CXCompletionString
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

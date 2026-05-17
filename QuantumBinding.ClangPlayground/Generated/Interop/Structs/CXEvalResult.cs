@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// Evaluation result of a cursor
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXIndexImpl
+public unsafe partial struct CXEvalResult
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

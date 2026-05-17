@@ -75,7 +75,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 firstParameter.Type.Declaration = method.Class;
                 parameters.Insert(0, firstParameter);
             }
-            
+
             var parametersResult =
                 TypePrinter.VisitParameters(parameters, MarshalTypes.SkipParamModifiers, method.IsExtensionMethod);
 
@@ -147,16 +147,16 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 {
                     WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({PrimitiveType.Nuint.GetDisplayName()});");
                 }
-                else if (parameter.Type.IsDoublePointer())
-                {
-                    WriteLine($"{totalSizeName} += sizeof({PrimitiveType.Nuint.GetDisplayName()});");
-                }
                 else if (parameter.Type.IsWrapper())
                 {
                     WriteLine($"if ({parameter.Name} != null)");
                     PushIndent();
                     WriteLine($"{totalSizeName} += {parameter.Name}.GetSize();");
                     PopIndent();
+                }
+                else if (parameter.Type.IsDoublePointer())
+                {
+                    WriteLine($"{totalSizeName} += sizeof({PrimitiveType.Nuint.GetDisplayName()});");
                 }
             }
 

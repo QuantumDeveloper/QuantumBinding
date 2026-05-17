@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// Opaque pointer representing client data that will be passed through to various callbacks and visitors.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXDiagnosticSetImpl
+public unsafe partial struct CXClientData
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

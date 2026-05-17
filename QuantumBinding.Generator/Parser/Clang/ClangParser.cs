@@ -443,7 +443,6 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                 {
                     var @struct = (Class)@class.Clone();
                     @struct.ClassType = ClassType.Struct;
-                    @struct.Name += "Impl";
                     var field1 = new Field();
                     field1.AccessSpecifier = AccessSpecifier.Public;
                     field1.Name = "pointer";

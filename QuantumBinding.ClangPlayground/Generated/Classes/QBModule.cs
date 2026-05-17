@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The functions in this group provide access to information about modules.
 ///</summary>
-public unsafe partial class QBModule : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXModuleImpl>
+public unsafe partial class QBModule : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXModule>
 {
-    internal CXModuleImpl __Instance;
+    internal CXModule __Instance;
     public QBModule()
     {
     }
 
-    public QBModule(in QuantumBinding.Clang.Interop.CXModuleImpl __Instance)
+    public QBModule(in QuantumBinding.Clang.Interop.CXModule __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXModuleImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXModule GetNativeValue() => __Instance;
     ///<summary>
     /// Returns the module file where the provided module object came from.
     ///</summary>
@@ -69,14 +69,14 @@ public unsafe partial class QBModule : IUnmanagedWrapper<QuantumBinding.Clang.In
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Module_isSystem(this);
     }
 
-    public ref readonly CXModuleImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXModule GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXModuleImpl(QBModule q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXModule(QBModule q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXModuleImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXModule();
     }
 
-    public static implicit operator QBModule(QuantumBinding.Clang.Interop.CXModuleImpl q)
+    public static implicit operator QBModule(QuantumBinding.Clang.Interop.CXModule q)
     {
         return new QBModule(in q);
     }

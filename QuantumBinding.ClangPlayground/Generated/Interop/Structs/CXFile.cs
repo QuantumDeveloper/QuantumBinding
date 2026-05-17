@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// A particular source file that is part of a translation unit.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXCompletionStringImpl
+public unsafe partial struct CXFile
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

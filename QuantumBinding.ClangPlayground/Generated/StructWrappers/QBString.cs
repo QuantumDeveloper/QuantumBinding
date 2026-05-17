@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// A character string.
+///</summary>
 public unsafe partial class QBString : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXString>
 {
     public QBString()
@@ -65,7 +68,7 @@ public unsafe partial class QBString : IMarshallableObject, IMarshallable<Quantu
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXString native)
     {
-        Data = native.data;
+        Data = (nuint)native.data;
         Private_flags = native.private_flags;
 
     }
@@ -82,7 +85,10 @@ public unsafe partial class QBString : IMarshallableObject, IMarshallable<Quantu
     {
         public CXStringMarshaller(QuantumBinding.Clang.QBString qBString, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXString> context)
         {
-            context.Destination[0].data = qBString.Data;
+            if (qBString.Data != default)
+            {
+                context.Destination[0].data = (void*)qBString.Data;
+            }
 
             context.Destination[0].private_flags = qBString.Private_flags;
 
