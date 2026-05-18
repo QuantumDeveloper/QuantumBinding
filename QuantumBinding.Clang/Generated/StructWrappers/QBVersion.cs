@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Describes a version number of the form major.minor.subminor.
+///</summary>
 public unsafe partial class QBVersion : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXVersion>
 {
     public QBVersion()

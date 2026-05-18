@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Describes a single preprocessing token.
+///</summary>
 public unsafe partial class QBToken : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXToken>
 {
     public QBToken()
@@ -55,10 +58,11 @@ public unsafe partial class QBToken : IMarshallableObject, IMarshallable<Quantum
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXToken native)
     {
         var tmpInt_data = new uint[4];
-        var pInt_data = (uint*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in native.int_data[0]));
+        var int_datap = native.int_data[0];
+        var pInt_data = (uint*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in int_datap ));
         QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(pInt_data, 4, tmpInt_data);
         Int_data = tmpInt_data;
-        Ptr_data = native.ptr_data;
+        Ptr_data = (nuint)native.ptr_data;
 
     }
     public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
@@ -80,7 +84,10 @@ public unsafe partial class QBToken : IMarshallableObject, IMarshallable<Quantum
                 QuantumBinding.Utils.MarshalingUtils.MarshalFixedArrayToPointer(qBToken.Int_data.Span, pDest, 4);
             }
 
-            context.Destination[0].ptr_data = qBToken.Ptr_data;
+            if (qBToken.Ptr_data != default)
+            {
+                context.Destination[0].ptr_data = (void*)qBToken.Ptr_data;
+            }
 
         }
     }

@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// The functions in this group provide access to information about modules.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXIdxClientFileImpl
+public unsafe partial struct CXModule
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

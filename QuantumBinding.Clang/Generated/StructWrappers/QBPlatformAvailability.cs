@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Describes the availability of a given entity on a particular platform, e.g., a particular class might only be available on Mac OS 10.7 or newer.
+///</summary>
 public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXPlatformAvailability>
 {
     public QBPlatformAvailability()

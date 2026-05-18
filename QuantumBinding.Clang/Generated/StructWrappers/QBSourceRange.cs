@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Identifies a half-open character range in the source code.
+///</summary>
 public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRange>
 {
     public QBSourceRange()

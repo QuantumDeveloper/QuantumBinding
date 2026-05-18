@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// An indexing action/session, to be applied to one or multiple translation units.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXClientDataImpl
+public unsafe partial struct CXIndexAction
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

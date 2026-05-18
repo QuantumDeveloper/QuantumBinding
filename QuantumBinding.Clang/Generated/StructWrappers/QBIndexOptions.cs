@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Index initialization options.
+///</summary>
 public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIndexOptions>
 {
     public QBIndexOptions()

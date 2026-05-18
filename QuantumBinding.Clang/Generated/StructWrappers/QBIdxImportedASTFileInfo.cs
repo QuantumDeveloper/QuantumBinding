@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Data for IndexerCallbacks#importedASTFile.
+///</summary>
 public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>
 {
     public QBIdxImportedASTFileInfo()
@@ -65,15 +68,9 @@ public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMar
     {
         public CXIdxImportedASTFileInfoMarshaller(QuantumBinding.Clang.QBIdxImportedASTFileInfo qBIdxImportedASTFileInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo> context)
         {
-            if (qBIdxImportedASTFileInfo.File != default)
-            {
-                context.Destination[0].file = qBIdxImportedASTFileInfo.File;
-            }
+            context.Destination[0].file = qBIdxImportedASTFileInfo.File;
 
-            if (qBIdxImportedASTFileInfo.Module != default)
-            {
-                context.Destination[0].module = qBIdxImportedASTFileInfo.Module;
-            }
+            context.Destination[0].module = qBIdxImportedASTFileInfo.Module;
 
             if (qBIdxImportedASTFileInfo.Loc != default)
             {

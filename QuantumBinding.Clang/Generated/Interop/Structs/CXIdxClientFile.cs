@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// The client's data object that is associated with a CXFile.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXFileImpl
+public unsafe partial struct CXIdxClientFile
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

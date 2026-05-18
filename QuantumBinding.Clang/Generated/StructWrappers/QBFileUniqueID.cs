@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Uniquely identifies a CXFile, that refers to the same underlying file, across an indexing session.
+///</summary>
 public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXFileUniqueID>
 {
     public QBFileUniqueID()
@@ -44,7 +47,8 @@ public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXFileUniqueID native)
     {
         var tmpData = new ulong[3];
-        var pData = (ulong*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in native.data[0]));
+        var datap = native.data[0];
+        var pData = (ulong*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in datap ));
         QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(pData, 3, tmpData);
         Data = tmpData;
 

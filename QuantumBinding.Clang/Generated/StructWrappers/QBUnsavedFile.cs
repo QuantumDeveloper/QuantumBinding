@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Provides the contents of a file that has not yet been saved to disk.
+///</summary>
 public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXUnsavedFile>
 {
     public QBUnsavedFile()

@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// A single result of code completion.
+///</summary>
 public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCompletionResult>
 {
     public QBCompletionResult()
@@ -63,10 +66,7 @@ public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshalla
         {
             context.Destination[0].cursorKind = qBCompletionResult.CursorKind;
 
-            if (qBCompletionResult.CompletionString != default)
-            {
-                context.Destination[0].completionString = qBCompletionResult.CompletionString;
-            }
+            context.Destination[0].completionString = qBCompletionResult.CompletionString;
 
         }
     }

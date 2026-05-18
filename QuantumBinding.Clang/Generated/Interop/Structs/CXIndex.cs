@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// An "index" that consists of a set of translation units that would typically be linked together into an executable or library.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXPrintingPolicyImpl
+public unsafe partial struct CXIndex
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

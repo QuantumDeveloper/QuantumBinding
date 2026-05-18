@@ -44,8 +44,8 @@ public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMars
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor native)
     {
-        Context = native.context;
-        Visit = native.visit;
+        Context = (nuint)native.context;
+        Visit = (nuint)native.visit;
 
     }
     public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
@@ -61,9 +61,15 @@ public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMars
     {
         public CXCursorAndRangeVisitorMarshaller(QuantumBinding.Clang.QBCursorAndRangeVisitor qBCursorAndRangeVisitor, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor> context)
         {
-            context.Destination[0].context = qBCursorAndRangeVisitor.Context;
+            if (qBCursorAndRangeVisitor.Context != default)
+            {
+                context.Destination[0].context = (void*)qBCursorAndRangeVisitor.Context;
+            }
 
-            context.Destination[0].visit = qBCursorAndRangeVisitor.Visit;
+            if (qBCursorAndRangeVisitor.Visit != default)
+            {
+                context.Destination[0].visit = (void*)qBCursorAndRangeVisitor.Visit;
+            }
 
         }
     }

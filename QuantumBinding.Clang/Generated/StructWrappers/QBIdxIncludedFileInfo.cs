@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Data for ppIncludedFile callback.
+///</summary>
 public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>
 {
     public QBIdxIncludedFileInfo()
@@ -90,10 +93,7 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
                 context.Destination[0].filename = (sbyte*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(stringSpan));
             }
 
-            if (qBIdxIncludedFileInfo.File != default)
-            {
-                context.Destination[0].file = qBIdxIncludedFileInfo.File;
-            }
+            context.Destination[0].file = qBIdxIncludedFileInfo.File;
 
             context.Destination[0].isImport = qBIdxIncludedFileInfo.IsImport;
 

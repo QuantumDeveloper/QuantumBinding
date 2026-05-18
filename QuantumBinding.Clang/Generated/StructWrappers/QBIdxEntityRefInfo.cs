@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Data for IndexerCallbacks#indexEntityReference.
+///</summary>
 public unsafe partial class QBIdxEntityRefInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxEntityRefInfo>
 {
     public QBIdxEntityRefInfo()

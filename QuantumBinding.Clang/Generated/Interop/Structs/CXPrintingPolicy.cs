@@ -11,10 +11,13 @@ using System.Runtime.InteropServices;
 
 namespace QuantumBinding.Clang.Interop;
 
+///<summary>
+/// Opaque pointer representing a policy that controls pretty printing for clang_getCursorPrettyPrinted.
+///</summary>
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct CXRemappingImpl
+public unsafe partial struct CXPrintingPolicy
 {
-    public nuint pointer;
+    public void* pointer;
 }
 
 

@@ -109,7 +109,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         return arguments;
     }
 
-    public CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+    public CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientData data)
     {
         return Visit(cursor, parent, data);
     }
@@ -187,7 +187,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
         //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
-        CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+        CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientData data)
         {
             return VisitEnumItems(cursor, parent, data);
         }
@@ -300,7 +300,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
 
         cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
-        CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+        CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientData data)
         {
             return VisitStructFields(cursor, parent, data);
         }
@@ -529,7 +529,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
 
                 cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
-                CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientDataImpl clientData)
+                CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientData clientData)
                 {
                     return VisitFunctionProto(cxCursor, parent, clientData);
                 }

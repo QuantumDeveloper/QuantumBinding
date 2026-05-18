@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// A cursor representing some element in the abstract syntax tree for a translation unit.
+///</summary>
 public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCursor>
 {
     public QBCursor()
@@ -528,11 +531,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
             var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(language, ref currentCursor);
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(definedIn, ref currentCursor);
-            var arg3 = stackalloc uint[1];
-            *arg3 = isGenerated;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isExternalSymbol(arg0, arg1, arg2, arg3);
-            isGenerated = *arg3;
-            return result;
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isExternalSymbol(arg0, arg1, arg2, ref isGenerated);
         }
         finally
         {
@@ -855,7 +854,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
             var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+            var arg1 = file == null ? new CXFile() : (CXFile)file;
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursorAndRangeVisitor, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(visitor, ref currentCursor);
             return QuantumBinding.Clang.Interop.ClangInterop.clang_findReferencesInFile(arg0, arg1, arg2);
         }
@@ -870,7 +869,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg1 = param1 == null ? new CXFileImpl() : (CXFileImpl)param1;
+        var arg1 = param1 == null ? new CXFile() : (CXFile)param1;
         var arg2 = param2 == null ? new _CXCursorAndRangeVisitorBlock() : (_CXCursorAndRangeVisitorBlock)param2;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_findReferencesInFileWithBlock(native, arg1, arg2);
     }
@@ -1039,17 +1038,13 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             var arg1 = stackalloc int[1];
             *arg1 = always_deprecated;
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(deprecated_message, ref currentCursor);
-            var arg3 = stackalloc int[1];
-            *arg3 = always_unavailable;
             var arg4 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(unavailable_message, ref currentCursor);
             QuantumBinding.Clang.Interop.CXPlatformAvailability* arg5 = null;
             if (!availability.IsEmpty)
             {
                 arg5 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBPlatformAvailability, QuantumBinding.Clang.Interop.CXPlatformAvailability>(availability, ref currentCursor);
             }
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPlatformAvailability(arg0, arg1, arg2, arg3, arg4, arg5, availability_size);
-            always_unavailable = *arg3;
-            return result;
+            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPlatformAvailability(arg0, arg1, arg2, ref always_unavailable, arg4, arg5, availability_size);
         }
         finally
         {
@@ -1065,7 +1060,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg1 = policy == null ? new CXPrintingPolicyImpl() : (CXPrintingPolicyImpl)policy;
+        var arg1 = policy == null ? new CXPrintingPolicy() : (CXPrintingPolicy)policy;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPrettyPrinted(native, arg1);
     }
 
@@ -1220,19 +1215,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
             var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(startBuf, ref currentCursor);
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(endBuf, ref currentCursor);
-            var arg3 = stackalloc uint[1];
-            *arg3 = startLine;
-            var arg4 = stackalloc uint[1];
-            *arg4 = startColumn;
-            var arg5 = stackalloc uint[1];
-            *arg5 = endLine;
-            var arg6 = stackalloc uint[1];
-            *arg6 = endColumn;
-            QuantumBinding.Clang.Interop.ClangInterop.clang_getDefinitionSpellingAndExtent(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-            startLine = *arg3;
-            startColumn = *arg4;
-            endLine = *arg5;
-            endColumn = *arg6;
+            QuantumBinding.Clang.Interop.ClangInterop.clang_getDefinitionSpellingAndExtent(arg0, arg1, arg2, ref startLine, ref startColumn, ref endLine, ref endColumn);
         }
         finally
         {
@@ -1360,7 +1343,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        QuantumBinding.Clang.Interop.CXCursor* arg1 = null;
+        QuantumBinding.Clang.Interop.CXCursor* arg1 = default;
         QuantumBinding.Clang.Interop.ClangInterop.clang_getOverriddenCursors(native, arg1, out num_overridden);
         overridden = new QuantumBinding.Clang.QBCursor[num_overridden];
         for (var i = 0U; i < num_overridden; ++i)
@@ -1456,7 +1439,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        var arg2 = client_data == null ? new CXClientData() : (CXClientData)client_data;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_visitChildren(native, visitor, arg2);
     }
 

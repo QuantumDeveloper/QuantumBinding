@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Identifies an array of ranges.
+///</summary>
 public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRangeList>
 {
     public QBSourceRangeList()
