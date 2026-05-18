@@ -20,6 +20,7 @@ public class ArrayType : BindingType, IEquatable<ArrayType>
         ArraySizeSource = type.ArraySizeSource;
         DimensionsCount = type.DimensionsCount;
         Sizes = type.Sizes;
+        MathExpression = type.MathExpression;
     }
 
     public BindingType ElementType { get; set; }
@@ -37,6 +38,10 @@ public class ArrayType : BindingType, IEquatable<ArrayType>
     public bool IsConstArray => SizeType == ArraySizeType.Constant;
 
     public string ArraySizeSource { get; set; }
+    
+    public string MathExpression { get; set; }
+    
+    public bool HasMathExpression => !string.IsNullOrEmpty(MathExpression);
 
     public List<long> Sizes { get; private set; }
 
@@ -67,7 +72,8 @@ public class ArrayType : BindingType, IEquatable<ArrayType>
                ElementSize == other.ElementSize &&
                ArraySizeSource == other.ArraySizeSource &&
                IsConstArray == other.IsConstArray &&
-               DimensionsCount == other.DimensionsCount;
+               DimensionsCount == other.DimensionsCount &&
+               MathExpression == other.MathExpression;
     }
 
     public override int GetHashCode()

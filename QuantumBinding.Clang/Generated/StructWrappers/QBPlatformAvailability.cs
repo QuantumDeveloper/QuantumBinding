@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Describes the availability of a given entity on a particular platform, e.g., a particular class might only be available on Mac OS 10.7 or newer.
+///</summary>
 public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXPlatformAvailability>
 {
     public QBPlatformAvailability()
@@ -66,14 +69,14 @@ public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarsh
         Message = new QBString(native.message);
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXPlatformAvailability>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXPlatformAvailability>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXPlatformAvailabilityMarshaller
     {

@@ -1,4 +1,5 @@
 ﻿using QuantumBinding.Generator.AST;
+using QuantumBinding.Generator.Types;
 using QuantumBinding.Generator.Utils;
 
 namespace QuantumBinding.Generator.Processors;
@@ -27,7 +28,14 @@ public class CheckMacrosPass : PreGeneratorPass
             macro.Value = macro.Value[1..^1];
         }
 
-        macro.Type = ClangUtils.GetMacroType(macro.Value);
+        if (macro.PrimitiveType != PrimitiveType.Unknown && macro.PrimitiveType != PrimitiveType.None)
+        {
+            macro.Type = new BuiltinType(macro.PrimitiveType);
+        }
+        else
+        {
+            macro.Type = ClangUtils.GetMacroType(macro.Value);
+        }
 
         return true;
     }

@@ -35,6 +35,14 @@ public class Class: DeclarationUnit
     public string InputClassName {get; set;}
 
     public Class LinkedTo { get; set; }
+    
+    public bool IsDispatchable { get; set; }
+    
+    public DispatchTable DispatchTable { get; set; }
+
+    public bool IsDispatchTableOwner => DispatchTable != null && DispatchTable.TableOwner == this;
+
+    public string DispatchFieldName => "Commands";
 
     // True if the record is a POD (Plain Old Data) type.
     public bool IsSimpleType { get; set; }
@@ -191,6 +199,9 @@ public class Class: DeclarationUnit
             NativeStructFieldName = NativeStructFieldName,
             ExtendedFrom = ExtendedFrom,
             interfaces = [..Interfaces],
+            Comment = (Comment)Comment?.Clone(),
+            IsDispatchable = IsDispatchable,
+            DispatchTable = DispatchTable
         };
     }
 

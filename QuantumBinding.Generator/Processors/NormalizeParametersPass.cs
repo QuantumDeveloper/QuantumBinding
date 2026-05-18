@@ -178,35 +178,43 @@ public class NormalizeParametersPass : PreGeneratorPass
         var classDecl = decl as Class;
 
         var type = parameter.Type;
-        switch (type)
-        {
-            case ArrayType array when array.IsConst && !array.CanConvertToString():
-                parameter.ParameterKind = ParameterKind.Readonly;
-                break;
-            case PointerType pointer when pointer.IsConst && !pointer.CanConvertToString():
-                parameter.ParameterKind = ParameterKind.Readonly;
-                break;
-            case PointerType pointer when !pointer.CanConvertToString() && pointer.Pointee.IsPrimitiveType || classDecl?.IsSimpleType == true || decl is Enumeration:
-                parameter.ParameterKind = ParameterKind.Ref;
-                break;
-            case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst && !pointer.IsPointerToStructOrUnion():
-            {
-                parameter.ParameterKind = ParameterKind.Out;
-                break;
-            }
-            case PointerType pointer when pointer.GetDepth() >= 3:
-            {
-                parameter.ParameterKind = ParameterKind.Out;
-                break;
-            }
-            default:
-                parameter.ParameterKind = ParameterKind.In;
-                break;
-        }
 
-        if (parameter.Name.StartsWith("out")) //small hack to set the correct parameter kind in cases developers calling out parameters starting with outxxx or out_xxx
+        if (parameter.ParameterKind == ParameterKind.Unknown)
         {
-            parameter.ParameterKind = ParameterKind.Out;
+            switch (type)
+            {
+                case ArrayType array when array.IsConst && !array.CanConvertToString():
+                    parameter.ParameterKind = ParameterKind.Readonly;
+                    break;
+                case PointerType pointer when pointer.IsConst && !pointer.CanConvertToString():
+                    parameter.ParameterKind = ParameterKind.Readonly;
+                    break;
+                case PointerType pointer when !pointer.CanConvertToString() && pointer.Pointee.IsPrimitiveType ||
+                                              classDecl?.IsSimpleType == true || decl is Enumeration:
+                    parameter.ParameterKind = ParameterKind.Ref;
+                    break;
+                case PointerType pointer when !pointer.Pointee.IsPrimitiveType && !pointer.IsConst &&
+                                              !pointer.IsPointerToStructOrUnion():
+                {
+                    parameter.ParameterKind = ParameterKind.Out;
+                    break;
+                }
+                case PointerType pointer when pointer.GetDepth() >= 3:
+                {
+                    parameter.ParameterKind = ParameterKind.Out;
+                    break;
+                }
+                default:
+                    parameter.ParameterKind = ParameterKind.In;
+                    break;
+            }
+
+            if (parameter.Name
+                .StartsWith(
+                    "out")) //small hack to set the correct parameter kind in cases developers calling out parameters starting with outxxx or out_xxx
+            {
+                parameter.ParameterKind = ParameterKind.Out;
+            }
         }
 
         if (CodeGenerator.ReservedWords.Contains(parameter.Name.ToLower()))

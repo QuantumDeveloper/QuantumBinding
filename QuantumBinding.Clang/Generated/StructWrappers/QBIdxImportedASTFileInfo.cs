@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Data for IndexerCallbacks#importedASTFile.
+///</summary>
 public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>
 {
     public QBIdxImportedASTFileInfo()
@@ -52,28 +55,22 @@ public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMar
         IsImplicit = native.isImplicit;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIdxImportedASTFileInfoMarshaller
     {
         public CXIdxImportedASTFileInfoMarshaller(QuantumBinding.Clang.QBIdxImportedASTFileInfo qBIdxImportedASTFileInfo, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo> context)
         {
-            if (qBIdxImportedASTFileInfo.File != default)
-            {
-                context.Destination[0].file = qBIdxImportedASTFileInfo.File;
-            }
+            context.Destination[0].file = qBIdxImportedASTFileInfo.File;
 
-            if (qBIdxImportedASTFileInfo.Module != default)
-            {
-                context.Destination[0].module = qBIdxImportedASTFileInfo.Module;
-            }
+            context.Destination[0].module = qBIdxImportedASTFileInfo.Module;
 
             if (qBIdxImportedASTFileInfo.Loc != default)
             {

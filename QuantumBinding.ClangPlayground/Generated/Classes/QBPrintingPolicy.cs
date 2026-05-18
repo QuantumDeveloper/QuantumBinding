@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Opaque pointer representing a policy that controls pretty printing for clang_getCursorPrettyPrinted.
 ///</summary>
-public unsafe partial class QBPrintingPolicy : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXPrintingPolicyImpl>
+public unsafe partial class QBPrintingPolicy : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXPrintingPolicy>
 {
-    internal CXPrintingPolicyImpl __Instance;
+    internal CXPrintingPolicy __Instance;
     public QBPrintingPolicy()
     {
     }
 
-    public QBPrintingPolicy(in QuantumBinding.Clang.Interop.CXPrintingPolicyImpl __Instance)
+    public QBPrintingPolicy(in QuantumBinding.Clang.Interop.CXPrintingPolicy __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXPrintingPolicyImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXPrintingPolicy GetNativeValue() => __Instance;
     ///<summary>
     /// Release a printing policy.
     ///</summary>
@@ -53,14 +53,14 @@ public unsafe partial class QBPrintingPolicy : IUnmanagedWrapper<QuantumBinding.
         QuantumBinding.Clang.Interop.ClangInterop.clang_PrintingPolicy_setProperty(this, property, value);
     }
 
-    public ref readonly CXPrintingPolicyImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXPrintingPolicy GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXPrintingPolicyImpl(QBPrintingPolicy q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXPrintingPolicy(QBPrintingPolicy q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXPrintingPolicyImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXPrintingPolicy();
     }
 
-    public static implicit operator QBPrintingPolicy(QuantumBinding.Clang.Interop.CXPrintingPolicyImpl q)
+    public static implicit operator QBPrintingPolicy(QuantumBinding.Clang.Interop.CXPrintingPolicy q)
     {
         return new QBPrintingPolicy(in q);
     }

@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Provides the contents of a file that has not yet been saved to disk.
+///</summary>
 public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXUnsavedFile>
 {
     public QBUnsavedFile()
@@ -54,14 +57,14 @@ public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<Q
         Length = native.length;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXUnsavedFile>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXUnsavedFile>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXUnsavedFileMarshaller
     {

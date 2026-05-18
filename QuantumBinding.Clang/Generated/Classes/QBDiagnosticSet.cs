@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A group of CXDiagnostics.
 ///</summary>
-public unsafe partial class QBDiagnosticSet : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXDiagnosticSetImpl>
+public unsafe partial class QBDiagnosticSet : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXDiagnosticSet>
 {
-    internal CXDiagnosticSetImpl __Instance;
+    internal CXDiagnosticSet __Instance;
     public QBDiagnosticSet()
     {
     }
 
-    public QBDiagnosticSet(in QuantumBinding.Clang.Interop.CXDiagnosticSetImpl __Instance)
+    public QBDiagnosticSet(in QuantumBinding.Clang.Interop.CXDiagnosticSet __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXDiagnosticSetImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXDiagnosticSet GetNativeValue() => __Instance;
     ///<summary>
     /// Release a CXDiagnosticSet and all of its contained diagnostics.
     ///</summary>
@@ -53,14 +53,14 @@ public unsafe partial class QBDiagnosticSet : IUnmanagedWrapper<QuantumBinding.C
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumDiagnosticsInSet(this);
     }
 
-    public ref readonly CXDiagnosticSetImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXDiagnosticSet GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXDiagnosticSetImpl(QBDiagnosticSet q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXDiagnosticSet(QBDiagnosticSet q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXDiagnosticSetImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXDiagnosticSet();
     }
 
-    public static implicit operator QBDiagnosticSet(QuantumBinding.Clang.Interop.CXDiagnosticSetImpl q)
+    public static implicit operator QBDiagnosticSet(QuantumBinding.Clang.Interop.CXDiagnosticSet q)
     {
         return new QBDiagnosticSet(in q);
     }

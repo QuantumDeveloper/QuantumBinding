@@ -22,6 +22,8 @@ public class Macro : DeclarationUnit
     public BindingType Type { get; set; }
 
     public List<Parameter> Parameters { get; set; }
+    
+    public PrimitiveType PrimitiveType { get; set; }
 
     public override T Visit<T>(IDeclarationVisitor<T> visitor)
     {

@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Contains the results of code-completion.
+///</summary>
 public unsafe partial class QBCodeCompleteResults : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCodeCompleteResults>
 {
     public QBCodeCompleteResults()
@@ -105,14 +108,14 @@ public unsafe partial class QBCodeCompleteResults : IMarshallableObject, IMarsha
         NumResults = native.numResults;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXCodeCompleteResults>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXCodeCompleteResultsMarshaller
     {

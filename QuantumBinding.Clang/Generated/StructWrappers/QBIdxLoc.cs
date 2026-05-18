@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Source location passed to index callbacks.
+///</summary>
 public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxLoc>
 {
     public QBIdxLoc()
@@ -42,9 +45,9 @@ public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<Quantu
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        CXIdxClientFileImpl arg1;
-        CXFileImpl arg2;
-        QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getFileLocation(native, out arg1, out arg2, out line, out column, out offset);
+        CXIdxClientFile arg1 = default;
+        CXFile arg2 = default;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_indexLoc_getFileLocation(native, &arg1, &arg2, out line, out column, out offset);
         indexFile = new QBIdxClientFile(arg1);
         file = new QBFile(arg2);
     }
@@ -77,14 +80,14 @@ public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<Quantu
         Int_data = native.int_data;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxLoc>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxLoc>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIdxLocMarshaller
     {

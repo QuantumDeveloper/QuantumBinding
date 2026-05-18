@@ -60,12 +60,12 @@ public static class TypeUtil
 
     public static bool IsPurePointer(this BindingType type)
     {
-        return (type.IsPointerToVoid() || type.IsDoublePointer() || type.IsPointerToIntPtr()) && type.Declaration == null;
+        return (type.IsPointerToVoid(out _) || type.IsDoublePointer() || type.IsPointerToIntPtr()) && type.Declaration == null;
     }
 
-    public static bool IsPointerToVoid(this BindingType type)
+    public static bool IsPointerToVoid(this BindingType type, out uint depth)
     {
-        var depth = 1;
+        depth = 1;
         PrimitiveType primitive = PrimitiveType.Unknown;
         var pointer = type as PointerType;
         if (pointer == null) return false;
@@ -84,7 +84,7 @@ public static class TypeUtil
             }
         } while (pointer.Pointee is PointerType);
             
-        return primitive == PrimitiveType.Void;
+        return primitive is PrimitiveType.Void or PrimitiveType.Nuint;
     }
         
     public static bool IsPointerToObject(this BindingType type)
@@ -116,7 +116,7 @@ public static class TypeUtil
         var isPrimitive = IsPointerToPrimitiveType(type, out primitive);
             
         if (isPrimitive &&
-            (primitive is PrimitiveType.IntPtr or PrimitiveType.UintPtr or PrimitiveType.Void))
+            (primitive is PrimitiveType.IntPtr or PrimitiveType.UintPtr or PrimitiveType.Void or PrimitiveType.Nuint))
         {
             return false;
         }
@@ -139,7 +139,7 @@ public static class TypeUtil
             return false;
         }
 
-        if (pointer.Declaration is Class classDecl && classDecl.IsSimpleType) return true;
+        if (pointer.Declaration is Class { IsSimpleType: true }) return true;
 
         return false;
     }
@@ -182,7 +182,7 @@ public static class TypeUtil
         var array = type as ArrayType;
         if (array != null && array.ElementType is PointerType pointerType)
         {
-            return pointerType.IsPointerToVoid();
+            return pointerType.IsPointerToVoid(out var depth);
         }
 
         return false;
@@ -836,7 +836,7 @@ public static class TypeUtil
 
     public static bool IsAvailableForMarshalContext(this BindingType type)
     {
-        return type.IsWrapper() || type.IsArray() || type.IsPointerToArray() || type.IsPointerToString();
+        return type.IsWrapper() || type.IsArray() || type.IsPointerToArray() || type.IsPointerToString() || type.IsDoublePointer();
     }
         
     public static string GetDisplayName(this Enum enumValue)

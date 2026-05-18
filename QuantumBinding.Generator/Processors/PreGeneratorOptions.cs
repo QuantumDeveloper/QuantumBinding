@@ -4,6 +4,7 @@ public class PreGeneratorOptions
 {
     public bool VisitEnums { get; set; }
     public bool VisitEnumItems { get; set; }
+    public bool VisitGlobalUsings { get; set; }
 
     public bool VisitClasses { get; set; }
     public bool VisitFields { get; set; }
@@ -15,4 +16,6 @@ public class PreGeneratorOptions
     public bool VisitParameters { get; set; }
 
     public bool VisitMacros { get; set; }
+    
+    public bool VisitDispatchTables { get; set; }
 }

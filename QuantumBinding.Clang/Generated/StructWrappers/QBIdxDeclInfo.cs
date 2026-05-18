@@ -95,9 +95,10 @@ public unsafe partial class QBIdxDeclInfo : IMarshallableObject, IMarshallable<Q
         DeclAsContainer = new QBIdxContainerInfo(in *native.declAsContainer);
         NativeUtils.Free(native.declAsContainer);
         IsImplicit = native.isImplicit;
-        var tmpAttributes = new QBIdxAttrInfo[native.numAttributes];
-        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxAttrInfo[native.numAttributes];
-        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.attributes, native.numAttributes, nativeTmpArray0);
+        var arrayLengthAttributes = native.numAttributes;
+        var tmpAttributes = new QBIdxAttrInfo[arrayLengthAttributes];
+        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxAttrInfo[arrayLengthAttributes];
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.attributes, arrayLengthAttributes, nativeTmpArray0);
         for (int i = 0; i < nativeTmpArray0.Length; ++i)
         {
             tmpAttributes[i] = new QBIdxAttrInfo(in nativeTmpArray0[i]);
@@ -107,14 +108,14 @@ public unsafe partial class QBIdxDeclInfo : IMarshallableObject, IMarshallable<Q
         Flags = native.flags;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxDeclInfo>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxDeclInfo>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIdxDeclInfoMarshaller
     {

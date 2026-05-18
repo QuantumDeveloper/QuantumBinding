@@ -4,6 +4,9 @@ namespace QuantumBinding.Generator;
 
 public interface IDeclarationVisitor<out T>
 {
+    T VisitGlobalUsings(GlobalUsings globalUsings);
+    T VisitGlobalUsingItem(GlobalUsingItem item);
+    T VisitDispatchTable(DispatchTable dispatchTable);
     T VisitEnum(Enumeration enumeration);
     T VisitEnumItem(EnumerationItem item);
     T VisitFunction(Function function);

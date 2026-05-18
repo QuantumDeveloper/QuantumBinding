@@ -76,7 +76,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve a diagnostic associated with the given code completion.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_codeCompleteGetDiagnostic", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticImpl clang_codeCompleteGetDiagnostic(QuantumBinding.Clang.Interop.CXCodeCompleteResults* results, uint index);
+    internal static extern CXDiagnostic clang_codeCompleteGetDiagnostic(QuantumBinding.Clang.Interop.CXCodeCompleteResults* results, uint index);
 
     ///<summary>
     /// Determine the number of diagnostics produced prior to the location where code completion was performed.
@@ -154,7 +154,7 @@ public static unsafe partial class ClangInterop
     /// Traverses the translation unit to create a CXAPISet.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_createAPISet", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXErrorCode clang_createAPISet(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, out QuantumBinding.Clang.Interop.CXAPISetImpl out_api);
+    internal static extern CXErrorCode clang_createAPISet(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXAPISetImpl* out_api);
 
     ///<summary>
     /// Creates an empty CXCursorSet.
@@ -166,37 +166,37 @@ public static unsafe partial class ClangInterop
     /// Provides a shared context for creating translation units.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_createIndex", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXIndexImpl clang_createIndex(int excludeDeclarationsFromPCH, int displayDiagnostics);
+    internal static extern CXIndex clang_createIndex(int excludeDeclarationsFromPCH, int displayDiagnostics);
 
     ///<summary>
     /// Provides a shared context for creating translation units.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_createIndexWithOptions", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXIndexImpl clang_createIndexWithOptions(QuantumBinding.Clang.Interop.CXIndexOptions* options);
+    internal static extern CXIndex clang_createIndexWithOptions(QuantumBinding.Clang.Interop.CXIndexOptions* options);
 
     ///<summary>
     /// Same as clang_createTranslationUnit2, but returns the CXTranslationUnit instead of an error code. In case of an error this routine returns a NULL CXTranslationUnit, without further detailed error codes.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_createTranslationUnit", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXTranslationUnitImpl clang_createTranslationUnit(QuantumBinding.Clang.Interop.CXIndexImpl cIdx, sbyte* ast_filename);
+    internal static extern CXTranslationUnitImpl clang_createTranslationUnit(QuantumBinding.Clang.Interop.CXIndex cIdx, sbyte* ast_filename);
 
     ///<summary>
     /// Create a translation unit from an AST file ( -emit-ast).
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_createTranslationUnit2", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXErrorCode clang_createTranslationUnit2(QuantumBinding.Clang.Interop.CXIndexImpl cIdx, sbyte* ast_filename, out QuantumBinding.Clang.Interop.CXTranslationUnitImpl out_TU);
+    internal static extern CXErrorCode clang_createTranslationUnit2(QuantumBinding.Clang.Interop.CXIndex cIdx, sbyte* ast_filename, QuantumBinding.Clang.Interop.CXTranslationUnitImpl* out_TU);
 
     ///<summary>
     /// Return the CXTranslationUnit for a given source file and the provided command line arguments one would pass to the compiler.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_createTranslationUnitFromSourceFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXTranslationUnitImpl clang_createTranslationUnitFromSourceFile(QuantumBinding.Clang.Interop.CXIndexImpl cIdx, sbyte* source_filename, int num_clang_command_line_args, sbyte** clang_command_line_args, uint num_unsaved_files, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files);
+    internal static extern CXTranslationUnitImpl clang_createTranslationUnitFromSourceFile(QuantumBinding.Clang.Interop.CXIndex cIdx, sbyte* source_filename, int num_clang_command_line_args, sbyte** clang_command_line_args, uint num_unsaved_files, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files);
 
     ///<summary>
     /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type. If it's an expression, tries to evaluate the expression.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Cursor_Evaluate", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXEvalResultImpl clang_Cursor_Evaluate(QuantumBinding.Clang.Interop.CXCursor c);
+    internal static extern CXEvalResult clang_Cursor_Evaluate(QuantumBinding.Clang.Interop.CXCursor c);
 
     ///<summary>
     /// Retrieve the argument cursor of a function or method.
@@ -286,7 +286,7 @@ public static unsafe partial class ClangInterop
     /// Given a CXCursor_ModuleImportDecl cursor, return the associated module.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Cursor_getModule", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXModuleImpl clang_Cursor_getModule(QuantumBinding.Clang.Interop.CXCursor c);
+    internal static extern CXModule clang_Cursor_getModule(QuantumBinding.Clang.Interop.CXCursor c);
 
     ///<summary>
     /// Retrieve the number of non-variadic arguments associated with a given cursor.
@@ -454,7 +454,7 @@ public static unsafe partial class ClangInterop
     /// Returns non-zero if the given cursor points to a symbol marked with external_source_symbol attribute.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Cursor_isExternalSymbol", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_Cursor_isExternalSymbol(QuantumBinding.Clang.Interop.CXCursor c, QuantumBinding.Clang.Interop.CXString* language, QuantumBinding.Clang.Interop.CXString* definedIn, uint* isGenerated);
+    internal static extern uint clang_Cursor_isExternalSymbol(QuantumBinding.Clang.Interop.CXCursor c, QuantumBinding.Clang.Interop.CXString* language, QuantumBinding.Clang.Interop.CXString* definedIn, ref uint isGenerated);
 
     ///<summary>
     /// Determine whether a CXCursor that is a function declaration, is an inline declaration.
@@ -526,19 +526,19 @@ public static unsafe partial class ClangInterop
     /// Gets the general options associated with a CXIndex.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_CXIndex_getGlobalOptions", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_CXIndex_getGlobalOptions(QuantumBinding.Clang.Interop.CXIndexImpl param0);
+    internal static extern uint clang_CXIndex_getGlobalOptions(QuantumBinding.Clang.Interop.CXIndex param0);
 
     ///<summary>
     /// Sets general options associated with a CXIndex.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_CXIndex_setGlobalOptions", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_CXIndex_setGlobalOptions(QuantumBinding.Clang.Interop.CXIndexImpl param0, uint options);
+    internal static extern void clang_CXIndex_setGlobalOptions(QuantumBinding.Clang.Interop.CXIndex param0, uint options);
 
     ///<summary>
     /// Sets the invocation emission path option in a CXIndex.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_CXIndex_setInvocationEmissionPathOption", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_CXIndex_setInvocationEmissionPathOption(QuantumBinding.Clang.Interop.CXIndexImpl param0, sbyte* path);
+    internal static extern void clang_CXIndex_setInvocationEmissionPathOption(QuantumBinding.Clang.Interop.CXIndex param0, sbyte* path);
 
     ///<summary>
     /// Determine if a C++ constructor is a converting constructor.
@@ -691,19 +691,19 @@ public static unsafe partial class ClangInterop
     /// Destroy a diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_disposeDiagnostic", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_disposeDiagnostic(QuantumBinding.Clang.Interop.CXDiagnosticImpl diagnostic);
+    internal static extern void clang_disposeDiagnostic(QuantumBinding.Clang.Interop.CXDiagnostic diagnostic);
 
     ///<summary>
     /// Release a CXDiagnosticSet and all of its contained diagnostics.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_disposeDiagnosticSet", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_disposeDiagnosticSet(QuantumBinding.Clang.Interop.CXDiagnosticSetImpl diags);
+    internal static extern void clang_disposeDiagnosticSet(QuantumBinding.Clang.Interop.CXDiagnosticSet diags);
 
     ///<summary>
     /// Destroy the given index.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_disposeIndex", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_disposeIndex(QuantumBinding.Clang.Interop.CXIndexImpl index);
+    internal static extern void clang_disposeIndex(QuantumBinding.Clang.Interop.CXIndex index);
 
     ///<summary>
     /// Free the set of overridden cursors returned by clang_getOverriddenCursors().
@@ -778,94 +778,94 @@ public static unsafe partial class ClangInterop
     /// Disposes the created Eval memory.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_dispose", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_EvalResult_dispose(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern void clang_EvalResult_dispose(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns the evaluation result as double if the kind is double.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_getAsDouble", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern double clang_EvalResult_getAsDouble(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern double clang_EvalResult_getAsDouble(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns the evaluation result as integer if the kind is Int.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_getAsInt", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_EvalResult_getAsInt(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern int clang_EvalResult_getAsInt(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns the evaluation result as a long long integer if the kind is Int. This prevents overflows that may happen if the result is returned with clang_EvalResult_getAsInt.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_getAsLongLong", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern long clang_EvalResult_getAsLongLong(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern long clang_EvalResult_getAsLongLong(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns the evaluation result as a constant string if the kind is other than Int or float. User must not free this pointer, instead call clang_EvalResult_dispose on the CXEvalResult returned by clang_Cursor_Evaluate.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_getAsStr", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern sbyte* clang_EvalResult_getAsStr(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern sbyte* clang_EvalResult_getAsStr(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns the evaluation result as an unsigned integer if the kind is Int and clang_EvalResult_isUnsignedInt is non-zero.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_getAsUnsigned", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern ulong clang_EvalResult_getAsUnsigned(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern ulong clang_EvalResult_getAsUnsigned(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns the kind of the evaluated result.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_getKind", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXEvalResultKind clang_EvalResult_getKind(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern CXEvalResultKind clang_EvalResult_getKind(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     ///<summary>
     /// Returns a non-zero value if the kind is Int and the evaluation result resulted in an unsigned integer.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_EvalResult_isUnsignedInt", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_EvalResult_isUnsignedInt(QuantumBinding.Clang.Interop.CXEvalResultImpl e);
+    internal static extern uint clang_EvalResult_isUnsignedInt(QuantumBinding.Clang.Interop.CXEvalResult e);
 
     [DllImport(LibraryPath, EntryPoint = "clang_executeOnThread", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_executeOnThread(nuint fn, nuint user_data, uint stack_size);
+    internal static extern void clang_executeOnThread(void* fn, void* user_data, uint stack_size);
 
     ///<summary>
     /// Returns non-zero if the file1 and file2 point to the same file, or they are both NULL.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_File_isEqual", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_File_isEqual(QuantumBinding.Clang.Interop.CXFileImpl file1, QuantumBinding.Clang.Interop.CXFileImpl file2);
+    internal static extern int clang_File_isEqual(QuantumBinding.Clang.Interop.CXFile file1, QuantumBinding.Clang.Interop.CXFile file2);
 
     ///<summary>
     /// Returns the real path name of file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_File_tryGetRealPathName", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_File_tryGetRealPathName(QuantumBinding.Clang.Interop.CXFileImpl file);
+    internal static extern CXString clang_File_tryGetRealPathName(QuantumBinding.Clang.Interop.CXFile file);
 
     ///<summary>
     /// Find #import/#include directives in a specific file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_findIncludesInFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXResult clang_findIncludesInFile(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tU, QuantumBinding.Clang.Interop.CXFileImpl file, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor visitor);
+    internal static extern CXResult clang_findIncludesInFile(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tU, QuantumBinding.Clang.Interop.CXFile file, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor visitor);
 
     [DllImport(LibraryPath, EntryPoint = "clang_findIncludesInFileWithBlock", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXResult clang_findIncludesInFileWithBlock(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXFileImpl param1, QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock param2);
+    internal static extern CXResult clang_findIncludesInFileWithBlock(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXFile param1, QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock param2);
 
     ///<summary>
     /// Find references of a declaration in a specific file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_findReferencesInFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXResult clang_findReferencesInFile(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXFileImpl file, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor visitor);
+    internal static extern CXResult clang_findReferencesInFile(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXFile file, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor visitor);
 
     [DllImport(LibraryPath, EntryPoint = "clang_findReferencesInFileWithBlock", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXResult clang_findReferencesInFileWithBlock(QuantumBinding.Clang.Interop.CXCursor param0, QuantumBinding.Clang.Interop.CXFileImpl param1, QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock param2);
+    internal static extern CXResult clang_findReferencesInFileWithBlock(QuantumBinding.Clang.Interop.CXCursor param0, QuantumBinding.Clang.Interop.CXFile param1, QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock param2);
 
     ///<summary>
     /// Format the given diagnostic in a manner that is suitable for display.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_formatDiagnostic", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_formatDiagnostic(QuantumBinding.Clang.Interop.CXDiagnosticImpl diagnostic, uint options);
+    internal static extern CXString clang_formatDiagnostic(QuantumBinding.Clang.Interop.CXDiagnostic diagnostic, uint options);
 
     ///<summary>
     /// free memory allocated by libclang, such as the buffer returned by CXVirtualFileOverlay() or clang_ModuleMapDescriptor_writeToBuffer().
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_free", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_free(nuint buffer);
+    internal static extern void clang_free(void* buffer);
 
     ///<summary>
     /// Convert a given full parsed comment to an HTML fragment.
@@ -937,7 +937,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve the child diagnostics of a CXDiagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getChildDiagnostics", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticSetImpl clang_getChildDiagnostics(QuantumBinding.Clang.Interop.CXDiagnosticImpl d);
+    internal static extern CXDiagnosticSet clang_getChildDiagnostics(QuantumBinding.Clang.Interop.CXDiagnostic d);
 
     ///<summary>
     /// Return a version string, suitable for showing to a user, but not intended to be parsed (the format is not guaranteed to be stable).
@@ -949,37 +949,37 @@ public static unsafe partial class ClangInterop
     /// Retrieve the annotation associated with the given completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionAnnotation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getCompletionAnnotation(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string, uint annotation_number);
+    internal static extern CXString clang_getCompletionAnnotation(QuantumBinding.Clang.Interop.CXCompletionString completion_string, uint annotation_number);
 
     ///<summary>
     /// Determine the availability of the entity that this code-completion string refers to.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionAvailability", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXAvailabilityKind clang_getCompletionAvailability(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string);
+    internal static extern CXAvailabilityKind clang_getCompletionAvailability(QuantumBinding.Clang.Interop.CXCompletionString completion_string);
 
     ///<summary>
     /// Retrieve the brief documentation comment attached to the declaration that corresponds to the given completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionBriefComment", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getCompletionBriefComment(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string);
+    internal static extern CXString clang_getCompletionBriefComment(QuantumBinding.Clang.Interop.CXCompletionString completion_string);
 
     ///<summary>
     /// Retrieve the completion string associated with a particular chunk within a completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionChunkCompletionString", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXCompletionStringImpl clang_getCompletionChunkCompletionString(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string, uint chunk_number);
+    internal static extern CXCompletionString clang_getCompletionChunkCompletionString(QuantumBinding.Clang.Interop.CXCompletionString completion_string, uint chunk_number);
 
     ///<summary>
     /// Determine the kind of a particular chunk within a completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionChunkKind", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXCompletionChunkKind clang_getCompletionChunkKind(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string, uint chunk_number);
+    internal static extern CXCompletionChunkKind clang_getCompletionChunkKind(QuantumBinding.Clang.Interop.CXCompletionString completion_string, uint chunk_number);
 
     ///<summary>
     /// Retrieve the text associated with a particular chunk within a completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionChunkText", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getCompletionChunkText(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string, uint chunk_number);
+    internal static extern CXString clang_getCompletionChunkText(QuantumBinding.Clang.Interop.CXCompletionString completion_string, uint chunk_number);
 
     ///<summary>
     /// Fix-its that *must* be applied before inserting the text for the corresponding completion.
@@ -991,7 +991,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve the number of annotations associated with the given completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionNumAnnotations", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getCompletionNumAnnotations(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string);
+    internal static extern uint clang_getCompletionNumAnnotations(QuantumBinding.Clang.Interop.CXCompletionString completion_string);
 
     ///<summary>
     /// Retrieve the number of fix-its for the given completion index.
@@ -1003,13 +1003,13 @@ public static unsafe partial class ClangInterop
     /// Retrieve the parent context of the given completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionParent", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getCompletionParent(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string, CXCursorKind* kind);
+    internal static extern CXString clang_getCompletionParent(QuantumBinding.Clang.Interop.CXCompletionString completion_string, CXCursorKind* kind);
 
     ///<summary>
     /// Determine the priority of this code completion.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCompletionPriority", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getCompletionPriority(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string);
+    internal static extern uint clang_getCompletionPriority(QuantumBinding.Clang.Interop.CXCompletionString completion_string);
 
     ///<summary>
     /// Retrieve the character data associated with the given string.
@@ -1039,7 +1039,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve a completion string for an arbitrary declaration or macro definition cursor.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCursorCompletionString", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXCompletionStringImpl clang_getCursorCompletionString(QuantumBinding.Clang.Interop.CXCursor cursor);
+    internal static extern CXCompletionString clang_getCursorCompletionString(QuantumBinding.Clang.Interop.CXCursor cursor);
 
     ///<summary>
     /// For a cursor that is either a reference to or a declaration of some entity, retrieve a cursor that describes the definition of that entity.
@@ -1105,19 +1105,19 @@ public static unsafe partial class ClangInterop
     /// Determine the availability of the entity that this cursor refers to on any platforms for which availability information is known.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCursorPlatformAvailability", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_getCursorPlatformAvailability(QuantumBinding.Clang.Interop.CXCursor cursor, int* always_deprecated, QuantumBinding.Clang.Interop.CXString* deprecated_message, int* always_unavailable, QuantumBinding.Clang.Interop.CXString* unavailable_message, QuantumBinding.Clang.Interop.CXPlatformAvailability* availability, int availability_size);
+    internal static extern int clang_getCursorPlatformAvailability(QuantumBinding.Clang.Interop.CXCursor cursor, int* always_deprecated, QuantumBinding.Clang.Interop.CXString* deprecated_message, ref int always_unavailable, QuantumBinding.Clang.Interop.CXString* unavailable_message, QuantumBinding.Clang.Interop.CXPlatformAvailability* availability, int availability_size);
 
     ///<summary>
     /// Pretty print declarations.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCursorPrettyPrinted", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getCursorPrettyPrinted(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXPrintingPolicyImpl policy);
+    internal static extern CXString clang_getCursorPrettyPrinted(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXPrintingPolicy policy);
 
     ///<summary>
     /// Retrieve the default policy for the cursor.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getCursorPrintingPolicy", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXPrintingPolicyImpl clang_getCursorPrintingPolicy(QuantumBinding.Clang.Interop.CXCursor param0);
+    internal static extern CXPrintingPolicy clang_getCursorPrintingPolicy(QuantumBinding.Clang.Interop.CXCursor param0);
 
     ///<summary>
     /// For a cursor that is a reference, retrieve a cursor representing the entity that it references.
@@ -1198,19 +1198,19 @@ public static unsafe partial class ClangInterop
     internal static extern CXString clang_getDeclObjCTypeEncoding(QuantumBinding.Clang.Interop.CXCursor c);
 
     [DllImport(LibraryPath, EntryPoint = "clang_getDefinitionSpellingAndExtent", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getDefinitionSpellingAndExtent(QuantumBinding.Clang.Interop.CXCursor param0, sbyte** startBuf, sbyte** endBuf, uint* startLine, uint* startColumn, uint* endLine, uint* endColumn);
+    internal static extern void clang_getDefinitionSpellingAndExtent(QuantumBinding.Clang.Interop.CXCursor param0, sbyte** startBuf, sbyte** endBuf, ref uint startLine, ref uint startColumn, ref uint endLine, ref uint endColumn);
 
     ///<summary>
     /// Retrieve a diagnostic associated with the given translation unit.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnostic", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticImpl clang_getDiagnostic(QuantumBinding.Clang.Interop.CXTranslationUnitImpl unit, uint index);
+    internal static extern CXDiagnostic clang_getDiagnostic(QuantumBinding.Clang.Interop.CXTranslationUnitImpl unit, uint index);
 
     ///<summary>
     /// Retrieve the category number for this diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticCategory", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getDiagnosticCategory(QuantumBinding.Clang.Interop.CXDiagnosticImpl param0);
+    internal static extern uint clang_getDiagnosticCategory(QuantumBinding.Clang.Interop.CXDiagnostic param0);
 
     ///<summary>
     /// Retrieve the name of a particular diagnostic category. This is now deprecated. Use clang_getDiagnosticCategoryText() instead.
@@ -1222,67 +1222,67 @@ public static unsafe partial class ClangInterop
     /// Retrieve the diagnostic category text for a given diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticCategoryText", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getDiagnosticCategoryText(QuantumBinding.Clang.Interop.CXDiagnosticImpl param0);
+    internal static extern CXString clang_getDiagnosticCategoryText(QuantumBinding.Clang.Interop.CXDiagnostic param0);
 
     ///<summary>
     /// Retrieve the replacement information for a given fix-it.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticFixIt", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getDiagnosticFixIt(QuantumBinding.Clang.Interop.CXDiagnosticImpl diagnostic, uint fixIt, QuantumBinding.Clang.Interop.CXSourceRange* replacementRange);
+    internal static extern CXString clang_getDiagnosticFixIt(QuantumBinding.Clang.Interop.CXDiagnostic diagnostic, uint fixIt, QuantumBinding.Clang.Interop.CXSourceRange* replacementRange);
 
     ///<summary>
     /// Retrieve a diagnostic associated with the given CXDiagnosticSet.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticInSet", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticImpl clang_getDiagnosticInSet(QuantumBinding.Clang.Interop.CXDiagnosticSetImpl diags, uint index);
+    internal static extern CXDiagnostic clang_getDiagnosticInSet(QuantumBinding.Clang.Interop.CXDiagnosticSet diags, uint index);
 
     ///<summary>
     /// Retrieve the source location of the given diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXSourceLocation clang_getDiagnosticLocation(QuantumBinding.Clang.Interop.CXDiagnosticImpl param0);
+    internal static extern CXSourceLocation clang_getDiagnosticLocation(QuantumBinding.Clang.Interop.CXDiagnostic param0);
 
     ///<summary>
     /// Determine the number of fix-it hints associated with the given diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticNumFixIts", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getDiagnosticNumFixIts(QuantumBinding.Clang.Interop.CXDiagnosticImpl diagnostic);
+    internal static extern uint clang_getDiagnosticNumFixIts(QuantumBinding.Clang.Interop.CXDiagnostic diagnostic);
 
     ///<summary>
     /// Determine the number of source ranges associated with the given diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticNumRanges", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getDiagnosticNumRanges(QuantumBinding.Clang.Interop.CXDiagnosticImpl param0);
+    internal static extern uint clang_getDiagnosticNumRanges(QuantumBinding.Clang.Interop.CXDiagnostic param0);
 
     ///<summary>
     /// Retrieve the name of the command-line option that enabled this diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticOption", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getDiagnosticOption(QuantumBinding.Clang.Interop.CXDiagnosticImpl diag, QuantumBinding.Clang.Interop.CXString* disable);
+    internal static extern CXString clang_getDiagnosticOption(QuantumBinding.Clang.Interop.CXDiagnostic diag, QuantumBinding.Clang.Interop.CXString* disable);
 
     ///<summary>
     /// Retrieve a source range associated with the diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticRange", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXSourceRange clang_getDiagnosticRange(QuantumBinding.Clang.Interop.CXDiagnosticImpl diagnostic, uint range);
+    internal static extern CXSourceRange clang_getDiagnosticRange(QuantumBinding.Clang.Interop.CXDiagnostic diagnostic, uint range);
 
     ///<summary>
     /// Retrieve the complete set of diagnostics associated with a translation unit.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticSetFromTU", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticSetImpl clang_getDiagnosticSetFromTU(QuantumBinding.Clang.Interop.CXTranslationUnitImpl unit);
+    internal static extern CXDiagnosticSet clang_getDiagnosticSetFromTU(QuantumBinding.Clang.Interop.CXTranslationUnitImpl unit);
 
     ///<summary>
     /// Determine the severity of the given diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticSeverity", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticSeverity clang_getDiagnosticSeverity(QuantumBinding.Clang.Interop.CXDiagnosticImpl param0);
+    internal static extern CXDiagnosticSeverity clang_getDiagnosticSeverity(QuantumBinding.Clang.Interop.CXDiagnostic param0);
 
     ///<summary>
     /// Retrieve the text of the given diagnostic.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getDiagnosticSpelling", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getDiagnosticSpelling(QuantumBinding.Clang.Interop.CXDiagnosticImpl param0);
+    internal static extern CXString clang_getDiagnosticSpelling(QuantumBinding.Clang.Interop.CXDiagnostic param0);
 
     ///<summary>
     /// Return the element type of an array, complex, or vector type.
@@ -1318,7 +1318,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getExpansionLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getExpansionLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, out QuantumBinding.Clang.Interop.CXFileImpl file, out uint line, out uint column, out uint offset);
+    internal static extern void clang_getExpansionLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, QuantumBinding.Clang.Interop.CXFile* file, out uint line, out uint column, out uint offset);
 
     ///<summary>
     /// Retrieve the bit width of a bit-field declaration as an integer.
@@ -1330,43 +1330,43 @@ public static unsafe partial class ClangInterop
     /// Retrieve a file handle within the given translation unit.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXFileImpl clang_getFile(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, sbyte* file_name);
+    internal static extern CXFile clang_getFile(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, sbyte* file_name);
 
     ///<summary>
     /// Retrieve the buffer associated with the given file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFileContents", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern sbyte* clang_getFileContents(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFileImpl file, out ulong size);
+    internal static extern sbyte* clang_getFileContents(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFile file, out ulong size);
 
     ///<summary>
     /// Retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFileLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getFileLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, out QuantumBinding.Clang.Interop.CXFileImpl file, out uint line, out uint column, out uint offset);
+    internal static extern void clang_getFileLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, QuantumBinding.Clang.Interop.CXFile* file, out uint line, out uint column, out uint offset);
 
     ///<summary>
     /// Retrieve the complete file and path name of the given file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFileName", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getFileName(QuantumBinding.Clang.Interop.CXFileImpl sFile);
+    internal static extern CXString clang_getFileName(QuantumBinding.Clang.Interop.CXFile sFile);
 
     ///<summary>
     /// Retrieve the last modification time of the given file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFileTime", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern long clang_getFileTime(QuantumBinding.Clang.Interop.CXFileImpl sFile);
+    internal static extern long clang_getFileTime(QuantumBinding.Clang.Interop.CXFile sFile);
 
     ///<summary>
     /// Retrieve the unique ID for the given file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFileUniqueID", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_getFileUniqueID(QuantumBinding.Clang.Interop.CXFileImpl file, out QuantumBinding.Clang.Interop.CXFileUniqueID outID);
+    internal static extern int clang_getFileUniqueID(QuantumBinding.Clang.Interop.CXFile file, QuantumBinding.Clang.Interop.CXFileUniqueID* outID);
 
     ///<summary>
     /// Get the fully qualified name for a type.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getFullyQualifiedName", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getFullyQualifiedName(QuantumBinding.Clang.Interop.CXType cT, QuantumBinding.Clang.Interop.CXPrintingPolicyImpl policy, uint withGlobalNsPrefix);
+    internal static extern CXString clang_getFullyQualifiedName(QuantumBinding.Clang.Interop.CXType cT, QuantumBinding.Clang.Interop.CXPrintingPolicy policy, uint withGlobalNsPrefix);
 
     ///<summary>
     /// Retrieve the calling convention associated with a function type.
@@ -1384,37 +1384,37 @@ public static unsafe partial class ClangInterop
     /// Retrieve the file that is included by the given inclusion directive cursor.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getIncludedFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXFileImpl clang_getIncludedFile(QuantumBinding.Clang.Interop.CXCursor cursor);
+    internal static extern CXFile clang_getIncludedFile(QuantumBinding.Clang.Interop.CXCursor cursor);
 
     ///<summary>
     /// Visit the set of preprocessor inclusions in a translation unit. The visitor function is called with the provided data for every included file. This does not include headers included by the PCH file (unless one is inspecting the inclusions in the PCH file itself).
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getInclusions", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getInclusions(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, nuint visitor, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    internal static extern void clang_getInclusions(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, nuint visitor, QuantumBinding.Clang.Interop.CXClientData client_data);
 
     ///<summary>
     /// Legacy API to retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getInstantiationLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getInstantiationLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, out QuantumBinding.Clang.Interop.CXFileImpl file, out uint line, out uint column, out uint offset);
+    internal static extern void clang_getInstantiationLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, QuantumBinding.Clang.Interop.CXFile* file, out uint line, out uint column, out uint offset);
 
     ///<summary>
     /// Retrieves the source location associated with a given file/line/column in a particular translation unit.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXSourceLocation clang_getLocation(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFileImpl file, uint line, uint column);
+    internal static extern CXSourceLocation clang_getLocation(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFile file, uint line, uint column);
 
     ///<summary>
     /// Retrieves the source location associated with a given character offset in a particular translation unit.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getLocationForOffset", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXSourceLocation clang_getLocationForOffset(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFileImpl file, uint offset);
+    internal static extern CXSourceLocation clang_getLocationForOffset(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFile file, uint offset);
 
     ///<summary>
     /// Given a CXFile header file, return the module that contains it, if one exists.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getModuleForFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXModuleImpl clang_getModuleForFile(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXFileImpl param1);
+    internal static extern CXModule clang_getModuleForFile(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXFile param1);
 
     ///<summary>
     /// For reference types (e.g., "const int&"), returns the type that the reference refers to (e.g "const int").
@@ -1450,7 +1450,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve the number of chunks in the given code-completion string.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getNumCompletionChunks", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getNumCompletionChunks(QuantumBinding.Clang.Interop.CXCompletionStringImpl completion_string);
+    internal static extern uint clang_getNumCompletionChunks(QuantumBinding.Clang.Interop.CXCompletionString completion_string);
 
     ///<summary>
     /// Determine the number of diagnostics produced for the given translation unit.
@@ -1462,7 +1462,7 @@ public static unsafe partial class ClangInterop
     /// Determine the number of diagnostics in a CXDiagnosticSet.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getNumDiagnosticsInSet", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_getNumDiagnosticsInSet(QuantumBinding.Clang.Interop.CXDiagnosticSetImpl diags);
+    internal static extern uint clang_getNumDiagnosticsInSet(QuantumBinding.Clang.Interop.CXDiagnosticSet diags);
 
     ///<summary>
     /// Return the number of elements of an array or vector type.
@@ -1504,7 +1504,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve the file, line and column represented by the given source location, as specified in a # line directive.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getPresumedLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getPresumedLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, out QuantumBinding.Clang.Interop.CXString filename, out uint line, out uint column);
+    internal static extern void clang_getPresumedLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, QuantumBinding.Clang.Interop.CXString* filename, out uint line, out uint column);
 
     ///<summary>
     /// Retrieve a source range given the beginning and ending source locations.
@@ -1525,10 +1525,10 @@ public static unsafe partial class ClangInterop
     internal static extern CXSourceLocation clang_getRangeStart(QuantumBinding.Clang.Interop.CXSourceRange range);
 
     [DllImport(LibraryPath, EntryPoint = "clang_getRemappings", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXRemappingImpl clang_getRemappings(sbyte* param0);
+    internal static extern CXRemapping clang_getRemappings(sbyte* param0);
 
     [DllImport(LibraryPath, EntryPoint = "clang_getRemappingsFromFileList", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXRemappingImpl clang_getRemappingsFromFileList(sbyte** param0, uint param1);
+    internal static extern CXRemapping clang_getRemappingsFromFileList(sbyte** param0, uint param1);
 
     ///<summary>
     /// Retrieve the return type associated with a function type.
@@ -1540,7 +1540,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve all ranges that were skipped by the preprocessor.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getSkippedRanges", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXSourceRangeList* clang_getSkippedRanges(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFileImpl file);
+    internal static extern CXSourceRangeList* clang_getSkippedRanges(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFile file);
 
     ///<summary>
     /// Given a cursor that may represent a specialization or instantiation of a template, retrieve the cursor that represents the template that it specializes or from which it was instantiated.
@@ -1552,7 +1552,7 @@ public static unsafe partial class ClangInterop
     /// Retrieve the file, line, column, and offset represented by the given source location.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getSpellingLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_getSpellingLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, out QuantumBinding.Clang.Interop.CXFileImpl file, out uint line, out uint column, out uint offset);
+    internal static extern void clang_getSpellingLocation(QuantumBinding.Clang.Interop.CXSourceLocation location, QuantumBinding.Clang.Interop.CXFile* file, out uint line, out uint column, out uint offset);
 
     ///<summary>
     /// Generate a single symbol symbol graph for the declaration at the given cursor. Returns a null string if the AST node for the cursor isn't a declaration.
@@ -1654,7 +1654,7 @@ public static unsafe partial class ClangInterop
     /// Pretty-print the underlying type using a custom printing policy.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_getTypePrettyPrinted", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_getTypePrettyPrinted(QuantumBinding.Clang.Interop.CXType cT, QuantumBinding.Clang.Interop.CXPrintingPolicyImpl cxPolicy);
+    internal static extern CXString clang_getTypePrettyPrinted(QuantumBinding.Clang.Interop.CXType cT, QuantumBinding.Clang.Interop.CXPrintingPolicy cxPolicy);
 
     ///<summary>
     /// Pretty-print the underlying type using the rules of the language of the translation unit from which it came.
@@ -1720,13 +1720,13 @@ public static unsafe partial class ClangInterop
     /// For retrieving a custom CXIdxClientContainer attached to a container.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_index_getClientContainer", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXIdxClientContainerImpl clang_index_getClientContainer(QuantumBinding.Clang.Interop.CXIdxContainerInfo* param0);
+    internal static extern CXIdxClientContainer clang_index_getClientContainer(QuantumBinding.Clang.Interop.CXIdxContainerInfo* param0);
 
     ///<summary>
     /// For retrieving a custom CXIdxClientEntity attached to an entity.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_index_getClientEntity", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXIdxClientEntityImpl clang_index_getClientEntity(QuantumBinding.Clang.Interop.CXIdxEntityInfo* param0);
+    internal static extern CXIdxClientEntity clang_index_getClientEntity(QuantumBinding.Clang.Interop.CXIdxEntityInfo* param0);
 
     [DllImport(LibraryPath, EntryPoint = "clang_index_getCXXClassDeclInfo", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
     internal static extern CXIdxCXXClassDeclInfo* clang_index_getCXXClassDeclInfo(QuantumBinding.Clang.Interop.CXIdxDeclInfo* param0);
@@ -1756,25 +1756,25 @@ public static unsafe partial class ClangInterop
     /// For setting a custom CXIdxClientContainer attached to a container.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_index_setClientContainer", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_index_setClientContainer(QuantumBinding.Clang.Interop.CXIdxContainerInfo* param0, QuantumBinding.Clang.Interop.CXIdxClientContainerImpl param1);
+    internal static extern void clang_index_setClientContainer(QuantumBinding.Clang.Interop.CXIdxContainerInfo* param0, QuantumBinding.Clang.Interop.CXIdxClientContainer param1);
 
     ///<summary>
     /// For setting a custom CXIdxClientEntity attached to an entity.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_index_setClientEntity", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_index_setClientEntity(QuantumBinding.Clang.Interop.CXIdxEntityInfo* param0, QuantumBinding.Clang.Interop.CXIdxClientEntityImpl param1);
+    internal static extern void clang_index_setClientEntity(QuantumBinding.Clang.Interop.CXIdxEntityInfo* param0, QuantumBinding.Clang.Interop.CXIdxClientEntity param1);
 
     ///<summary>
     /// An indexing action/session, to be applied to one or multiple translation units.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_IndexAction_create", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXIndexActionImpl clang_IndexAction_create(QuantumBinding.Clang.Interop.CXIndexImpl cIdx);
+    internal static extern CXIndexAction clang_IndexAction_create(QuantumBinding.Clang.Interop.CXIndex cIdx);
 
     ///<summary>
     /// Destroy the given index action.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_IndexAction_dispose", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_IndexAction_dispose(QuantumBinding.Clang.Interop.CXIndexActionImpl param0);
+    internal static extern void clang_IndexAction_dispose(QuantumBinding.Clang.Interop.CXIndexAction param0);
 
     ///<summary>
     /// Retrieve the CXSourceLocation represented by the given CXIdxLoc.
@@ -1786,25 +1786,25 @@ public static unsafe partial class ClangInterop
     /// Retrieve the CXIdxFile, file, line, column, and offset represented by the given CXIdxLoc.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_indexLoc_getFileLocation", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_indexLoc_getFileLocation(QuantumBinding.Clang.Interop.CXIdxLoc loc, out QuantumBinding.Clang.Interop.CXIdxClientFileImpl indexFile, out QuantumBinding.Clang.Interop.CXFileImpl file, out uint line, out uint column, out uint offset);
+    internal static extern void clang_indexLoc_getFileLocation(QuantumBinding.Clang.Interop.CXIdxLoc loc, QuantumBinding.Clang.Interop.CXIdxClientFile* indexFile, QuantumBinding.Clang.Interop.CXFile* file, out uint line, out uint column, out uint offset);
 
     ///<summary>
     /// Index the given source file and the translation unit corresponding to that file via callbacks implemented through #IndexerCallbacks.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_indexSourceFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_indexSourceFile(QuantumBinding.Clang.Interop.CXIndexActionImpl param0, QuantumBinding.Clang.Interop.CXClientDataImpl client_data, QuantumBinding.Clang.Interop.IndexerCallbacks* index_callbacks, uint index_callbacks_size, uint index_options, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, out QuantumBinding.Clang.Interop.CXTranslationUnitImpl out_TU, uint tU_options);
+    internal static extern int clang_indexSourceFile(QuantumBinding.Clang.Interop.CXIndexAction param0, QuantumBinding.Clang.Interop.CXClientData client_data, QuantumBinding.Clang.Interop.IndexerCallbacks* index_callbacks, uint index_callbacks_size, uint index_options, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, QuantumBinding.Clang.Interop.CXTranslationUnitImpl* out_TU, uint tU_options);
 
     ///<summary>
     /// Same as clang_indexSourceFile but requires a full command line for command_line_args including argv[0]. This is useful if the standard library paths are relative to the binary.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_indexSourceFileFullArgv", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_indexSourceFileFullArgv(QuantumBinding.Clang.Interop.CXIndexActionImpl param0, QuantumBinding.Clang.Interop.CXClientDataImpl client_data, QuantumBinding.Clang.Interop.IndexerCallbacks* index_callbacks, uint index_callbacks_size, uint index_options, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, out QuantumBinding.Clang.Interop.CXTranslationUnitImpl out_TU, uint tU_options);
+    internal static extern int clang_indexSourceFileFullArgv(QuantumBinding.Clang.Interop.CXIndexAction param0, QuantumBinding.Clang.Interop.CXClientData client_data, QuantumBinding.Clang.Interop.IndexerCallbacks* index_callbacks, uint index_callbacks_size, uint index_options, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, QuantumBinding.Clang.Interop.CXTranslationUnitImpl* out_TU, uint tU_options);
 
     ///<summary>
     /// Index the given translation unit via callbacks implemented through #IndexerCallbacks.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_indexTranslationUnit", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_indexTranslationUnit(QuantumBinding.Clang.Interop.CXIndexActionImpl param0, QuantumBinding.Clang.Interop.CXClientDataImpl client_data, QuantumBinding.Clang.Interop.IndexerCallbacks* index_callbacks, uint index_callbacks_size, uint index_options, QuantumBinding.Clang.Interop.CXTranslationUnitImpl param5);
+    internal static extern int clang_indexTranslationUnit(QuantumBinding.Clang.Interop.CXIndexAction param0, QuantumBinding.Clang.Interop.CXClientData client_data, QuantumBinding.Clang.Interop.IndexerCallbacks* index_callbacks, uint index_callbacks_size, uint index_options, QuantumBinding.Clang.Interop.CXTranslationUnitImpl param5);
 
     ///<summary>
     /// Returns text of the specified argument.
@@ -1876,7 +1876,7 @@ public static unsafe partial class ClangInterop
     /// Determine whether the given header is guarded against multiple inclusions, either with the conventional #ifndef/#define/#endif macro guards or with #pragma once.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_isFileMultipleIncludeGuarded", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_isFileMultipleIncludeGuarded(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFileImpl file);
+    internal static extern uint clang_isFileMultipleIncludeGuarded(QuantumBinding.Clang.Interop.CXTranslationUnitImpl tu, QuantumBinding.Clang.Interop.CXFile file);
 
     ///<summary>
     /// Return 1 if the CXType is a variadic function type, and 0 otherwise.
@@ -1954,7 +1954,7 @@ public static unsafe partial class ClangInterop
     /// Deserialize a set of diagnostics from a Clang diagnostics bitcode file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_loadDiagnostics", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXDiagnosticSetImpl clang_loadDiagnostics(sbyte* file, out CXLoadDiag_Error error, out QuantumBinding.Clang.Interop.CXString errorString);
+    internal static extern CXDiagnosticSet clang_loadDiagnostics(sbyte* file, CXLoadDiag_Error* error, QuantumBinding.Clang.Interop.CXString* errorString);
 
     ///<summary>
     /// Returns non-zero if the given source location is in the main file of the corresponding translation unit.
@@ -1972,43 +1972,43 @@ public static unsafe partial class ClangInterop
     /// Returns the module file where the provided module object came from.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_getASTFile", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXFileImpl clang_Module_getASTFile(QuantumBinding.Clang.Interop.CXModuleImpl module);
+    internal static extern CXFile clang_Module_getASTFile(QuantumBinding.Clang.Interop.CXModule module);
 
     ///<summary>
     /// Returns the full name of the module, e.g. "std.vector".
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_getFullName", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_Module_getFullName(QuantumBinding.Clang.Interop.CXModuleImpl module);
+    internal static extern CXString clang_Module_getFullName(QuantumBinding.Clang.Interop.CXModule module);
 
     ///<summary>
     /// Returns the name of the module, e.g. for the 'std.vector' sub-module it will return "vector".
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_getName", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXString clang_Module_getName(QuantumBinding.Clang.Interop.CXModuleImpl module);
+    internal static extern CXString clang_Module_getName(QuantumBinding.Clang.Interop.CXModule module);
 
     ///<summary>
     /// Returns the number of top level headers associated with this module.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_getNumTopLevelHeaders", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_Module_getNumTopLevelHeaders(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXModuleImpl module);
+    internal static extern uint clang_Module_getNumTopLevelHeaders(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXModule module);
 
     ///<summary>
     /// Returns the parent of a sub-module or NULL if the given module is top-level, e.g. for 'std.vector' it will return the 'std' module.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_getParent", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXModuleImpl clang_Module_getParent(QuantumBinding.Clang.Interop.CXModuleImpl module);
+    internal static extern CXModule clang_Module_getParent(QuantumBinding.Clang.Interop.CXModule module);
 
     ///<summary>
     /// Returns the specified top level header associated with the module.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_getTopLevelHeader", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXFileImpl clang_Module_getTopLevelHeader(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXModuleImpl module, uint index);
+    internal static extern CXFile clang_Module_getTopLevelHeader(QuantumBinding.Clang.Interop.CXTranslationUnitImpl param0, QuantumBinding.Clang.Interop.CXModule module, uint index);
 
     ///<summary>
     /// Returns non-zero if the module is a system one.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Module_isSystem", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int clang_Module_isSystem(QuantumBinding.Clang.Interop.CXModuleImpl module);
+    internal static extern int clang_Module_isSystem(QuantumBinding.Clang.Interop.CXModule module);
 
     ///<summary>
     /// Prune module files in the module cache directory that haven't been accessed in a long time.
@@ -2080,37 +2080,37 @@ public static unsafe partial class ClangInterop
     /// Same as clang_parseTranslationUnit2, but returns the CXTranslationUnit instead of an error code. In case of an error this routine returns a NULL CXTranslationUnit, without further detailed error codes.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_parseTranslationUnit", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXTranslationUnitImpl clang_parseTranslationUnit(QuantumBinding.Clang.Interop.CXIndexImpl cIdx, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, uint options);
+    internal static extern CXTranslationUnitImpl clang_parseTranslationUnit(QuantumBinding.Clang.Interop.CXIndex cIdx, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, uint options);
 
     ///<summary>
     /// Parse the given source file and the translation unit corresponding to that file.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_parseTranslationUnit2", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXErrorCode clang_parseTranslationUnit2(QuantumBinding.Clang.Interop.CXIndexImpl cIdx, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, uint options, out QuantumBinding.Clang.Interop.CXTranslationUnitImpl out_TU);
+    internal static extern CXErrorCode clang_parseTranslationUnit2(QuantumBinding.Clang.Interop.CXIndex cIdx, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, uint options, QuantumBinding.Clang.Interop.CXTranslationUnitImpl* out_TU);
 
     ///<summary>
     /// Same as clang_parseTranslationUnit2 but requires a full command line for command_line_args including argv[0]. This is useful if the standard library paths are relative to the binary.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_parseTranslationUnit2FullArgv", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern CXErrorCode clang_parseTranslationUnit2FullArgv(QuantumBinding.Clang.Interop.CXIndexImpl cIdx, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, uint options, out QuantumBinding.Clang.Interop.CXTranslationUnitImpl out_TU);
+    internal static extern CXErrorCode clang_parseTranslationUnit2FullArgv(QuantumBinding.Clang.Interop.CXIndex cIdx, sbyte* source_filename, sbyte** command_line_args, int num_command_line_args, QuantumBinding.Clang.Interop.CXUnsavedFile* unsaved_files, uint num_unsaved_files, uint options, QuantumBinding.Clang.Interop.CXTranslationUnitImpl* out_TU);
 
     ///<summary>
     /// Release a printing policy.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_PrintingPolicy_dispose", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_PrintingPolicy_dispose(QuantumBinding.Clang.Interop.CXPrintingPolicyImpl policy);
+    internal static extern void clang_PrintingPolicy_dispose(QuantumBinding.Clang.Interop.CXPrintingPolicy policy);
 
     ///<summary>
     /// Get a property value for the given printing policy.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_PrintingPolicy_getProperty", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_PrintingPolicy_getProperty(QuantumBinding.Clang.Interop.CXPrintingPolicyImpl policy, CXPrintingPolicyProperty property);
+    internal static extern uint clang_PrintingPolicy_getProperty(QuantumBinding.Clang.Interop.CXPrintingPolicy policy, CXPrintingPolicyProperty property);
 
     ///<summary>
     /// Set a property value for the given printing policy.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_PrintingPolicy_setProperty", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_PrintingPolicy_setProperty(QuantumBinding.Clang.Interop.CXPrintingPolicyImpl policy, CXPrintingPolicyProperty property, uint value);
+    internal static extern void clang_PrintingPolicy_setProperty(QuantumBinding.Clang.Interop.CXPrintingPolicy policy, CXPrintingPolicyProperty property, uint value);
 
     ///<summary>
     /// Returns non-zero if range is null.
@@ -2119,13 +2119,13 @@ public static unsafe partial class ClangInterop
     internal static extern int clang_Range_isNull(QuantumBinding.Clang.Interop.CXSourceRange range);
 
     [DllImport(LibraryPath, EntryPoint = "clang_remap_dispose", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_remap_dispose(QuantumBinding.Clang.Interop.CXRemappingImpl param0);
+    internal static extern void clang_remap_dispose(QuantumBinding.Clang.Interop.CXRemapping param0);
 
     [DllImport(LibraryPath, EntryPoint = "clang_remap_getFilenames", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern void clang_remap_getFilenames(QuantumBinding.Clang.Interop.CXRemappingImpl param0, uint param1, QuantumBinding.Clang.Interop.CXString* param2, QuantumBinding.Clang.Interop.CXString* param3);
+    internal static extern void clang_remap_getFilenames(QuantumBinding.Clang.Interop.CXRemapping param0, uint param1, QuantumBinding.Clang.Interop.CXString* param2, QuantumBinding.Clang.Interop.CXString* param3);
 
     [DllImport(LibraryPath, EntryPoint = "clang_remap_getNumFiles", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_remap_getNumFiles(QuantumBinding.Clang.Interop.CXRemappingImpl param0);
+    internal static extern uint clang_remap_getNumFiles(QuantumBinding.Clang.Interop.CXRemapping param0);
 
     ///<summary>
     /// Reparse the source files that produced this translation unit.
@@ -2323,7 +2323,7 @@ public static unsafe partial class ClangInterop
     /// Visit the fields of a particular type.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Type_visitFields", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_Type_visitFields(QuantumBinding.Clang.Interop.CXType t, nuint visitor, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    internal static extern uint clang_Type_visitFields(QuantumBinding.Clang.Interop.CXType t, nuint visitor, QuantumBinding.Clang.Interop.CXClientData client_data);
 
     ///<summary>
     /// Returns text contained in the AST node.
@@ -2371,7 +2371,7 @@ public static unsafe partial class ClangInterop
     /// Visit the children of a particular cursor.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_visitChildren", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_visitChildren(QuantumBinding.Clang.Interop.CXCursor parent, nuint visitor, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    internal static extern uint clang_visitChildren(QuantumBinding.Clang.Interop.CXCursor parent, nuint visitor, QuantumBinding.Clang.Interop.CXClientData client_data);
 
     ///<summary>
     /// Visits the children of a cursor using the specified block. Behaves identically to clang_visitChildren() in all other respects.
@@ -2383,13 +2383,13 @@ public static unsafe partial class ClangInterop
     /// Visit the base classes of a type.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_visitCXXBaseClasses", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_visitCXXBaseClasses(QuantumBinding.Clang.Interop.CXType t, nuint visitor, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    internal static extern uint clang_visitCXXBaseClasses(QuantumBinding.Clang.Interop.CXType t, nuint visitor, QuantumBinding.Clang.Interop.CXClientData client_data);
 
     ///<summary>
     /// Visit the class methods of a type.
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_visitCXXMethods", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern uint clang_visitCXXMethods(QuantumBinding.Clang.Interop.CXType t, nuint visitor, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    internal static extern uint clang_visitCXXMethods(QuantumBinding.Clang.Interop.CXType t, nuint visitor, QuantumBinding.Clang.Interop.CXClientData client_data);
 
 }
 

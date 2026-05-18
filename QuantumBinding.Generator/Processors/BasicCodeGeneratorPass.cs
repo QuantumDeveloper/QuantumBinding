@@ -23,6 +23,10 @@ public class BasicCodeGeneratorPass : CodeGeneratorPass
     {
         switch (specializations)
         {
+            case GeneratorSpecializations.GlobalUsings:
+                var globalUsingsGenerator = OnCreateGenerator(GeneratorCategory.GlobalUsings, unit);
+                globalUsingsGenerator.Run();
+                return new List<CodeGenerator>() { globalUsingsGenerator };
             case GeneratorSpecializations.Enums:
                 return ProcessDeclarations(unit.Enums, unit);
             case GeneratorSpecializations.Delegates:

@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Uniquely identifies a CXFile, that refers to the same underlying file, across an indexing session.
+///</summary>
 public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXFileUniqueID>
 {
     public QBFileUniqueID()
@@ -44,19 +47,20 @@ public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXFileUniqueID native)
     {
         var tmpData = new ulong[3];
-        var pData = (ulong*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in native.data[0]));
+        var datap = native.data[0];
+        var pData = (ulong*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.CompilerServices.Unsafe.AsRef(in datap ));
         QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(pData, 3, tmpData);
         Data = tmpData;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXFileUniqueID>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXFileUniqueID>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXFileUniqueIDMarshaller
     {

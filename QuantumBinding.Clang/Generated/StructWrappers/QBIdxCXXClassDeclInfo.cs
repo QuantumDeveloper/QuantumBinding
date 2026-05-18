@@ -61,9 +61,10 @@ public unsafe partial class QBIdxCXXClassDeclInfo : IMarshallableObject, IMarsha
     {
         DeclInfo = new QBIdxDeclInfo(in *native.declInfo);
         NativeUtils.Free(native.declInfo);
-        var tmpBases = new QBIdxBaseClassInfo[native.numBases];
-        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxBaseClassInfo[native.numBases];
-        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.bases, native.numBases, nativeTmpArray0);
+        var arrayLengthBases = native.numBases;
+        var tmpBases = new QBIdxBaseClassInfo[arrayLengthBases];
+        var nativeTmpArray0 = new QuantumBinding.Clang.Interop.CXIdxBaseClassInfo[arrayLengthBases];
+        QuantumBinding.Utils.MarshalingUtils.MarshalFromPointerToArray(native.bases, arrayLengthBases, nativeTmpArray0);
         for (int i = 0; i < nativeTmpArray0.Length; ++i)
         {
             tmpBases[i] = new QBIdxBaseClassInfo(in nativeTmpArray0[i]);
@@ -72,14 +73,14 @@ public unsafe partial class QBIdxCXXClassDeclInfo : IMarshallableObject, IMarsha
         NumBases = native.numBases;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxCXXClassDeclInfo>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxCXXClassDeclInfo>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIdxCXXClassDeclInfoMarshaller
     {

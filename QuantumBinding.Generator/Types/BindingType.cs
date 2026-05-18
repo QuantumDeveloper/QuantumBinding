@@ -7,6 +7,7 @@ public abstract class BindingType: ICloneable
 {
     protected BindingType()
     {
+        Qualifiers = new TypeQualifiers();
     }
 
     protected BindingType(BindingType type)

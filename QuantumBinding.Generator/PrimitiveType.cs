@@ -52,7 +52,9 @@ public enum PrimitiveType
     String = 22,
     [Display(Name = "object")]
     Object = 23,
+    [Display(Name = "nuint")]
+    Nuint = 24,
     [Display(Name = "(unknown)")]
-    Unknown = 24,
+    Unknown = 25,
         
 }

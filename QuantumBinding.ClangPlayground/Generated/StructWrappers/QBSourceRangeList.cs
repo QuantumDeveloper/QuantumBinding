@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Identifies an array of ranges.
+///</summary>
 public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRangeList>
 {
     public QBSourceRangeList()
@@ -63,14 +66,14 @@ public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallab
         NativeUtils.Free(native.ranges);
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXSourceRangeList>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXSourceRangeList>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXSourceRangeListMarshaller
     {

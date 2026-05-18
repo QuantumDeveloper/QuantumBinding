@@ -20,7 +20,7 @@ public unsafe partial struct CXTUResourceUsage
     ///<summary>
     /// Private data member, used for queries.
     ///</summary>
-    public nuint data;
+    public void* data;
     ///<summary>
     /// The number of entries in the 'entries' array.
     ///</summary>

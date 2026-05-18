@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// A parsed comment.
+///</summary>
 public unsafe partial class QBComment : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXComment>
 {
     public QBComment()
@@ -374,24 +377,27 @@ public unsafe partial class QBComment : IMarshallableObject, IMarshallable<Quant
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXComment native)
     {
-        ASTNode = native.aSTNode;
+        ASTNode = (nuint)native.aSTNode;
         TranslationUnit = new QBTranslationUnit(native.translationUnit);
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXComment>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXComment>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXCommentMarshaller
     {
         public CXCommentMarshaller(QuantumBinding.Clang.QBComment qBComment, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXComment> context)
         {
-            context.Destination[0].aSTNode = qBComment.ASTNode;
+            if (qBComment.ASTNode != default)
+            {
+                context.Destination[0].aSTNode = (void*)qBComment.ASTNode;
+            }
 
             if (qBComment.TranslationUnit != default)
             {

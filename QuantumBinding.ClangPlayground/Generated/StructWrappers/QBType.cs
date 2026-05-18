@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// The type of an element in the abstract syntax tree.
+///</summary>
 public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXType>
 {
     public QBType()
@@ -134,7 +137,7 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg1 = policy == null ? new CXPrintingPolicyImpl() : (CXPrintingPolicyImpl)policy;
+        var arg1 = policy == null ? new CXPrintingPolicy() : (CXPrintingPolicy)policy;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getFullyQualifiedName(native, arg1, withGlobalNsPrefix);
     }
 
@@ -225,7 +228,7 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg1 = cxPolicy == null ? new CXPrintingPolicyImpl() : (CXPrintingPolicyImpl)cxPolicy;
+        var arg1 = cxPolicy == null ? new CXPrintingPolicy() : (CXPrintingPolicy)cxPolicy;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getTypePrettyPrinted(native, arg1);
     }
 
@@ -508,7 +511,7 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        var arg2 = client_data == null ? new CXClientData() : (CXClientData)client_data;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Type_visitFields(native, visitor, arg2);
     }
 
@@ -519,7 +522,7 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        var arg2 = client_data == null ? new CXClientData() : (CXClientData)client_data;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_visitCXXBaseClasses(native, visitor, arg2);
     }
 
@@ -530,7 +533,7 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);
         var native = this.MarshalToNative(ctx);
-        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        var arg2 = client_data == null ? new CXClientData() : (CXClientData)client_data;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_visitCXXMethods(native, visitor, arg2);
     }
 
@@ -562,14 +565,14 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
         Data = tmpData;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXType>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXType>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXTypeMarshaller
     {

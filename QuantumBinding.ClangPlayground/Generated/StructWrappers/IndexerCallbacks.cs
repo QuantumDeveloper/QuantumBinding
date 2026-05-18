@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// A group of callbacks used by #clang_indexSourceFile and #clang_indexTranslationUnit.
+///</summary>
 public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.IndexerCallbacks>
 {
     public IndexerCallbacks()
@@ -23,14 +26,14 @@ public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallabl
         MarshalFrom(in native);
     }
 
-    public nuint AbortQuery { get; set; }
-    public nuint Diagnostic { get; set; }
-    public nuint EnteredMainFile { get; set; }
-    public nuint PIncludedFile { get; set; }
-    public nuint ImportedASTFile { get; set; }
-    public nuint StartedTranslationUnit { get; set; }
-    public nuint IndexDeclaration { get; set; }
-    public nuint IndexEntityReference { get; set; }
+    public delegate* unmanaged<CXClientData, void*, int> AbortQuery { get; set; }
+    public delegate* unmanaged<CXClientData, CXDiagnosticSet, void*, void> Diagnostic { get; set; }
+    public delegate* unmanaged<CXClientData, CXFile, void*, CXIdxClientFile> EnteredMainFile { get; set; }
+    public delegate* unmanaged<CXClientData, CXIdxIncludedFileInfo*, CXIdxClientFile> PIncludedFile { get; set; }
+    public delegate* unmanaged<CXClientData, CXIdxImportedASTFileInfo*, CXIdxClientASTFile> ImportedASTFile { get; set; }
+    public delegate* unmanaged<CXClientData, void*, CXIdxClientContainer> StartedTranslationUnit { get; set; }
+    public delegate* unmanaged<CXClientData, CXIdxDeclInfo*, void> IndexDeclaration { get; set; }
+    public delegate* unmanaged<CXClientData, CXIdxEntityRefInfo*, void> IndexEntityReference { get; set; }
 
     public static implicit operator IndexerCallbacks(QuantumBinding.Clang.Interop.IndexerCallbacks i)
     {
@@ -60,14 +63,14 @@ public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallabl
         IndexEntityReference = native.indexEntityReference;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.IndexerCallbacks>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.IndexerCallbacks>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct IndexerCallbacksMarshaller
     {

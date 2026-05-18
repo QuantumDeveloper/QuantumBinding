@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// The memory usage of a CXTranslationUnit, broken into categories.
+///</summary>
 public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXTUResourceUsage>
 {
     public QBTUResourceUsage()
@@ -56,26 +59,29 @@ public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallab
 
     public void MarshalFrom(in QuantumBinding.Clang.Interop.CXTUResourceUsage native)
     {
-        Data = native.data;
+        Data = (nuint)native.data;
         NumEntries = native.numEntries;
         Entries = new QBTUResourceUsageEntry(in *native.entries);
         NativeUtils.Free(native.entries);
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXTUResourceUsage>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsage>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXTUResourceUsageMarshaller
     {
         public CXTUResourceUsageMarshaller(QuantumBinding.Clang.QBTUResourceUsage qBTUResourceUsage, ref QuantumBinding.Utils.MarshallingContext<QuantumBinding.Clang.Interop.CXTUResourceUsage> context)
         {
-            context.Destination[0].data = qBTUResourceUsage.Data;
+            if (qBTUResourceUsage.Data != default)
+            {
+                context.Destination[0].data = (void*)qBTUResourceUsage.Data;
+            }
 
             context.Destination[0].numEntries = qBTUResourceUsage.NumEntries;
 

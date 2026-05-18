@@ -15,5 +15,7 @@ public enum GeneratorCategory
     UnionWrappers = 512,
     StaticMethods = 1024,
     ExtensionMethods = 2048,
-    Extensions = 4096
+    Extensions = 4096,
+    GlobalUsings = 8192,
+    DispatchTables = 16384,
 }
