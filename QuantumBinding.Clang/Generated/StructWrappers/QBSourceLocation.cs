@@ -28,6 +28,7 @@ public unsafe partial class QBSourceLocation : IMarshallableObject, IMarshallabl
 
     public System.ReadOnlyMemory<nuint> Ptr_data { get; set; }
     public uint Int_data { get; set; }
+
     ///<summary>
     /// Determine whether two source locations, which must refer into the same translation unit, refer to exactly the same point in the source code.
     ///</summary>

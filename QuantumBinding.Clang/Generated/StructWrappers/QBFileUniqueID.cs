@@ -28,6 +28,7 @@ public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<
 
     public System.ReadOnlyMemory<ulong> Data { get; set; }
 
+
     public static implicit operator QBFileUniqueID(QuantumBinding.Clang.Interop.CXFileUniqueID q)
     {
         return new QBFileUniqueID(in q);

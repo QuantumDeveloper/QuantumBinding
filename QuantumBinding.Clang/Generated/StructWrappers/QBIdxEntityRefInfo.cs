@@ -34,6 +34,7 @@ public unsafe partial class QBIdxEntityRefInfo : IMarshallableObject, IMarshalla
     public QBIdxContainerInfo Container { get; set; }
     public CXSymbolRole Role { get; set; }
 
+
     public static implicit operator QBIdxEntityRefInfo(QuantumBinding.Clang.Interop.CXIdxEntityRefInfo q)
     {
         return new QBIdxEntityRefInfo(in q);

@@ -37,6 +37,7 @@ public unsafe partial class QBIdxDeclInfo : IMarshallableObject, IMarshallable<Q
     public uint NumAttributes { get; set; }
     public uint Flags { get; set; }
 
+
     public static implicit operator QBIdxDeclInfo(QuantumBinding.Clang.Interop.CXIdxDeclInfo q)
     {
         return new QBIdxDeclInfo(in q);

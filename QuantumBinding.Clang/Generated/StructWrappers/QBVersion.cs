@@ -30,6 +30,7 @@ public unsafe partial class QBVersion : IMarshallableObject, IMarshallable<Quant
     public int Minor { get; set; }
     public int Subminor { get; set; }
 
+
     public static implicit operator QBVersion(QuantumBinding.Clang.Interop.CXVersion q)
     {
         return new QBVersion(in q);

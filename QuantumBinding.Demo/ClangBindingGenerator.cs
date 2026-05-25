@@ -24,8 +24,8 @@ namespace QuantumBinding.ClangGenerator
             ----------------------------------------------------------------------------------------------";
             
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
-            //string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
-            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
+            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
+            //string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
             string library = "libclang";
             string interopSubNamespace = "Interop";
             string mainNamespace = "QuantumBinding.Clang";

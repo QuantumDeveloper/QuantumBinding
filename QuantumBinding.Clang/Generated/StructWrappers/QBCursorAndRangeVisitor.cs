@@ -26,6 +26,7 @@ public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMars
     public nuint Context { get; set; }
     public nuint Visit { get; set; }
 
+
     public static implicit operator QBCursorAndRangeVisitor(QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor q)
     {
         return new QBCursorAndRangeVisitor(in q);

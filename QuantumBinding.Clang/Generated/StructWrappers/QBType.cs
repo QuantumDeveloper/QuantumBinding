@@ -28,6 +28,7 @@ public unsafe partial class QBType : IMarshallableObject, IMarshallable<QuantumB
 
     public CXTypeKind Kind { get; set; }
     public System.ReadOnlyMemory<nuint> Data { get; set; }
+
     ///<summary>
     /// Determine whether two CXTypes represent the same type.
     ///</summary>

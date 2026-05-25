@@ -29,6 +29,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     public CXCursorKind Kind { get; set; }
     public int Xdata { get; set; }
     public System.ReadOnlyMemory<nuint> Data { get; set; }
+
     ///<summary>
     /// If cursor is a statement declaration tries to evaluate the statement and if its variable, tries to evaluate its initializer, into its corresponding type. If it's an expression, tries to evaluate the expression.
     ///</summary>

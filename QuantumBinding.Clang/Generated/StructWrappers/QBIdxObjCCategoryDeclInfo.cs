@@ -29,6 +29,7 @@ public unsafe partial class QBIdxObjCCategoryDeclInfo : IMarshallableObject, IMa
     public QBIdxLoc ClassLoc { get; set; }
     public QBIdxObjCProtocolRefListInfo Protocols { get; set; }
 
+
     public static implicit operator QBIdxObjCCategoryDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCCategoryDeclInfo q)
     {
         return new QBIdxObjCCategoryDeclInfo(in q);
