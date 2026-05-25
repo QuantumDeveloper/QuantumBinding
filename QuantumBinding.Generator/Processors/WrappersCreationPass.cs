@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
-using System.Linq;
 using System.Text;
 
 namespace QuantumBinding.Generator.Processors;
@@ -144,7 +143,7 @@ public class WrappersCreationPass : PreGeneratorPass
                 pointersCount++;
             }
                 
-            if (field.IsPointer && !field.Type.IsPointerToVoid())
+            if (field.IsPointer && !field.Type.IsPointerToVoid(out _))
             {
                 var pointerType = (PointerType)field.Type;
                 if (field.Name.StartsWith("@"))
@@ -246,7 +245,7 @@ public class WrappersCreationPass : PreGeneratorPass
 
                 property.PairedField.AccessSpecifier = AccessSpecifier.Private;
                 if (!property.Type.IsPointerToIntPtr() && 
-                    !field.Type.IsPointerToVoid() &&
+                    !field.Type.IsPointerToVoid(out _) &&
                     !field.Type.IsPointerToSystemType(out var type))
                 {
                     wrapper.AddField(property.PairedField);
@@ -286,7 +285,7 @@ public class WrappersCreationPass : PreGeneratorPass
 
         wrapper.IsDisposable = true;
         wrapper.DisposableBaseClass = FileExtensionGenerator.DisposableClassName;
-        StringBuilder disposeBody = new StringBuilder();
+        var disposeBody = new StringBuilder();
         var usedFields = new List<string>();
         foreach (var field in wrapper.Fields)
         {

@@ -8,7 +8,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using QuantumBinding.Clang;
 
 namespace QuantumBinding.Clang.Interop;
 
@@ -21,11 +20,11 @@ public unsafe partial struct CXIdxImportedASTFileInfo
     ///<summary>
     /// Top level AST file containing the imported PCH, module or submodule.
     ///</summary>
-    public CXFileImpl file;
+    public CXFile file;
     ///<summary>
     /// The imported module or NULL if the AST file is a PCH.
     ///</summary>
-    public CXModuleImpl module;
+    public CXModule module;
     ///<summary>
     /// Location where the file is imported. Applicable only for modules.
     ///</summary>

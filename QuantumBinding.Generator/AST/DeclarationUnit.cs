@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
@@ -11,7 +10,7 @@ public abstract class DeclarationUnit : Declaration
 {
     protected DeclarationUnit()
     {
-        declarations = new List<Declaration>();
+        _declarations = new List<Declaration>();
         Namespaces = new List<Namespace>();
     }
 
@@ -20,16 +19,20 @@ public abstract class DeclarationUnit : Declaration
         DummyTypes = new Dictionary<string, string>();
     }
 
-    private List<Declaration> declarations;
+    private List<Declaration> _declarations;
 
     public List<Namespace> Namespaces { get; private set; }
+    
+    public IReadOnlyList<GlobalUsings> GlobalUsings => _declarations.Where(x => x is GlobalUsings).OfType<GlobalUsings>().ToList();
+    
+    public IReadOnlyList<DispatchTable> DispatchTables => _declarations.Where(x => x is DispatchTable).OfType<DispatchTable>().ToList();
 
-    public IReadOnlyList<Macro> Macros => declarations.Where(x => x is Macro).Cast<Macro>().ToList();
+    public IReadOnlyList<Macro> Macros => _declarations.Where(x => x is Macro).OfType<Macro>().ToList();
 
     public IReadOnlyList<Enumeration> Enums =>
-        declarations.Where(x => x is Enumeration).Cast<Enumeration>().ToList();
+        _declarations.Where(x => x is Enumeration).OfType<Enumeration>().ToList();
 
-    public IReadOnlyList<Class> AllClasses => declarations.Where(x => x is Class).Cast<Class>().ToList();
+    public IReadOnlyList<Class> AllClasses => _declarations.Where(x => x is Class).OfType<Class>().ToList();
 
     public IReadOnlyList<Class> Classes => AllClasses.Where(x => x.ClassType == ClassType.Class).ToList();
 
@@ -49,17 +52,17 @@ public abstract class DeclarationUnit : Declaration
     public IReadOnlyList<Class> ExtensionClasses => TranslationUnitsPool.SelectMany(x => x.Classes)
         .Where(x => x.HasExtensions && x.ExtensionMethods.Any(z => z.Owner == this)).ToList();
 
-    public IReadOnlyList<Delegate> Delegates => declarations.Where(x => x is Delegate).Cast<Delegate>().ToList();
+    public IReadOnlyList<Delegate> Delegates => _declarations.Where(x => x is Delegate).OfType<Delegate>().ToList();
 
     public IReadOnlyList<Function> Functions =>
-        declarations.Where(x => x is Function && !(x is Method)).Cast<Function>().ToList();
+        _declarations.Where(x => x is Function && !(x is Method)).OfType<Function>().ToList();
 
-    public IReadOnlyList<Method> StaticMethods => declarations.Where(x => x is Method).Cast<Method>().ToList();
+    public IReadOnlyList<Method> StaticMethods => _declarations.Where(x => x is Method).OfType<Method>().ToList();
 
-    public IReadOnlyList<Declaration> Declarations => declarations;
+    public IReadOnlyList<Declaration> Declarations => _declarations;
 
     public IReadOnlyList<Declaration> IgnoredDeclarations =>
-        declarations.Where(x => x.IsIgnored).ToList();
+        _declarations.Where(x => x.IsIgnored).ToList();
 
     public static Dictionary<string, string> DummyTypes { get; }
 
@@ -69,7 +72,7 @@ public abstract class DeclarationUnit : Declaration
 
     private bool IsUnitEmpty()
     {
-        return (declarations.Count == 0 || declarations.Except(IgnoredDeclarations).ToList().Count == 0) &&
+        return (_declarations.Count == 0 || _declarations.Except(IgnoredDeclarations).ToList().Count == 0) &&
                ExtensionClasses.Count == 0;
     }
 
@@ -115,6 +118,12 @@ public abstract class DeclarationUnit : Declaration
                 case GeneratorSpecializations.ExtensionMethods:
                     isAvailable |= ExtensionClasses.Count > 0;
                     break;
+                case GeneratorSpecializations.GlobalUsings:
+                    isAvailable |= GlobalUsings.Count > 0;
+                    break;
+                case GeneratorSpecializations.DispatchTables:
+                    isAvailable |= DispatchTables.Count > 0;
+                    break;
             }
         }
 
@@ -123,10 +132,7 @@ public abstract class DeclarationUnit : Declaration
 
     public void AddDummyType(string dummyType, string originalType)
     {
-        if (!DummyTypes.ContainsKey(dummyType))
-        {
-            DummyTypes.Add(dummyType, originalType);
-        }
+        DummyTypes.TryAdd(dummyType, originalType);
     }
 
     public DeclarationUnit FindNamespace(string @namespace)
@@ -138,7 +144,7 @@ public abstract class DeclarationUnit : Declaration
     {
         for (int i = 0; i < classes.Length; ++i)
         {
-            declarations.Remove(classes[i]);
+            _declarations.Remove(classes[i]);
         }
     }
 
@@ -150,7 +156,7 @@ public abstract class DeclarationUnit : Declaration
         {
             var decls = Declarations.Where(x => x.Location.FileNameWithoutExtension == fileName).ToList();
             declsOutput.AddRange(decls);
-            declarations = Declarations.Except(decls).ToList();
+            _declarations = Declarations.Except(decls).ToList();
         }
         else
         {
@@ -197,19 +203,26 @@ public abstract class DeclarationUnit : Declaration
                         decl = UnionWrappers.FirstOrDefault(x => x.Name == declaration.Name);
                         break;
                 }
-
+                break;
+            
+            case GlobalUsings globalUsings:
+                decl = GlobalUsings.FirstOrDefault(x => x.Name == declaration.Name);
+                break;
+            
+            case DispatchTable dispatchTable:
+                decl = DispatchTables.FirstOrDefault(x => x.Name == declaration.Name);
                 break;
         }
 
         if (decl == null)
         {
-            declarations.Add(declaration);
+            _declarations.Add(declaration);
         }
     }
 
     public void RemoveDeclaration(Declaration declaration)
     {
-        declarations.Remove(declaration);
+        _declarations.Remove(declaration);
     }
 
     public bool IsWrapperPresent(string declName, out Declaration declaration)

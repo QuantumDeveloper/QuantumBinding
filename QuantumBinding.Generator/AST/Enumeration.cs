@@ -40,7 +40,7 @@ public class Enumeration : DeclarationUnit
             OriginalName = OriginalName,
             Owner = Owner,
             Location = Location,
-            Comment = (Comment)Comment.Clone()
+            Comment = (Comment)Comment?.Clone()
         };
     }
 }

@@ -24,24 +24,24 @@ public unsafe struct CXFieldVisitor
     public CXFieldVisitor(void* ptr)
     {
         NativePointer = ptr;
-        InvokeFunc = (delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXVisitorResult>)ptr;
+        InvokeFunc = (delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientData, CXVisitorResult>)ptr;
     }
 
-    private delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXVisitorResult> InvokeFunc;
+    private delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientData, CXVisitorResult> InvokeFunc;
 
     public void* NativePointer { get; }
 
-    public CXVisitorResult Invoke(QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
+    public CXVisitorResult Invoke(QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientData client_data)
     {
         return InvokeFunc(C, client_data);
     }
-    public static CXVisitorResult Invoke(void* ptr, QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
+    public static CXVisitorResult Invoke(void* ptr, QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientData client_data)
     {
-        return ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXVisitorResult>)ptr)(C, client_data);
+        return ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientData, CXVisitorResult>)ptr)(C, client_data);
     }
-    public static CXVisitorResult Invoke(nuint ptr, QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientDataImpl client_data)
+    public static CXVisitorResult Invoke(nuint ptr, QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientData client_data)
     {
-        return ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientDataImpl, CXVisitorResult>)(void*)ptr)(C, client_data);
+        return ((delegate* unmanaged<QuantumBinding.Clang.Interop.CXCursor, QuantumBinding.Clang.Interop.CXClientData, CXVisitorResult>)(void*)ptr)(C, client_data);
     }
 
     public static explicit operator CXFieldVisitor(void* ptr) => new(ptr);

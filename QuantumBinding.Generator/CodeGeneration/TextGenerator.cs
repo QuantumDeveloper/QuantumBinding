@@ -8,6 +8,7 @@ namespace QuantumBinding.Generator.CodeGeneration;
 public class TextGenerator: ITextGenerator
 {
     public static string NullPointer => "null";
+    public static string Default => "default";
         
     public static string StackAlloc => "stackalloc";
         

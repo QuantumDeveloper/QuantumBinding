@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using QuantumBinding.Generator.Types;
 
@@ -34,6 +35,17 @@ public class Function : DeclarationUnit
         return $"{AccessSpecifier} {ReturnType} {Name}";
     }
 
+    public void AddParameter(Parameter parameter)
+    {
+        var lastIndex = Parameters.Count == 0 ? 0: Parameters.Last().Index;
+        if (Parameters.Count > 0)
+        {
+            lastIndex++;
+        }
+        parameter.Index = lastIndex;
+        Parameters.Add(parameter);
+    }
+
     public override T Visit<T>(IDeclarationVisitor<T> visitor)
     {
         return visitor.VisitFunction(this);
@@ -53,15 +65,12 @@ public class Function : DeclarationUnit
             Name = Name,
             OriginalName = OriginalName,
             Location = Location,
+            Comment = (Comment)Comment?.Clone(),
             Owner = Owner,
             IsIgnored = IsIgnored,
             Id = Id
         };
         func.Parameters.AddRange(Parameters);
-        if (Comment != null)
-        {
-            func.Comment = (Comment) Comment.Clone();
-        }
 
         return func;
     }

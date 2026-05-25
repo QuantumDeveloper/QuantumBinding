@@ -9,6 +9,10 @@ public static class DeclarationUtils
     {
         switch (decl)
         {
+            case GlobalUsings:
+                return GeneratorCategory.GlobalUsings;
+            case DispatchTable:
+                return GeneratorCategory.DispatchTables;
             case Enumeration:
                 return GeneratorCategory.Enums;
             case Class @class:

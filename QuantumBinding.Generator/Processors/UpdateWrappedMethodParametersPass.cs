@@ -3,7 +3,6 @@ using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
 using System.Linq;
-using System.Text;
 
 namespace QuantumBinding.Generator.Processors;
 
@@ -27,6 +26,20 @@ public class UpdateWrappedMethodParametersPass : PreGeneratorPass
 
         UpdateReturnType(method);
         UpdateMethodParameters(method);
+        
+        var lastParameter = method.Parameters.LastOrDefault();
+        if (lastParameter != null)
+        {
+            var decl = lastParameter.Type.Declaration;
+
+            if (lastParameter.IsOptional && 
+                decl is Class { IsWrapper: true } &&
+                !lastParameter.Type.IsPointerToArray() &&
+                lastParameter.ParameterKind is ParameterKind.Readonly or ParameterKind.In)
+            {
+                lastParameter.DefaultValue = "null";
+            }
+        }
 
         return true;
     }

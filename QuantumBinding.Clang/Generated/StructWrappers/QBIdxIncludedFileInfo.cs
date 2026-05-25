@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Data for ppIncludedFile callback.
+///</summary>
 public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>
 {
     public QBIdxIncludedFileInfo()
@@ -29,6 +32,7 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
     public int IsImport { get; set; }
     public int IsAngled { get; set; }
     public int IsModuleImport { get; set; }
+
 
     public static implicit operator QBIdxIncludedFileInfo(QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo q)
     {
@@ -58,14 +62,14 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
         IsModuleImport = native.isModuleImport;
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIdxIncludedFileInfoMarshaller
     {
@@ -90,10 +94,7 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
                 context.Destination[0].filename = (sbyte*)System.Runtime.CompilerServices.Unsafe.AsPointer(ref System.Runtime.InteropServices.MemoryMarshal.GetReference(stringSpan));
             }
 
-            if (qBIdxIncludedFileInfo.File != default)
-            {
-                context.Destination[0].file = qBIdxIncludedFileInfo.File;
-            }
+            context.Destination[0].file = qBIdxIncludedFileInfo.File;
 
             context.Destination[0].isImport = qBIdxIncludedFileInfo.IsImport;
 

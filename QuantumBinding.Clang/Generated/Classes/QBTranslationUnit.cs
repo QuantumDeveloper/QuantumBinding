@@ -113,8 +113,8 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public CXErrorCode CreateAPISet(out QuantumBinding.Clang.QBAPISet out_api)
     {
-        CXAPISetImpl arg1;
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createAPISet(this, out arg1);
+        CXAPISetImpl arg1 = default;
+        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createAPISet(this, &arg1);
         out_api = new QBAPISet(arg1);
         return result;
     }
@@ -191,7 +191,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
         try
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+            var arg1 = file == null ? new CXFile() : (CXFile)file;
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursorAndRangeVisitor, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(visitor, ref currentCursor);
             return QuantumBinding.Clang.Interop.ClangInterop.clang_findIncludesInFile(this, arg1, arg2);
         }
@@ -204,7 +204,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
 
     public CXResult FindIncludesInFileWithBlock(QuantumBinding.Clang.QBFile param1, QuantumBinding.Clang.QBCursorAndRangeVisitorBlock param2)
     {
-        var arg1 = param1 == null ? new CXFileImpl() : (CXFileImpl)param1;
+        var arg1 = param1 == null ? new CXFile() : (CXFile)param1;
         var arg2 = param2 == null ? new _CXCursorAndRangeVisitorBlock() : (_CXCursorAndRangeVisitorBlock)param2;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_findIncludesInFileWithBlock(this, arg1, arg2);
     }
@@ -307,7 +307,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public string GetFileContents(QuantumBinding.Clang.QBFile file, out ulong size)
     {
-        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFile() : (CXFile)file;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getFileContents(this, arg1, out size);
         return new string(result);
     }
@@ -317,7 +317,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public void GetInclusions(nuint visitor, QuantumBinding.Clang.QBClientData client_data)
     {
-        var arg2 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+        var arg2 = client_data == null ? new CXClientData() : (CXClientData)client_data;
         QuantumBinding.Clang.Interop.ClangInterop.clang_getInclusions(this, visitor, arg2);
     }
 
@@ -326,7 +326,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public QBSourceLocation GetLocation(QuantumBinding.Clang.QBFile file, uint line, uint column)
     {
-        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFile() : (CXFile)file;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getLocation(this, arg1, line, column);
     }
 
@@ -335,7 +335,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public QBSourceLocation GetLocationForOffset(QuantumBinding.Clang.QBFile file, uint offset)
     {
-        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFile() : (CXFile)file;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getLocationForOffset(this, arg1, offset);
     }
 
@@ -344,7 +344,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public QBModule GetModuleForFile(QuantumBinding.Clang.QBFile param1)
     {
-        var arg1 = param1 == null ? new CXFileImpl() : (CXFileImpl)param1;
+        var arg1 = param1 == null ? new CXFile() : (CXFile)param1;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getModuleForFile(this, arg1);
     }
 
@@ -361,7 +361,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public QBSourceRangeList GetSkippedRanges(QuantumBinding.Clang.QBFile file)
     {
-        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFile() : (CXFile)file;
         var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getSkippedRanges(this, arg1);
         var wrappedResult = new QBSourceRangeList(*result);
         NativeUtils.Free(result);
@@ -516,7 +516,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public uint IsFileMultipleIncludeGuarded(QuantumBinding.Clang.QBFile file)
     {
-        var arg1 = file == null ? new CXFileImpl() : (CXFileImpl)file;
+        var arg1 = file == null ? new CXFile() : (CXFile)file;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_isFileMultipleIncludeGuarded(this, arg1);
     }
 
@@ -525,7 +525,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public uint Module_getNumTopLevelHeaders(QuantumBinding.Clang.QBModule module)
     {
-        var arg1 = module == null ? new CXModuleImpl() : (CXModuleImpl)module;
+        var arg1 = module == null ? new CXModule() : (CXModule)module;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Module_getNumTopLevelHeaders(this, arg1);
     }
 
@@ -534,7 +534,7 @@ public unsafe partial class QBTranslationUnit : IUnmanagedWrapper<QuantumBinding
     ///</summary>
     public QBFile Module_getTopLevelHeader(QuantumBinding.Clang.QBModule module, uint index)
     {
-        var arg1 = module == null ? new CXModuleImpl() : (CXModuleImpl)module;
+        var arg1 = module == null ? new CXModule() : (CXModule)module;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Module_getTopLevelHeader(this, arg1, index);
     }
 

@@ -75,7 +75,7 @@ public static unsafe class MarshalContextUtils
         return (TBlittable*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(destinationByteSpan));
     }
     
-    public static TBlittable[] UnmarshalBlittableArray<TBlittable>(TBlittable* source, int count)
+    public static TBlittable[] UnmarshalBlittableArray<TBlittable>(TBlittable* source, long count)
         where TBlittable : unmanaged
     {
         if (source == null || count <= 0)
@@ -388,5 +388,27 @@ public static unsafe class MarshalContextUtils
         }
 
         return pointerArraySize + stringsDataSize;
+    }
+    
+    /// <summary>
+    /// For future use in case if we will need memory alignment
+    /// </summary>
+    /// <param name="cursor"></param>
+    /// <param name="alignment"></param>
+    public static void AlignCursor(ref Span<byte> cursor, int alignment = 8)
+    {
+        fixed (byte* ptr = cursor)
+        {
+            var address = (nuint)ptr;
+            var remainder = address % (nuint)alignment;
+            if (remainder != 0)
+            {
+                var padding = (int)((nuint)alignment - remainder);
+                if (padding < cursor.Length)
+                {
+                    cursor = cursor.Slice(padding);
+                }
+            }
+        }
     }
 }

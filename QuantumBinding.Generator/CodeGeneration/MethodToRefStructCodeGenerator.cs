@@ -75,7 +75,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 firstParameter.Type.Declaration = method.Class;
                 parameters.Insert(0, firstParameter);
             }
-            
+
             var parametersResult =
                 TypePrinter.VisitParameters(parameters, MarshalTypes.SkipParamModifiers, method.IsExtensionMethod);
 
@@ -83,6 +83,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
             WriteLine($"int CalculateSize({parametersResult})");
             WriteOpenBraceAndIndent();
             WriteLine($"int {totalSizeName} = 0;");
+
             foreach (var parameter in parameters)
             {
                 if (parameter.Type.IsConstArray(out var size))
@@ -117,7 +118,13 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 }
                 else if (parameter.Type.IsPointerToArrayOfPrimitiveTypes(out var elementType))
                 {
-                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({elementType.Type});");
+                    var primitiveType = elementType.Type;
+                    string typeName = primitiveType.GetDisplayName();
+                    if (primitiveType == PrimitiveType.Void)
+                    {
+                        typeName = PrimitiveType.Nuint.GetDisplayName();
+                    }
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({typeName});");
                 }
                 else if (parameter.Type.IsPointerToArrayOfEnums())
                 {
@@ -130,7 +137,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                     WriteForLoop($"{parameter.Name}.Length",
                         () =>
                         {
-                            if (declaration != null && declaration.IsWrapper)
+                            if (declaration is { IsWrapper: true })
                             {
                                 WriteLine($"if({parameter.Name}[(int)i] == null)");
                                 PushIndent();
@@ -143,12 +150,20 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                             }
                         });
                 }
+                else if (parameter.Type.IsPointerToArray(out var arrayType, out var depth))
+                {
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({PrimitiveType.Nuint.GetDisplayName()});");
+                }
                 else if (parameter.Type.IsWrapper())
                 {
                     WriteLine($"if ({parameter.Name} != null)");
                     PushIndent();
                     WriteLine($"{totalSizeName} += {parameter.Name}.GetSize();");
                     PopIndent();
+                }
+                else if (parameter.Type.IsDoublePointer())
+                {
+                    WriteLine($"{totalSizeName} += sizeof({PrimitiveType.Nuint.GetDisplayName()});");
                 }
             }
 
@@ -208,9 +223,9 @@ public class MethodToRefStructCodeGenerator : TextGenerator
         WriteOpenBraceAndIndent();
         action?.Invoke();
         UnindentAndWriteCloseBrace();
-        WriteLine($"finally");
+        WriteLine("finally");
         WriteOpenBraceAndIndent();
-        WriteLine($"if (rentedArray != null)");
+        WriteLine("if (rentedArray != null)");
         PushIndent();
         WriteLine($"System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);");
         PopIndent();

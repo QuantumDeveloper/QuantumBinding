@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// CINDEX_DEPRECATED - disabled to silence MSVC deprecation warnings
 ///</summary>
-public unsafe partial class QBRemapping : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXRemappingImpl>
+public unsafe partial class QBRemapping : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXRemapping>
 {
-    internal CXRemappingImpl __Instance;
+    internal CXRemapping __Instance;
     public QBRemapping()
     {
     }
 
-    public QBRemapping(in QuantumBinding.Clang.Interop.CXRemappingImpl __Instance)
+    public QBRemapping(in QuantumBinding.Clang.Interop.CXRemapping __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXRemappingImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXRemapping GetNativeValue() => __Instance;
     public void Remap_dispose()
     {
         QuantumBinding.Clang.Interop.ClangInterop.clang_remap_dispose(this);
@@ -68,14 +68,14 @@ public unsafe partial class QBRemapping : IUnmanagedWrapper<QuantumBinding.Clang
         return QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getNumFiles(this);
     }
 
-    public ref readonly CXRemappingImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXRemapping GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXRemappingImpl(QBRemapping q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXRemapping(QBRemapping q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXRemappingImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXRemapping();
     }
 
-    public static implicit operator QBRemapping(QuantumBinding.Clang.Interop.CXRemappingImpl q)
+    public static implicit operator QBRemapping(QuantumBinding.Clang.Interop.CXRemapping q)
     {
         return new QBRemapping(in q);
     }

@@ -5,5 +5,5 @@ namespace QuantumBinding.Generator.Parser;
 
 public interface IMetadataProvider : IDisposable
 {
-    ParseResult Parse(TranslationUnit unit, string source);
+    ParseResult Parse(TranslationUnit unit, string vulkanFile);
 }

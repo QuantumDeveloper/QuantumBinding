@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using QuantumBinding.Generator.Types;
 
@@ -26,6 +27,17 @@ public class Delegate : DeclarationUnit
     {
         return $"{AccessSpecifier} {ReturnType} {Name}";
     }
+    
+    public void AddParameter(Parameter parameter)
+    {
+        var lastIndex = Parameters.Count == 0 ? 0: Parameters.Last().Index;
+        if (Parameters.Count > 0)
+        {
+            lastIndex++;
+        }
+        parameter.Index = lastIndex;
+        Parameters.Add(parameter);
+    }
 
     public override T Visit<T>(IDeclarationVisitor<T> visitor)
     {
@@ -43,7 +55,7 @@ public class Delegate : DeclarationUnit
             Name = Name,
             Location = Location,
             Owner = Owner,
-            Comment = (Comment)Comment.Clone(),
+            Comment = (Comment)Comment?.Clone(),
             IsIgnored = IsIgnored,
             Id = Id,
         };

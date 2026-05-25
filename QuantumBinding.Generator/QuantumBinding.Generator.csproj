@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="clang-include\**\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>clang-include\%(RecursiveDir)%(FileName)%(Extension)</Link>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="CodeGeneration\__CSharpCodeGenerator.cs" />
   </ItemGroup>
 

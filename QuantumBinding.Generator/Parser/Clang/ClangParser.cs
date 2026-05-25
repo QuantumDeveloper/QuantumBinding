@@ -32,7 +32,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
     private Delegates.CXCursorVisitor _visitor;
     private Delegates.CXCursorVisitor _functionPtr;
 
-    public ParseResult Parse(TranslationUnit unit, string filePath)
+    public ParseResult Parse(TranslationUnit unit, string vulkanFile)
     {
         _unit = unit;
         var arguments = GetArguments();
@@ -43,7 +43,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         {
             QBUnsavedFile[] unsavedFile = Array.Empty<QBUnsavedFile>();
             var translationUnitResult = _index.ParseTranslationUnit2(
-                filePath,
+                vulkanFile,
                 arguments.ToArray(),
                 arguments.Count,
                 unsavedFile,
@@ -109,7 +109,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         return arguments;
     }
 
-    public CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+    public CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientData data)
     {
         return Visit(cursor, parent, data);
     }
@@ -187,7 +187,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
         //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
-        CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+        CXChildVisitResult VisitEnumItemsDelegate(CXCursor cursor, CXCursor parent, CXClientData data)
         {
             return VisitEnumItems(cursor, parent, data);
         }
@@ -299,9 +299,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         _functionPtr = VisitStructFieldsNative;
 
         cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-        //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
-        CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+        CXChildVisitResult VisitStructFieldsNative(CXCursor cursor, CXCursor parent, CXClientData data)
         {
             return VisitStructFields(cursor, parent, data);
         }
@@ -444,7 +443,6 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                 {
                     var @struct = (Class)@class.Clone();
                     @struct.ClassType = ClassType.Struct;
-                    @struct.Name += "Impl";
                     var field1 = new Field();
                     field1.AccessSpecifier = AccessSpecifier.Public;
                     field1.Name = "pointer";
@@ -530,9 +528,8 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                 _functionPtr = VisitFunctionProtoNative;
 
                 cursor.VisitChildren((nuint)Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
-                //cursor.VisitChildren(Marshal.GetFunctionPointerForDelegate(_functionPtr).ToPointer(), new QBClientData());
 
-                CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientDataImpl clientData)
+                CXChildVisitResult VisitFunctionProtoNative(CXCursor cxCursor, CXCursor parent, CXClientData clientData)
                 {
                     return VisitFunctionProto(cxCursor, parent, clientData);
                 }
@@ -614,12 +611,12 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
     {
         var functionName = cursor.GetCursorSpelling().ToString();
 
-        if (this._visitedFunctions.Contains(functionName))
+        if (_visitedFunctions.Contains(functionName))
         {
             return CXChildVisitResult.CXChildVisit_Continue;
         }
 
-        this._visitedFunctions.Add(functionName);
+        _visitedFunctions.Add(functionName);
         var function = ClangUtils.GetFunctionInfo(cursor);
         function.Comment = GetComment(cursor);
         function.Location = ClangUtils.GetCurrentCursorLocation(cursor);

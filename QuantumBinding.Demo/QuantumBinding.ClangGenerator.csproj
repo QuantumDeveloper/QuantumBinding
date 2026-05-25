@@ -19,6 +19,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="clang-include\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>clang-include\%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\QuantumBinding.Generator\QuantumBinding.Generator.csproj" />
   </ItemGroup>
 

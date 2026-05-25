@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// An indexing action/session, to be applied to one or multiple translation units.
 ///</summary>
-public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIndexActionImpl>
+public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIndexAction>
 {
-    internal CXIndexActionImpl __Instance;
+    internal CXIndexAction __Instance;
     public QBIndexAction()
     {
     }
 
-    public QBIndexAction(in QuantumBinding.Clang.Interop.CXIndexActionImpl __Instance)
+    public QBIndexAction(in QuantumBinding.Clang.Interop.CXIndexAction __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXIndexActionImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXIndexAction GetNativeValue() => __Instance;
     ///<summary>
     /// Destroy the given index action.
     ///</summary>
@@ -61,13 +61,13 @@ public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Cla
         try
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+            var arg1 = client_data == null ? new CXClientData() : (CXClientData)client_data;
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.IndexerCallbacks, QuantumBinding.Clang.Interop.IndexerCallbacks>(index_callbacks, ref currentCursor);
             var arg5 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(source_filename, ref currentCursor);
             var arg6 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(command_line_args, ref currentCursor);
             var arg8 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBUnsavedFile, QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files, ref currentCursor);
-            CXTranslationUnitImpl arg10;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_indexSourceFile(this, arg1, arg2, index_callbacks_size, index_options, arg5, arg6, num_command_line_args, arg8, num_unsaved_files, out arg10, tU_options);
+            CXTranslationUnitImpl arg10 = default;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_indexSourceFile(this, arg1, arg2, index_callbacks_size, index_options, arg5, arg6, num_command_line_args, arg8, num_unsaved_files, &arg10, tU_options);
             out_TU = new QBTranslationUnit(arg10);
             return result;
         }
@@ -102,13 +102,13 @@ public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Cla
         try
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+            var arg1 = client_data == null ? new CXClientData() : (CXClientData)client_data;
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.IndexerCallbacks, QuantumBinding.Clang.Interop.IndexerCallbacks>(index_callbacks, ref currentCursor);
             var arg5 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(source_filename, ref currentCursor);
             var arg6 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(command_line_args, ref currentCursor);
             var arg8 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBUnsavedFile, QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files, ref currentCursor);
-            CXTranslationUnitImpl arg10;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_indexSourceFileFullArgv(this, arg1, arg2, index_callbacks_size, index_options, arg5, arg6, num_command_line_args, arg8, num_unsaved_files, out arg10, tU_options);
+            CXTranslationUnitImpl arg10 = default;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_indexSourceFileFullArgv(this, arg1, arg2, index_callbacks_size, index_options, arg5, arg6, num_command_line_args, arg8, num_unsaved_files, &arg10, tU_options);
             out_TU = new QBTranslationUnit(arg10);
             return result;
         }
@@ -138,7 +138,7 @@ public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Cla
         try
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = client_data == null ? new CXClientDataImpl() : (CXClientDataImpl)client_data;
+            var arg1 = client_data == null ? new CXClientData() : (CXClientData)client_data;
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.IndexerCallbacks, QuantumBinding.Clang.Interop.IndexerCallbacks>(index_callbacks, ref currentCursor);
             var arg5 = param5 == null ? new CXTranslationUnitImpl() : (CXTranslationUnitImpl)param5;
             return QuantumBinding.Clang.Interop.ClangInterop.clang_indexTranslationUnit(this, arg1, arg2, index_callbacks_size, index_options, arg5);
@@ -150,14 +150,14 @@ public unsafe partial class QBIndexAction : IUnmanagedWrapper<QuantumBinding.Cla
         }
     }
 
-    public ref readonly CXIndexActionImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXIndexAction GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXIndexActionImpl(QBIndexAction q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXIndexAction(QBIndexAction q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIndexActionImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIndexAction();
     }
 
-    public static implicit operator QBIndexAction(QuantumBinding.Clang.Interop.CXIndexActionImpl q)
+    public static implicit operator QBIndexAction(QuantumBinding.Clang.Interop.CXIndexAction q)
     {
         return new QBIndexAction(in q);
     }

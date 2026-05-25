@@ -28,6 +28,7 @@ public unsafe partial class QBIdxIBOutletCollectionAttrInfo : IMarshallableObjec
     public QBCursor ClassCursor { get; set; }
     public QBIdxLoc ClassLoc { get; set; }
 
+
     public static implicit operator QBIdxIBOutletCollectionAttrInfo(QuantumBinding.Clang.Interop.CXIdxIBOutletCollectionAttrInfo q)
     {
         return new QBIdxIBOutletCollectionAttrInfo(in q);
@@ -62,14 +63,14 @@ public unsafe partial class QBIdxIBOutletCollectionAttrInfo : IMarshallableObjec
         ClassLoc = new QBIdxLoc(native.classLoc);
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIdxIBOutletCollectionAttrInfo>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIdxIBOutletCollectionAttrInfo>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIdxIBOutletCollectionAttrInfoMarshaller
     {

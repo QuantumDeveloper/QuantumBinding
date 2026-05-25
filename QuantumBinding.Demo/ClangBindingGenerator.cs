@@ -24,8 +24,8 @@ namespace QuantumBinding.ClangGenerator
             ----------------------------------------------------------------------------------------------";
             
             var appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.LastIndexOf("bin"));
-            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
-            //string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
+            //string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.Clang", "Generated"));
+            string outputPath = Path.GetFullPath(Path.Combine(appRoot, "..", "QuantumBinding.ClangPlayground", "Generated"));
             string library = "libclang";
             string interopSubNamespace = "Interop";
             string mainNamespace = "QuantumBinding.Clang";
@@ -295,24 +295,6 @@ namespace QuantumBinding.ClangGenerator
 
             api.Class("CXCursorAndRangeVisitor")
                 .WithField("visit")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void));
-
-            api.Class("IndexerCallbacks")
-                .WithField("abortQuery")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("diagnostic")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("enteredMainFile")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("ppIncludedFile")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("importedASTFile")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("startedTranslationUnit")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("indexDeclaration")
-                .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void))
-                .WithField("indexEntityReference")
                 .InterpretAsPointerType(new BuiltinType(PrimitiveType.Void));
 
             api.Class("CXIdxEntityInfo")

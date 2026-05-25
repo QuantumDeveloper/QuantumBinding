@@ -37,6 +37,8 @@ public class ClassExtension
     public List<PropertyExtension> PropertiesToAdd { get; }
 
     public ClassType ClassType { get; set; }
+    
+    public bool SaveNativeContext { get; set; }
         
     public string NativeStructName { get; set; }
 

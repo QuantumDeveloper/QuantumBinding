@@ -18,7 +18,7 @@ namespace QuantumBinding.Clang.Interop;
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct CXComment
 {
-    public nuint aSTNode;
+    public void* aSTNode;
     public CXTranslationUnitImpl translationUnit;
 }
 

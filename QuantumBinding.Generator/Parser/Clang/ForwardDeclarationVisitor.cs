@@ -24,7 +24,7 @@ internal sealed unsafe class ForwardDeclarationVisitor : ICXCursorVisitor
 
     public IntPtr VisitorPtr { get; }
 
-    public CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientDataImpl data)
+    public CXChildVisitResult VisitDelegate(CXCursor cursor, CXCursor parent, CXClientData data)
     {
         return Visit(cursor, parent, data);
     }

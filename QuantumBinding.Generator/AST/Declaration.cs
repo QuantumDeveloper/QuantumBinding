@@ -10,7 +10,7 @@ public abstract class Declaration : ICloneable
         Id = Guid.NewGuid().ToString();
     }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     public string FullName => string.IsNullOrEmpty(Namespace) ? Name : $"{Namespace}.{Name}";
 

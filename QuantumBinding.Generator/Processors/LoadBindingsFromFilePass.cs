@@ -176,7 +176,7 @@ internal class LoadBindingsFromFilePass : PreGeneratorPass
         {
             @class.UnderlyingNativeType = classFix.UnderlyingNativeType.ToBindingType();
         }
-
+        
         foreach (var fieldFix in classFix.Fields)
         {
             var field = @class.Fields.FirstOrDefault(x => x.Name == fieldFix.Name);

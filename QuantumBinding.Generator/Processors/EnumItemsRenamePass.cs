@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
+using QuantumBinding.Generator.Extensions;
 
 namespace QuantumBinding.Generator.Processors;
 
@@ -27,37 +28,50 @@ public class EnumItemsRenamePass : PreGeneratorPass
 
         var enumItems = enumeration.Items.Where(x => !x.IsIgnored).ToList();
 
-        var basicItem = enumItems.FirstOrDefault();
-        if (basicItem == null) return false;
+        var firstItem = enumItems.FirstOrDefault();
+        if (firstItem == null) return false;
+        
+        string firstName = firstItem.Name;
+        int commonLength = firstName.Length;
 
-        var basicName = basicItem.Name;
-        var finalName = string.Empty;
-        List<string> shortenedNames = new List<string>();
-
-        foreach (var item in enumItems)
+        if (enumItems.Count > 1)
         {
-            if (basicName == item.Name || item.IsIgnored) continue;
-
-            var name = item.Name;
-            var tempName = string.Empty;
-            for (int i = 0; i < name.Length; ++i)
+            foreach (var item in enumItems.Skip(1))
             {
-                if (i > basicName.Length - 1 || name[i] != basicName[i]) break;
+                int j = 0;
+                while (j < commonLength && j < item.Name.Length && firstName[j] == item.Name[j])
+                {
+                    j++;
+                }
 
-                tempName += name[i];
+                commonLength = j;
+                if (commonLength == 0) break;
             }
-
-            shortenedNames.Add(tempName);
+        }
+        else
+        {
+            string typePrefix = enumeration.Name.ToSnakeCase();
+            
+            int j = 0;
+            while (j < firstName.Length && j < typePrefix.Length && firstItem.Name[j] == typePrefix[j])
+            {
+                j++;
+            }
+    
+            int lastUnderscoreInMatch = firstName.Substring(0, j).LastIndexOf('_');
+            commonLength = (lastUnderscoreInMatch != -1) ? lastUnderscoreInMatch + 1 : j;
         }
 
-
-        finalName = shortenedNames.OrderBy(x => x.Length).FirstOrDefault();
-
-        if (enumItems.Count > 1 && !string.IsNullOrEmpty(finalName))
+        if (commonLength > 0)
         {
+            string fullPrefix = firstName.Substring(0, commonLength);
+            int lastUnderscore = fullPrefix.LastIndexOf('_');
+        
+            int finalPrefixLength = (lastUnderscore != -1) ? lastUnderscore + 1 : commonLength;
+
             foreach (var enumItem in enumItems)
             {
-                enumItem.Name = enumItem.Name.Replace(finalName, "");
+                enumItem.Name = enumItem.Name.Substring(finalPrefixLength);
             }
         }
 

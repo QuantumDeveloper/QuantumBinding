@@ -144,6 +144,15 @@ public partial class PostProcessingApi : IFunctionParameter, IFunctionParameterN
         return this;
     }
 
+    public IFunctionParameterName InterpretAsPointerToVoid()
+    {
+        var pointer = new PointerType();
+        pointer.Pointee = new BuiltinType(PrimitiveType.Void);
+        _currentParameter.Type = pointer;
+        
+        return this;
+    }
+
     IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerToArray(BindingType elementType, bool isNullable, string arraySizeSource, uint pointerDepth, bool isConst)
     {
         var pointer = new PointerType();

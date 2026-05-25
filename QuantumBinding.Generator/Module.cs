@@ -77,6 +77,8 @@ public class Module
     public TargetRuntime TargetRuntime { get; set; }
     
     public IMetadataProvider MetadataProvider { get; set; }
+    
+    public string WrapperInteropSourceName { get; set; } = "InteropSource";
         
     /// <summary>
     /// Create overloads for functions, which contains input arrays
