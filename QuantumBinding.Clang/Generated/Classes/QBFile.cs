@@ -16,25 +16,25 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A particular source file that is part of a translation unit.
 ///</summary>
-public unsafe partial class QBFile : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXFileImpl>
+public unsafe partial class QBFile : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXFile>
 {
-    internal CXFileImpl __Instance;
+    internal CXFile __Instance;
     public QBFile()
     {
     }
 
-    public QBFile(in QuantumBinding.Clang.Interop.CXFileImpl __Instance)
+    public QBFile(in QuantumBinding.Clang.Interop.CXFile __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXFileImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXFile GetNativeValue() => __Instance;
     ///<summary>
     /// Returns non-zero if the file1 and file2 point to the same file, or they are both NULL.
     ///</summary>
     public int File_isEqual(QuantumBinding.Clang.QBFile file2)
     {
-        var arg1 = file2 == null ? new CXFileImpl() : (CXFileImpl)file2;
+        var arg1 = file2 == null ? new CXFile() : (CXFile)file2;
         return QuantumBinding.Clang.Interop.ClangInterop.clang_File_isEqual(this, arg1);
     }
 
@@ -67,20 +67,20 @@ public unsafe partial class QBFile : IUnmanagedWrapper<QuantumBinding.Clang.Inte
     ///</summary>
     public int GetFileUniqueID(out QBFileUniqueID outID)
     {
-        QuantumBinding.Clang.Interop.CXFileUniqueID arg1;
-        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getFileUniqueID(this, out arg1);
+        QuantumBinding.Clang.Interop.CXFileUniqueID arg1 = default;
+        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_getFileUniqueID(this, &arg1);
         outID = new QBFileUniqueID(arg1);
         return result;
     }
 
-    public ref readonly CXFileImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXFile GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXFileImpl(QBFile q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXFile(QBFile q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXFileImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXFile();
     }
 
-    public static implicit operator QBFile(QuantumBinding.Clang.Interop.CXFileImpl q)
+    public static implicit operator QBFile(QuantumBinding.Clang.Interop.CXFile q)
     {
         return new QBFile(in q);
     }

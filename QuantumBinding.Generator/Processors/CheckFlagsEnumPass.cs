@@ -20,7 +20,7 @@ public class CheckFlagsEnumsPass : PreGeneratorPass
         {
             try
             {
-                var value = Convert.ToInt64(item.Value);
+                var value = item.Value;
 
                 if (value < 0)
                 {

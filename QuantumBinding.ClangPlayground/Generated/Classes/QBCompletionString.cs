@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A semantic string that describes a code-completion result.
 ///</summary>
-public unsafe partial class QBCompletionString : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXCompletionStringImpl>
+public unsafe partial class QBCompletionString : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXCompletionString>
 {
-    internal CXCompletionStringImpl __Instance;
+    internal CXCompletionString __Instance;
     public QBCompletionString()
     {
     }
 
-    public QBCompletionString(in QuantumBinding.Clang.Interop.CXCompletionStringImpl __Instance)
+    public QBCompletionString(in QuantumBinding.Clang.Interop.CXCompletionString __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXCompletionStringImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXCompletionString GetNativeValue() => __Instance;
     ///<summary>
     /// Retrieve the annotation associated with the given completion string.
     ///</summary>
@@ -116,14 +116,14 @@ public unsafe partial class QBCompletionString : IUnmanagedWrapper<QuantumBindin
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumCompletionChunks(this);
     }
 
-    public ref readonly CXCompletionStringImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXCompletionString GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXCompletionStringImpl(QBCompletionString q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXCompletionString(QBCompletionString q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXCompletionStringImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXCompletionString();
     }
 
-    public static implicit operator QBCompletionString(QuantumBinding.Clang.Interop.CXCompletionStringImpl q)
+    public static implicit operator QBCompletionString(QuantumBinding.Clang.Interop.CXCompletionString q)
     {
         return new QBCompletionString(in q);
     }

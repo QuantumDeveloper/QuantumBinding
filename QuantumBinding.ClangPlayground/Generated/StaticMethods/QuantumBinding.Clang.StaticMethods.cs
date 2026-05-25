@@ -36,7 +36,9 @@ public unsafe static class ClangNative
     ///</summary>
     public static void Free(ref nuint buffer)
     {
-        QuantumBinding.Clang.Interop.ClangInterop.clang_free(buffer);
+        var arg0 = (void*)buffer;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_free(arg0);
+        buffer = (nuint)arg0;
     }
 
     ///<summary>
@@ -112,8 +114,15 @@ public unsafe static class ClangNative
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
             var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(file, ref currentCursor);
-            QuantumBinding.Clang.Interop.CXString arg2;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_loadDiagnostics(arg0, out error, out arg2);
+            var arg1 = stackalloc QuantumBinding.Clang.CXLoadDiag_Error[1];
+            QuantumBinding.Clang.Interop.CXString arg2 = default;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_loadDiagnostics(arg0, arg1, &arg2);
+            if (arg1 is not null)
+            {
+                error = *arg1;
+            }
+            else
+                error = default;
             errorString = new QBString(arg2);
             return result;
         }
@@ -491,7 +500,10 @@ public unsafe static class ClangNative
 
     public static void ExecuteOnThread(nuint fn, ref nuint user_data, uint stack_size)
     {
-        QuantumBinding.Clang.Interop.ClangInterop.clang_executeOnThread(fn, user_data, stack_size);
+        var arg0 = (void*)fn;
+        var arg1 = (void*)user_data;
+        QuantumBinding.Clang.Interop.ClangInterop.clang_executeOnThread(arg0, arg1, stack_size);
+        user_data = (nuint)arg1;
     }
 
     ///<summary>
@@ -1041,7 +1053,7 @@ public unsafe static class ClangNative
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
             var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxContainerInfo, QuantumBinding.Clang.Interop.CXIdxContainerInfo>(param0, ref currentCursor);
-            var arg1 = param1 == null ? new CXIdxClientContainerImpl() : (CXIdxClientContainerImpl)param1;
+            var arg1 = param1 == null ? new CXIdxClientContainer() : (CXIdxClientContainer)param1;
             QuantumBinding.Clang.Interop.ClangInterop.clang_index_setClientContainer(arg0, arg1);
         }
         finally
@@ -1100,7 +1112,7 @@ public unsafe static class ClangNative
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
             var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBIdxEntityInfo, QuantumBinding.Clang.Interop.CXIdxEntityInfo>(param0, ref currentCursor);
-            var arg1 = param1 == null ? new CXIdxClientEntityImpl() : (CXIdxClientEntityImpl)param1;
+            var arg1 = param1 == null ? new CXIdxClientEntity() : (CXIdxClientEntity)param1;
             QuantumBinding.Clang.Interop.ClangInterop.clang_index_setClientEntity(arg0, arg1);
         }
         finally

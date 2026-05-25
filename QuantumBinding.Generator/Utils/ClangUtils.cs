@@ -112,15 +112,32 @@ public static class ClangUtils
                     type = new CustomType(functionType);
                     break;
                 case CXTypeKind.CXType_Pointer:
-                    //var pointeeType = clang.getCanonicalType(clang.getPointeeType(cursorType));
                     var pointeeType = cursorType.GetPointeeType();
-                    var pointer = new PointerType();
-
+                    
                     if (pointeeType.Kind == CXTypeKind.CXType_FunctionProto)
                     {
-                        pointeeType = pointeeType.GetResultType();
-                    }
+                        var funcPtrType = new DelegateType();
+                        var returnType = pointeeType.GetResultType().GetBindingType();
+
+                        int numArgTypes = pointeeType.GetNumArgTypes();
+                        for (uint i = 0; i < (uint)numArgTypes; ++i)
+                        {
+                            var argType = pointeeType.GetArgType(i);
+                            var parameterType = argType.GetBindingType();
+                            var parameter = new Parameter();
+                            parameter.Type = parameterType;
+                            funcPtrType.Parameters.Add(parameter);
+                        }
                         
+                        var returnParameter = new Parameter();
+                        returnParameter.Type = returnType;
+                        funcPtrType.Parameters.Add(returnParameter);
+
+                        type = funcPtrType;
+                        break;
+                    }
+                    
+                    var pointer = new PointerType();
                     var isBuiltin = pointeeType.IsPrimitiveType();
                         
                     if (isBuiltin)
@@ -207,7 +224,24 @@ public static class ClangUtils
 
     private static string NormalizeTypeName(string name)
     {
-        return name.Replace("const", "").Trim();
+        if (string.IsNullOrEmpty(name)) return name;
+
+        string result = name.Replace("const", "").Trim();
+
+        if (result.StartsWith("enum "))
+        {
+            result = result.Substring(5).Trim();
+        }
+        else if (result.StartsWith("struct "))
+        {
+            result = result.Substring(7).Trim();
+        }
+        else if (result.StartsWith("union "))
+        {
+            result = result.Substring(6).Trim();
+        }
+
+        return result;
     }
 
     public static bool IsPrimitiveType(this QBType type)

@@ -19,5 +19,7 @@ public enum GeneratorSpecializations
     StaticMethods = 1024,
     ExtensionMethods = 2048,
     Extensions = 4096,
-    All = Macros|Enums|Structs|Unions|Classes|Delegates|OldFashionDelegates|Functions|StructWrappers|UnionWrappers|StaticMethods|ExtensionMethods|Extensions
+    GlobalUsings = 8192,
+    DispatchTables = 16384,
+    All = Macros|Enums|Structs|Unions|Classes|Delegates|OldFashionDelegates|Functions|StructWrappers|UnionWrappers|StaticMethods|ExtensionMethods|Extensions|GlobalUsings|DispatchTables
 }

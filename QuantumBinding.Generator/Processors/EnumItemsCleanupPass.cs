@@ -1,8 +1,5 @@
 ﻿using QuantumBinding.Generator.AST;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace QuantumBinding.Generator.Processors;
 
@@ -17,11 +14,6 @@ public class EnumItemsCleanupPass : PreGeneratorPass
     {
         if (IsVisited(enumeration))
             return false;
-
-        if (enumeration.Name == "VkSharingMode")
-        {
-
-        }
 
         var groupItems = enumeration.Items.GroupBy(x => x.Value).Where(group => group.Count() > 1);
 

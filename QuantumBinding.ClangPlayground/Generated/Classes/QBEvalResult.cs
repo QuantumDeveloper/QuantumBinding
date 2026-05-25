@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Evaluation result of a cursor
 ///</summary>
-public unsafe partial class QBEvalResult : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXEvalResultImpl>
+public unsafe partial class QBEvalResult : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXEvalResult>
 {
-    internal CXEvalResultImpl __Instance;
+    internal CXEvalResult __Instance;
     public QBEvalResult()
     {
     }
 
-    public QBEvalResult(in QuantumBinding.Clang.Interop.CXEvalResultImpl __Instance)
+    public QBEvalResult(in QuantumBinding.Clang.Interop.CXEvalResult __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXEvalResultImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXEvalResult GetNativeValue() => __Instance;
     ///<summary>
     /// Disposes the created Eval memory.
     ///</summary>
@@ -94,14 +94,14 @@ public unsafe partial class QBEvalResult : IUnmanagedWrapper<QuantumBinding.Clan
         return QuantumBinding.Clang.Interop.ClangInterop.clang_EvalResult_isUnsignedInt(this);
     }
 
-    public ref readonly CXEvalResultImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXEvalResult GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXEvalResultImpl(QBEvalResult q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXEvalResult(QBEvalResult q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXEvalResultImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXEvalResult();
     }
 
-    public static implicit operator QBEvalResult(QuantumBinding.Clang.Interop.CXEvalResultImpl q)
+    public static implicit operator QBEvalResult(QuantumBinding.Clang.Interop.CXEvalResult q)
     {
         return new QBEvalResult(in q);
     }

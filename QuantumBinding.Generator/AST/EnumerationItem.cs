@@ -1,10 +1,12 @@
-﻿namespace QuantumBinding.Generator.AST;
+﻿using System;
+
+namespace QuantumBinding.Generator.AST;
 
 public class EnumerationItem : Declaration
 {
     public Enumeration Enumeration { get; set; }
 
-    public long Value { get; set; }
+    public Int128 Value { get; set; }
 
     public override string ToString()
     {

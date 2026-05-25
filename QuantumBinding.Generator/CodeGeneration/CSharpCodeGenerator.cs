@@ -78,7 +78,14 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
     protected virtual void GenerateTranslationUnit(TranslationUnit unit)
     {
         CurrentTranslationUnit = unit;
-        GenerateNamespace(unit);
+        if (Category == GeneratorCategory.GlobalUsings)
+        {
+            GenerateGlobalUsings(unit);
+        }
+        else
+        {
+            GenerateNamespace(unit);
+        }
     }
 
     protected virtual void GenerateTranslationUnitForDeclaration(TranslationUnit unit, Declaration declaration)
@@ -110,6 +117,32 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    protected virtual void GenerateGlobalUsings(TranslationUnit unit)
+    {
+        if (unit.GlobalUsings.Count == 0)
+        {
+            IsEmpty = true;
+            return;
+        }
+        
+        PushBlock(CodeBlockKind.Usings);
+        foreach (var @using in unit.GlobalUsings)
+        {
+            GenerateGlobalUsingScope(@using);
+            NewLine();
+        }
+        PopBlock(NewLineStrategy.NewLineBeforeNextBlock);
+    }
+    
+    protected virtual void GenerateGlobalUsingScope(GlobalUsings globalUsings)
+    {
+        foreach (var @using in globalUsings.Usings)
+        {
+            WriteLine($"global using {@using.Alias.FullName} = {@using.Source.FullName};");
+        }
+        NewLine();
     }
 
     protected virtual bool IsDeclarationEqualsSpec(Declaration decl, GeneratorSpecializations spec)
@@ -283,7 +316,15 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         WriteLocation(macro);
         if (!macro.IsFunctionLike)
         {
-            WriteLine($"public static {macro.Type.Visit(TypePrinter)} {macro.Name} => {macro.Value};");
+            switch (macro.PrimitiveType)
+            {
+                case PrimitiveType.String:
+                    WriteLine($"public static {macro.Type.Visit(TypePrinter)} {macro.Name} => \"{macro.Value}\";");
+                    break;
+                default:
+                    WriteLine($"public static {macro.Type.Visit(TypePrinter)} {macro.Name} => {macro.Value};");
+                    break;
+            }
         }
         else
         {
@@ -626,7 +667,7 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
         PushBlock(CodeBlockKind.AccessSpecifier);
         Write($"{TypePrinter.GetAccessSpecifier(function.AccessSpecifier)} static extern");
         PopBlock(NewLineStrategy.SpaceBeforeNextBlock);
-
+        
         var returnType = function.ReturnType.Visit(TypePrinter);
         Write($"{returnType} {function.Name}(");
         CheckParameters(function.Parameters);

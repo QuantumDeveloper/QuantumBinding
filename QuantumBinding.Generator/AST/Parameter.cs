@@ -14,20 +14,24 @@ public class Parameter : Declaration
         Name = name;
     }
 
-    public Parameter(Parameter parameter)
+    public Parameter(Parameter copy)
     {
-        ParameterKind = parameter.ParameterKind;
-        Type = parameter.Type.Clone() as BindingType;
-        WrappedType = parameter.WrappedType;
-        Name = parameter.Name;
-        Index = parameter.Index;
-        DefaultValue = parameter.DefaultValue;
-        Id = parameter.Id;
+        ParameterKind = copy.ParameterKind;
+        Type = copy.Type.Clone() as BindingType;
+        WrappedType = copy.WrappedType;
+        Name = copy.Name;
+        Index = copy.Index;
+        DefaultValue = copy.DefaultValue;
+        Id = copy.Id;
         Parent = Parent;
-        IsOverload = parameter.IsOverload;
+        IsOverload = copy.IsOverload;
+        IsOptional = copy.IsOptional;
+        OriginalParameter = copy.OriginalParameter;
     }
         
     public bool IsOverload { get; set; }
+    
+    public Parameter OriginalParameter { get; set; }
 
     public Declaration Parent { get; set; }
 
@@ -42,6 +46,8 @@ public class Parameter : Declaration
     public bool HasDefaultValue => !string.IsNullOrEmpty(DefaultValue);
 
     public string DefaultValue { get; set; }
+    
+    public bool IsOptional { get; set; }
 
     public override string ToString()
     {

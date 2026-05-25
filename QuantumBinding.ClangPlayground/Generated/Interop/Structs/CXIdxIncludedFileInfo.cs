@@ -8,7 +8,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using QuantumBinding.Clang;
 
 namespace QuantumBinding.Clang.Interop;
 
@@ -29,7 +28,7 @@ public unsafe partial struct CXIdxIncludedFileInfo
     ///<summary>
     /// The actual file that the #include/#import directive resolved to.
     ///</summary>
-    public CXFileImpl file;
+    public CXFile file;
     public int isImport;
     public int isAngled;
     ///<summary>

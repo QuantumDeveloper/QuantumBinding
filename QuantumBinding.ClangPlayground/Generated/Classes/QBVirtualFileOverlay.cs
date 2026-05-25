@@ -80,9 +80,12 @@ public unsafe partial class QBVirtualFileOverlay : IUnmanagedWrapper<QuantumBind
     ///<summary>
     /// Write out the CXVirtualFileOverlay object to a char buffer.
     ///</summary>
-    public CXErrorCode VirtualFileOverlay_writeToBuffer(uint options, out sbyte* out_buffer_ptr, out uint out_buffer_size)
+    public CXErrorCode VirtualFileOverlay_writeToBuffer(uint options, out nuint out_buffer_ptr, out uint out_buffer_size)
     {
-        return QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_writeToBuffer(this, options, out out_buffer_ptr, out out_buffer_size);
+        sbyte* arg2 = null;
+        var result = QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_writeToBuffer(this, options, out arg2, out out_buffer_size);
+        out_buffer_ptr = (nuint)arg2;
+        return result;
     }
 
     public ref readonly CXVirtualFileOverlayImpl GetPinnableReference() => ref __Instance;

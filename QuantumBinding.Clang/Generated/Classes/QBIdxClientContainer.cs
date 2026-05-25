@@ -16,27 +16,27 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The client's data object that is associated with a semantic container of entities.
 ///</summary>
-public unsafe partial class QBIdxClientContainer : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIdxClientContainerImpl>
+public unsafe partial class QBIdxClientContainer : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIdxClientContainer>
 {
-    internal CXIdxClientContainerImpl __Instance;
+    internal CXIdxClientContainer __Instance;
     public QBIdxClientContainer()
     {
     }
 
-    public QBIdxClientContainer(in QuantumBinding.Clang.Interop.CXIdxClientContainerImpl __Instance)
+    public QBIdxClientContainer(in QuantumBinding.Clang.Interop.CXIdxClientContainer __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXIdxClientContainerImpl GetNativeValue() => __Instance;
-    public ref readonly CXIdxClientContainerImpl GetPinnableReference() => ref __Instance;
+    public QuantumBinding.Clang.Interop.CXIdxClientContainer GetNativeValue() => __Instance;
+    public ref readonly CXIdxClientContainer GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientContainerImpl(QBIdxClientContainer q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientContainer(QBIdxClientContainer q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIdxClientContainerImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIdxClientContainer();
     }
 
-    public static implicit operator QBIdxClientContainer(QuantumBinding.Clang.Interop.CXIdxClientContainerImpl q)
+    public static implicit operator QBIdxClientContainer(QuantumBinding.Clang.Interop.CXIdxClientContainer q)
     {
         return new QBIdxClientContainer(in q);
     }

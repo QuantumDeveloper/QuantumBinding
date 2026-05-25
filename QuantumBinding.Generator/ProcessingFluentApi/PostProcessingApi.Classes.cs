@@ -209,6 +209,12 @@ public partial class PostProcessingApi : IClassParameters, ISetField, ISetProper
         return this;
     }
 
+    public ISetField SaveInteropSource(bool value)
+    {
+        _currentClass.SaveNativeContext = value;
+        return this;
+    }
+
     ISetField IClassParameters.SetClassType(ClassType classType)
     {
         _currentClass.ClassType = classType;
@@ -448,7 +454,7 @@ public partial class PostProcessingApi : IClassParameters, ISetField, ISetProper
 
     public ISetField InterpretAsDelegateType(IEnumerable<Parameter> parameters, string name)
     {
-        _currentField.Type = new DelegateType() { Name = name, Parameters = new List<Parameter>(parameters)};
+        _currentField.Type = new DelegateType() { Name = name, Parameters = [..parameters] };
         return this;
     }
 

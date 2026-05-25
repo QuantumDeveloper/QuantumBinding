@@ -25,7 +25,7 @@ public unsafe partial struct CXCompletionResult
     ///<summary>
     /// The code-completion string that describes how to insert this code-completion result into the editing buffer.
     ///</summary>
-    public CXCompletionStringImpl completionString;
+    public CXCompletionString completionString;
 }
 
 

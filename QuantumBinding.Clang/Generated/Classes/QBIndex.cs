@@ -16,19 +16,19 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// An "index" that consists of a set of translation units that would typically be linked together into an executable or library.
 ///</summary>
-public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIndexImpl>
+public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIndex>
 {
-    internal CXIndexImpl __Instance;
+    internal CXIndex __Instance;
     public QBIndex()
     {
     }
 
-    public QBIndex(in QuantumBinding.Clang.Interop.CXIndexImpl __Instance)
+    public QBIndex(in QuantumBinding.Clang.Interop.CXIndex __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXIndexImpl GetNativeValue() => __Instance;
+    public QuantumBinding.Clang.Interop.CXIndex GetNativeValue() => __Instance;
     ///<summary>
     /// Same as clang_createTranslationUnit2, but returns the CXTranslationUnit instead of an error code. In case of an error this routine returns a NULL CXTranslationUnit, without further detailed error codes.
     ///</summary>
@@ -78,8 +78,8 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
         {
             ref System.Span<byte> currentCursor = ref mainBuffer;
             var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(ast_filename, ref currentCursor);
-            CXTranslationUnitImpl arg2;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createTranslationUnit2(this, arg1, out arg2);
+            CXTranslationUnitImpl arg2 = default;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_createTranslationUnit2(this, arg1, &arg2);
             out_TU = new QBTranslationUnit(arg2);
             return result;
         }
@@ -253,8 +253,8 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
             {
                 arg4 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBUnsavedFile, QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files, ref currentCursor);
             }
-            CXTranslationUnitImpl arg7;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_parseTranslationUnit2(this, arg1, arg2, num_command_line_args, arg4, num_unsaved_files, options, out arg7);
+            CXTranslationUnitImpl arg7 = default;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_parseTranslationUnit2(this, arg1, arg2, num_command_line_args, arg4, num_unsaved_files, options, &arg7);
             out_TU = new QBTranslationUnit(arg7);
             return result;
         }
@@ -290,8 +290,8 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
             var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(source_filename, ref currentCursor);
             var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(command_line_args, ref currentCursor);
             var arg4 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBUnsavedFile, QuantumBinding.Clang.Interop.CXUnsavedFile>(unsaved_files, ref currentCursor);
-            CXTranslationUnitImpl arg7;
-            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_parseTranslationUnit2FullArgv(this, arg1, arg2, num_command_line_args, arg4, num_unsaved_files, options, out arg7);
+            CXTranslationUnitImpl arg7 = default;
+            var result = QuantumBinding.Clang.Interop.ClangInterop.clang_parseTranslationUnit2FullArgv(this, arg1, arg2, num_command_line_args, arg4, num_unsaved_files, options, &arg7);
             out_TU = new QBTranslationUnit(arg7);
             return result;
         }
@@ -302,14 +302,14 @@ public unsafe partial class QBIndex : IUnmanagedWrapper<QuantumBinding.Clang.Int
         }
     }
 
-    public ref readonly CXIndexImpl GetPinnableReference() => ref __Instance;
+    public ref readonly CXIndex GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXIndexImpl(QBIndex q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXIndex(QBIndex q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIndexImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIndex();
     }
 
-    public static implicit operator QBIndex(QuantumBinding.Clang.Interop.CXIndexImpl q)
+    public static implicit operator QBIndex(QuantumBinding.Clang.Interop.CXIndex q)
     {
         return new QBIndex(in q);
     }

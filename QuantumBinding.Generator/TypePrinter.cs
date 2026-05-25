@@ -120,10 +120,17 @@ public abstract class TypePrinter : ITypePrinter<TypePrinterResult>, IDeclaratio
     public abstract TypePrinterResult VisitDelegateType(DelegateType delegateType);
 
     public abstract TypePrinterResult VisitDependentNameType(DependentNameType dependentNameType);
+    public abstract TypePrinterResult VisitDispatchTableType(DispatchTableType dispatchTableType);
+
+    public abstract TypePrinterResult VisitDispatchTable(DispatchTable dispatchTable);
 
     public abstract TypePrinterResult VisitEnum(Enumeration enumeration);
 
     public abstract TypePrinterResult VisitEnumItem(EnumerationItem item);
+
+    public abstract TypePrinterResult VisitGlobalUsings(GlobalUsings globalUsings);
+    
+    public abstract TypePrinterResult VisitGlobalUsingItem(GlobalUsingItem item);
 
     public abstract TypePrinterResult VisitFunction(Function function);
 

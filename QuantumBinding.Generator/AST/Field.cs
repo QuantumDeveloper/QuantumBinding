@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using QuantumBinding.Generator.Types;
 
 namespace QuantumBinding.Generator.AST;
@@ -32,10 +33,24 @@ public class Field : Declaration
     public bool CanGenerateGetter { get; set; } = true;
 
     public bool CanGenerateSetter { get; set; } = true;
+    
+    public Func<string> PredefinedInputSource { get; set; }
+    
+    public bool UsePredefinedInputSource { get; set; } = true;
 
-    public bool HasPredefinedValue => !string.IsNullOrEmpty(PredefinedValue);
+    public bool HasPredefinedValue => !string.IsNullOrEmpty(PredefinedValue) || PredefinedInputSource != null;
 
     public string PredefinedValue { get; set; }
+    
+    public string GetPredefinedValue()
+    {
+        if (UsePredefinedInputSource && PredefinedInputSource != null)
+        {
+            return PredefinedInputSource();
+        }
+        
+        return PredefinedValue;
+    }
 
     public bool IsPredefinedValueReadOnly { get; set; }
 

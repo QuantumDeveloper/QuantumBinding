@@ -196,14 +196,14 @@ public class WrapperGenerator : CSharpCodeGenerator
 
     private void GenerateIMarshallableObjectInterface(Class @class)
     {
-        WriteLine($"public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct");
+        WriteLine($"public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct");
         WriteOpenBraceAndIndent();
         WriteLine($"var nativeSpan = context.AllocateNative<{@class.NativeStruct.FullName}>(1);");
         WriteLine($"var dataCursor = context.GetDataCursor();");
         WriteLine($"var internalContext = new MarshallingContext<{@class.NativeStruct.FullName}>(nativeSpan, dataCursor);");
         WriteLine($"this.MarshalTo(ref internalContext);");
         WriteLine($"context.SetDataCursor(internalContext.DataCursor);");
-        WriteLine($"return (nuint){UnsafeClassName}.AsPointer(ref nativeSpan[0]);");
+        WriteLine($"return {UnsafeClassName}.AsPointer(ref nativeSpan[0]);");
         UnindentAndWriteCloseBrace();
     }
 
@@ -212,167 +212,253 @@ public class WrapperGenerator : CSharpCodeGenerator
         WriteLine($"public int GetSize()");
         WriteOpenBraceAndIndent();
         WriteLine($"var size = Marshal.SizeOf<{@class.NativeStruct.FullName}>();");
-
-        foreach (var property in @class.Properties)
+        
+        if (@class.ClassType == ClassType.UnionWrapper)
         {
-            if (property.Type.IsPointerToObject())
+            foreach (var property in @class.Properties)
             {
-                WriteLine($"if ({property.Name} is IMarshallableObject marshallable)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"size += marshallable.GetSize();");
-                UnindentAndWriteCloseBrace();
-            }
-            else if (property.Type.IsString())
-            {
-                WriteLine($"if (!string.IsNullOrEmpty({property.Name}))");
-                PushIndent();
-                WriteLine($"size += System.Text.Encoding.UTF8.GetByteCount({property.Name}) + 1;");
-                PopIndent();
-            }
-            else if (property.Type.IsStringArray())
-            {
-                if (TargetRuntime == TargetRuntime.Net8Plus)
+                if (property.Type.IsPointerToObject())
                 {
-                    WriteLine(
-                        $"size += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}.Span);");
-                }
-                else
-                {
-                    WriteLine($"size += MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name});");
-                }
-            }
-            else if (property.Type.IsPointerToArray())
-            {
-                if (property.Type.IsConstArray())
-                    continue;
-                    
-                var declaration = property.Type.Declaration as Class;
-                if (declaration is { IsWrapper: true })
-                {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                    }
+                    WriteLine($"if ({property.Name} is IMarshallableObject marshallable)");
                     WriteOpenBraceAndIndent();
-                    WriteLine($"for (int i = 0; i < {property.Name}.Length; i++)");
-                    WriteOpenBraceAndIndent();
-
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if ({property.Name}.Span[i] == null)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name}[i] == null)");
-                    }
-
-                    PushIndent();
-                    WriteLine($"size += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                    PopIndent();
-                    WriteLine("else");
-                    PushIndent();
-                    WriteLine(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span[i].GetSize();"
-                        : $"size += {property.Name}[i].GetSize();");
-                    PopIndent();
-                    UnindentAndWriteCloseBrace();
+                    WriteLine($"size = Math.Max(size, marshallable.GetSize());");
                     UnindentAndWriteCloseBrace();
                 }
-                else if (declaration is { ClassType: ClassType.Class })
+                else if (property.Type.IsString())
                 {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                        PushIndent();
-                        WriteLine($"size += {property.Name}.Span.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                        PopIndent();
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                        PushIndent();
-                        WriteLine($"size += {property.Name}.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                        PopIndent();
-                    }
-                }
-                else if (property.Type.IsPointerToArrayOfHandleWrappers())
-                {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                    }
-                        
+                    WriteLine($"if (!string.IsNullOrEmpty({property.Name}))");
                     PushIndent();
-                    Write(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span.Length"
-                        : $"size += {property.Name}.Length");
-                    Write($" * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                    NewLine();
+                    WriteLine($"size = Math.Max(size, System.Text.Encoding.UTF8.GetByteCount({property.Name}) + 1);");
                     PopIndent();
                 }
-                else if (property.Type.IsPointerToArrayOfEnums())
+                else if (property.Type.IsStringArray())
                 {
                     if (TargetRuntime == TargetRuntime.Net8Plus)
                     {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
+                        WriteLine(
+                            $"size = Math.Max(size, QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}.Span));");
                     }
                     else
                     {
-                        WriteLine($"if ({property.Name} is not null)");
+                        WriteLine($"size = Math.Max(size, MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}));");
                     }
-                        
-                    var decl = property.Type.Declaration as Enumeration;
-                    PushIndent();
-                    Write(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span.Length"
-                        : $"size += {property.Name}.Length");
-                    Write($" * sizeof({decl.InheritanceType});");
-                    NewLine();
-                    PopIndent();
                 }
-                else if (property.Type.IsPointerToArrayOfPrimitiveTypes(out var primitiveType))
+                else if (property.Type.IsPointerToWrapper(out var wrapper))
                 {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                    }
-                        
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size = Math.Max(size, {property.Name}.GetSize());");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsPointerToSimpleType())
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size = Math.Max(size, Marshal.SizeOf<{property.Type.Declaration.FullName}>());");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsDoublePointer())
+                {
+                    WriteLine($"if (!{property.Name}.IsEmpty)");
                     PushIndent();
-                    Write(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span.Length"
-                        : $"size += {property.Name}.Length");
-                    Write($" * Marshal.SizeOf<{primitiveType.Type.GetDisplayName()}>();");
-                    NewLine();
+                    WriteLine($"size = Math.Max(size, Marshal.SizeOf<nuint>());");
                     PopIndent();
                 }
-            }
-            else if (property.Type.IsPointerToWrapper(out var wrapper))
-            {
-                WriteLine($"if ({property.Name} != default)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"size += {property.Name}.GetSize();");
-                UnindentAndWriteCloseBrace();
-            }
-            else if (property.Type.IsPointerToSimpleType())
-            {
-                WriteLine($"if ({property.Name} != default)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"size += Marshal.SizeOf<{property.Type.Declaration.FullName}>();");
-                UnindentAndWriteCloseBrace();
             }
         }
+        else
+        {
+            foreach (var property in @class.Properties)
+            {
+                if (property.Type.IsPointerToObject())
+                {
+                    WriteLine($"if ({property.Name} is IMarshallableObject marshallable)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size += marshallable.GetSize();");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsString())
+                {
+                    WriteLine($"if (!string.IsNullOrEmpty({property.Name}))");
+                    PushIndent();
+                    WriteLine($"size += System.Text.Encoding.UTF8.GetByteCount({property.Name}) + 1;");
+                    PopIndent();
+                }
+                else if (property.Type.IsStringArray())
+                {
+                    if (TargetRuntime == TargetRuntime.Net8Plus)
+                    {
+                        WriteLine(
+                            $"size += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}.Span);");
+                    }
+                    else
+                    {
+                        WriteLine($"size += MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name});");
+                    }
+                }
+                else if (property.Type.IsPointerToArray(out var arrayType, out var depth))
+                {
+                    if (property.Type.IsConstArray())
+                        continue;
+
+                    var declaration = property.Type.Declaration as Class;
+                    if (declaration is { IsWrapper: true })
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        WriteOpenBraceAndIndent();
+                        WriteLine($"for (int i = 0; i < {property.Name}.Length; i++)");
+                        WriteOpenBraceAndIndent();
+
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if ({property.Name}.Span[i] == null)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name}[i] == null)");
+                        }
+
+                        PushIndent();
+                        WriteLine($"size += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        PopIndent();
+                        WriteLine("else");
+                        PushIndent();
+                        WriteLine(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span[i].GetSize();"
+                            : $"size += {property.Name}[i].GetSize();");
+                        PopIndent();
+                        UnindentAndWriteCloseBrace();
+                        UnindentAndWriteCloseBrace();
+                    }
+                    else if (declaration is { ClassType: ClassType.Class })
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                            PushIndent();
+                            WriteLine(
+                                $"size += {property.Name}.Span.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                            PopIndent();
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                            PushIndent();
+                            WriteLine(
+                                $"size += {property.Name}.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                            PopIndent();
+                        }
+                    }
+                    else if (property.Type.IsPointerToArrayOfHandleWrappers())
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        PushIndent();
+                        Write(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span.Length"
+                            : $"size += {property.Name}.Length");
+                        Write($" * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        NewLine();
+                        PopIndent();
+                    }
+                    else if (property.Type.IsPointerToArrayOfEnums())
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        var decl = property.Type.Declaration as Enumeration;
+                        PushIndent();
+                        Write(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span.Length"
+                            : $"size += {property.Name}.Length");
+                        Write($" * sizeof({decl.InheritanceType});");
+                        NewLine();
+                        PopIndent();
+                    }
+                    else if (property.Type.IsPointerToArrayOfPrimitiveTypes(out var primitiveType))
+                    {
+                        if (primitiveType.Type == PrimitiveType.Void)
+                        {
+                            primitiveType.Type = PrimitiveType.Nuint;
+                        }
+
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        PushIndent();
+                        Write(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span.Length"
+                            : $"size += {property.Name}.Length");
+                        Write($" * Marshal.SizeOf<{primitiveType.Type.GetDisplayName()}>();");
+                        NewLine();
+                        PopIndent();
+                    }
+                    else if (depth >= 2 && arrayType.ElementType.IsPrimitiveType)
+                    {
+                        WriteLine($"if (!{property.Name}.IsEmpty)");
+                        PushIndent();
+                        WriteLine($"size += Marshal.SizeOf<nuint>();");
+                        PopIndent();
+                    }
+                }
+                else if (property.Type.IsPointerToWrapper(out var wrapper))
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size += {property.Name}.GetSize();");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsPointerToSimpleType())
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size += Marshal.SizeOf<{property.Type.Declaration.FullName}>();");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsDoublePointer())
+                {
+                    WriteLine($"if (!{property.Name}.IsEmpty)");
+                    PushIndent();
+                    WriteLine($"size += Marshal.SizeOf<nuint>();");
+                    PopIndent();
+                }
+                else if (property.Type.IsUnionWrapper())
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    PushIndent();
+                    WriteLine($"size += {property.Name}.GetSize();");
+                    PopIndent();
+                }
+            }
+        }
+
         WriteLine($"return size;");
         UnindentAndWriteCloseBrace();
     }
@@ -389,7 +475,7 @@ public class WrapperGenerator : CSharpCodeGenerator
     {
         WriteLine($"public void {MarshalFromMethodName}(in {@class.NativeStruct.FullName} {@class.NativeStructFieldName})");
         WriteOpenBraceAndIndent();
-        GenerateNativeToManagedCode(@class);
+        GenerateNativeToManagedTransition(@class);
         UnindentAndWriteCloseBrace();
     }
 
@@ -407,14 +493,20 @@ public class WrapperGenerator : CSharpCodeGenerator
         @class.InputClassName = $"{@class.Name[0].ToString().ToLower()}{@class.Name.Substring(1)}";
         WriteLine($"public {@class.MarshalerStructName}({@class.FullName} {@class.InputClassName}, ref {MarshalContextClassName}<{@class.NativeStruct.FullName}> context)");
         WriteOpenBraceAndIndent();
-        GenerateManagedToNativeCode(@class, contextName);
+        GenerateManagedToNativeTransition(@class, contextName);
         UnindentAndWriteCloseBrace();
     }
 
-    protected virtual void GenerateNativeToManagedCode(Class @class)
+    protected virtual void GenerateNativeToManagedTransition(Class @class)
     {
         PushBlock(CodeBlockKind.Constructor);
         int constArrayIndex = 0;
+
+        if (@class.SaveNativeContext)
+        {
+            WriteLine($"{CurrentTranslationUnit.Module.WrapperInteropSourceName} = {@class.NativeStructFieldName};");
+        }
+
         foreach (var property in @class.Properties)
         {
             TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
@@ -427,12 +519,12 @@ public class WrapperGenerator : CSharpCodeGenerator
             {
                 if (!property.Field.IsPredefinedValueReadOnly)
                 {
-                    WriteLine($"{property.Name} = {property.Field.PredefinedValue};");
+                    WriteLine($"{property.Name} = {property.Field.GetPredefinedValue()};");
                 }
 
                 continue;
             }
-
+            
             if (property.Type.IsPointer())
             {
                 if (property.Type.IsStringArray(out var isUnicode))
@@ -443,20 +535,27 @@ public class WrapperGenerator : CSharpCodeGenerator
                 {
                     WriteLine($"{property.Name} = new string({@class.NativeStructFieldName}.{property.Field.Name});");
                 }
-                else if (property.Type.IsPointerToArray())
+                else if (property.Type.IsPointerToArray(out var arrayType, out var depth))
                 {
-                    MarshalFromPointerToArray(property, @class, constArrayIndex++);
+                    if (depth == 1)
+                    {
+                        MarshalFromPointerToArray(property, @class, constArrayIndex++);
+                    }
+                    else if (depth == 2)
+                    {
+                        MarshalFromDoublePointerToManagedArray(property, @class, constArrayIndex++);
+                    }
                 }
                 else if (property.Type.IsPointerToObject())
                 {
                     WriteLine($"{property.Name} = (System.IntPtr){@class.NativeStructFieldName}.{property.Field.Name};");
                 }
                 else if (property.Type.IsDoublePointer() ||
-                         property.Type.IsPointerToVoid() ||
+                         property.Type.IsPointerToVoid(out var pointerDepth) ||
                          property.Type.IsPointerToIntPtr() ||
                          property.Type.IsPointerToSystemType(out var systemType))
                 {
-                    WriteLine($"{property.Name} = {@class.NativeStructFieldName}.{property.Field.Name};");
+                    WriteLine($"{property.Name} = ({PrimitiveType.Nuint.GetDisplayName()}){@class.NativeStructFieldName}.{property.Field.Name};");
                 }
                 else if (property.Type.IsPointerToEnum() || property.Type.IsEnum())
                 {
@@ -518,7 +617,7 @@ public class WrapperGenerator : CSharpCodeGenerator
         PopBlock();
     }
 
-    protected virtual void GenerateManagedToNativeCode(Class @class, string contextName)
+    protected virtual void GenerateManagedToNativeTransition(Class @class, string contextName)
     {
         int structIndex = 0;
         int pointerArrayIndex = 0;
@@ -534,14 +633,10 @@ public class WrapperGenerator : CSharpCodeGenerator
             {
                 continue;
             }
-
+            
             if (property.Type.IsPointer())
             {
-                if (property.Type.IsPointerToVoid() || property.Type.IsPointerToIntPtr() || property.Type.IsPointerToSystemType(out var systemType))
-                {
-                    WriteLine($"{contextName}.Destination[0].{property.Field.Name} = {@class.InputClassName}.{property.Name};");
-                }
-                else if (property.Type.IsPointerToArrayOfEnums() || property.Type.IsPointerToEnum())
+                if (property.Type.IsPointerToArrayOfEnums() || property.Type.IsPointerToEnum())
                 {
                     MarshalPointerToEnum(property, @class, contextName);
                 }
@@ -565,11 +660,11 @@ public class WrapperGenerator : CSharpCodeGenerator
                         }
                         
                         WriteOpenBraceAndIndent();
-                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (nuint)ptr;");
+                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (void*)ptr;");
                         UnindentAndWriteCloseBrace();
                         WriteLine($"else if ({@class.InputClassName}.{property.Name} is nuint nPtr)");
                         WriteOpenBraceAndIndent();
-                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (nuint)nPtr;");
+                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (void*)nPtr;");
                         UnindentAndWriteCloseBrace();
 
                         NewLine();
@@ -581,7 +676,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                     {
                         WriteLine($"if ({@class.InputClassName}.{property.Name}.HasValue)");
                     }
-                    else if (property.Type.IsPointerToArray())
+                    else if (property.Type.IsPointerToArray() || property.Type.IsDoublePointer())
                     {
                         if (TargetRuntime == TargetRuntime.Net8Plus)
                         {
@@ -610,9 +705,17 @@ public class WrapperGenerator : CSharpCodeGenerator
                             MarshalStringToPointer(property, @class, contextName);
                         }
                     }
-                    else if (property.Type.IsPointerToArray())
+                    else if (property.Type.IsPointerToArray(out var arrayType, out var ptrDepth))
                     {
-                        MarshalFromArrayToPointer(property, @class, contextName);
+                        switch (ptrDepth)
+                        {
+                            case 1:
+                                MarshalFromArrayToPointer(property, @class, contextName);
+                                break;
+                            case 2:
+                                MarshalFromArrayToDoublePointer(property, @class, contextName);
+                                break;
+                        }
                     }
                     else if (property.Type.IsPointerToIntPtr())
                     {
@@ -621,10 +724,11 @@ public class WrapperGenerator : CSharpCodeGenerator
                         TypePrinter.PopMarshalType();
                         WriteLine($"{contextName}.Destination[0].{property.Field.Name} = ({fieldResult}){@class.InputClassName}.{property.Name};");
                     }
-                    else if (property.Type.IsDoublePointer() || property.Type.IsPointerToVoid())
+                    else if (property.Type.IsPurePointer() || property.Type.IsPointerToSystemType(out var systemType))
                     {
-                        WriteLine(
-                            $"{contextName}.Destination[0].{property.Field.Name} = {@class.InputClassName}.{property.Name};");
+                        var pointer = (PointerType)property.Type;
+                        var depth = pointer.GetDepth();
+                        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (void{TextGenerator.GetPointerString(depth)}){@class.InputClassName}.{property.Name};");
                     }
                     else // pointer to struct and pointer to simple types
                     {
@@ -746,7 +850,7 @@ public class WrapperGenerator : CSharpCodeGenerator
             {
                 if (property.Field.HasPredefinedValue && !property.Field.IsPredefinedValueReadOnly)
                 {
-                    WriteLine($"{property.Name} = {property.Field.PredefinedValue};");
+                    WriteLine($"{property.Name} = {property.Field.GetPredefinedValue()};");
                 }
             }
             UnindentAndWriteCloseBrace();
@@ -921,7 +1025,7 @@ public class WrapperGenerator : CSharpCodeGenerator
             {
                 if (property.Field.IsPredefinedValueReadOnly)
                 {
-                    WriteLine($"{propertyTypeName} {property.Name} => {property.Field.PredefinedValue};");
+                    WriteLine($"{propertyTypeName} {property.Name} => {property.Field.GetPredefinedValue()};");
                     PopBlock();
                     continue;
                 }
@@ -954,6 +1058,13 @@ public class WrapperGenerator : CSharpCodeGenerator
             NewLine();
 
             PopBlock();
+        }
+        
+        NewLine();
+
+        if (@class.SaveNativeContext)
+        {
+            Write($"public {@class.NativeStruct.FullName} {CurrentTranslationUnit.Module.WrapperInteropSourceName} {{get; set;}}");
         }
     }
 
@@ -1024,6 +1135,10 @@ public class WrapperGenerator : CSharpCodeGenerator
 
         var arrayPtr = $"{parentClass.NativeStructFieldName}.{property.Field.Name}";
         var arraySizeFieldName = $"{parentClass.NativeStructFieldName}.{arrayType.ArraySizeSource}";
+        if (arrayType.HasMathExpression)
+        {
+            arraySizeFieldName = arrayType.MathExpression.Replace(arrayType.ArraySizeSource, $"(uint){parentClass.NativeStructFieldName}.{arrayType.ArraySizeSource}");
+        }
         TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
         arrayType.ElementType.Declaration = property.Type.Declaration;
         var arrayElementType = arrayType.ElementType.Visit(TypePrinter);
@@ -1031,35 +1146,86 @@ public class WrapperGenerator : CSharpCodeGenerator
         TypePrinter.PushMarshalType(MarshalTypes.NativeField);
         var nativeArrayType = property.Field.Type.Visit(TypePrinter);
         TypePrinter.PopMarshalType();
+        string arrayLengthName = $"arrayLength{property.Name}";
+        WriteLine($"var {arrayLengthName} = {arraySizeFieldName};");
         string tempArrayName = $"tmp{property.Name}";
-        WriteLine($"var {tempArrayName} = new {arrayElementType}[{arraySizeFieldName}];");
+        WriteLine($"var {tempArrayName} = new {arrayElementType}[{arrayLengthName}];");
 
         var nativeArrayName = $"nativeTmpArray{index}";
         if (pointerType.Declaration is Class { IsSimpleType: false } classDecl)
         {
-            WriteLine($"var {nativeArrayName} = new {parentClass.NativeStruct.Namespace}.{nativeArrayType.Type}[{arraySizeFieldName}];");
-            WriteLine($"{TextGenerator.MarshalFromPointerToArray}({arrayPtr}, {arraySizeFieldName}, {nativeArrayName});");
+            var @namespace = classDecl.NativeStruct.Namespace;
+            WriteLine($"var {nativeArrayName} = new {@namespace}.{nativeArrayType.Type}[{arrayLengthName}];");
+            WriteLine($"{TextGenerator.MarshalFromPointerToArray}({arrayPtr}, {arrayLengthName}, {nativeArrayName});");
             WriteLine($"for (int i = 0; i < {nativeArrayName}.{CounterProperty}; ++i)");
             WriteOpenBraceAndIndent();
             WriteLine($"{tempArrayName}[i] = new {classDecl.Name}(in {nativeArrayName}[i]);");
             UnindentAndWriteCloseBrace();
-            WriteLine($"{property.Name} = {tempArrayName};");
         }
         else if (arrayType.ElementType.IsPrimitiveType(out var primitive) && 
                  primitive is PrimitiveType.Bool32 or PrimitiveType.Bool)
         {
-            WriteLine($"var {nativeArrayName} = new {nativeArrayType}[{arraySizeFieldName}];");
-            WriteLine($"{TextGenerator.MarshalFromPointerToArray}({arrayPtr}, {arraySizeFieldName}, {nativeArrayName});");
+            WriteLine($"var {nativeArrayName} = new {nativeArrayType}[{arrayLengthName}];");
+            WriteLine($"{TextGenerator.MarshalFromPointerToArray}({arrayPtr}, {arrayLengthName}, {nativeArrayName});");
             WriteLine($"for (int i = 0; i < {nativeArrayName}.{CounterProperty}; ++i)");
             WriteOpenBraceAndIndent();
             WriteLine($"{tempArrayName}[i] = System.Convert.ToBoolean({nativeArrayName}[i]);");
             UnindentAndWriteCloseBrace();
-            WriteLine($"{property.Name} = {tempArrayName};");
         }
         else
         {
-            WriteLine($"{TextGenerator.MarshalFromPointerToArray}({arrayPtr}, {arraySizeFieldName}, {tempArrayName});");
+            WriteLine($"{TextGenerator.MarshalFromPointerToArray}({arrayPtr}, {arrayLengthName}, {tempArrayName});");
         }
+        WriteLine($"{property.Name} = {tempArrayName};");
+    }
+    
+    private void MarshalFromDoublePointerToManagedArray(Property property, Class parentClass, int index)
+    {
+        var pointerType = property.Type as PointerType;
+        if (pointerType == null) return;
+        
+        var depth = pointerType.GetDepth();
+
+        var bindingType = pointerType.GetBindingType();
+        
+        var arrayType = bindingType as ArrayType;
+        if (arrayType == null || string.IsNullOrEmpty(arrayType.ArraySizeSource))
+            return;
+
+        var arrayPtr = $"{parentClass.NativeStructFieldName}.{property.Field.Name}";
+        var arraySizeFieldName = $"{parentClass.NativeStructFieldName}.{arrayType.ArraySizeSource}";
+        if (arrayType.HasMathExpression)
+        {
+            arraySizeFieldName = arrayType.MathExpression.Replace(arrayType.ArraySizeSource, $"(uint){parentClass.NativeStructFieldName}.{arrayType.ArraySizeSource}");
+        }
+        TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
+        arrayType.ElementType.Declaration = property.Type.Declaration;
+        var arrayElementType = arrayType.ElementType.Visit(TypePrinter);
+        if (arrayElementType.Type == "void")
+        {
+            arrayElementType.Type = PrimitiveType.Nuint.GetDisplayName();
+        }
+        TypePrinter.PopMarshalType();
+        TypePrinter.PushMarshalType(MarshalTypes.NativeField);
+        var nativeArrayType = property.Field.Type.Visit(TypePrinter);
+        TypePrinter.PopMarshalType();
+        
+        WriteLine($"if ({parentClass.NativeStructFieldName}.{property.Field.Name} != null && {arraySizeFieldName} > 0)");
+        WriteOpenBraceAndIndent();
+        
+        string arrayLengthName = $"arrayLength{property.Name}";
+        WriteLine($"var {arrayLengthName} = {arraySizeFieldName};");
+        string tempArrayName = $"tmp{property.Name}";
+        WriteLine($"var {tempArrayName} = new {arrayElementType}[{arrayLengthName}];");
+        WriteLine($"var ptrArray = {parentClass.NativeStructFieldName}.{property.Field.Name};");
+        
+        WriteLine($"for (int i = 0; i < (int){arrayLengthName}; ++i)");
+        PushIndent();
+        WriteLine($"{tempArrayName}[i] = (nuint)(ptrArray[i]);");
+        PopIndent();
+        
+        WriteLine($"{property.Name} = {tempArrayName};");
+        UnindentAndWriteCloseBrace();
     }
 
     private void WriteFreeMemory(string pointer)
@@ -1091,8 +1257,8 @@ public class WrapperGenerator : CSharpCodeGenerator
         TypePrinter.PushMarshalType(MarshalTypes.NativeField);
         var nativeType = property.Field.Type.Visit(TypePrinter);
         TypePrinter.PopMarshalType();
-            
-        if (arrayType.ElementType.CanConvertToFixedArray())
+
+        if (arrayType.ElementType.CanConvertToFixedArray() || arrayType.ElementType.IsSimpleType())
         {
             var arrayName = $"{parentClass.NativeStructFieldName}.{property.Field.Name}";
 
@@ -1120,14 +1286,17 @@ public class WrapperGenerator : CSharpCodeGenerator
                 string tempArrayName = $"tmp{property.Name}";
                 
                 WriteLine($"var {tempArrayName} = new {managedType.Type}[{size}];");
-                WriteLine($"var p{property.Name} = ({managedType.Type}*){UnsafeClassName}.AsPointer(ref {UnsafeClassName}.AsRef(in {parentClass.NativeStructFieldName}.{property.Field.Name}[0]));");
+                WriteLine($"var {property.Field.Name}p = {parentClass.NativeStructFieldName}.{property.Field.Name}[0];");
+                WriteLine($"var p{property.Name} = ({managedType.Type}*){UnsafeClassName}.AsPointer(ref {UnsafeClassName}.AsRef(in {property.Field.Name}p ));");
                 WriteLine($"{TextGenerator.MarshalFromPointerToArray}(p{property.Name}, {size}, {tempArrayName});");
                 WriteLine($"{property.Name} = {tempArrayName};");
             }
         }
         else if (arrayType.ElementType.IsPurePointer())
         {
+            TypePrinter.PushMarshalType(MarshalTypes.Property);
             var propertyArrayElementType = arrayType.ElementType.Visit(TypePrinter);
+            TypePrinter.PopMarshalType();
             string tempArrayName = $"tmp{property.Name}";
             WriteLine($"var {tempArrayName} = new {propertyArrayElementType}[{size}];");
             WriteLine($"for (int i = 0; i < {size}; ++i)");
@@ -1160,14 +1329,27 @@ public class WrapperGenerator : CSharpCodeGenerator
             WriteLine($"var {tempArrayName} = new {propertyArrayElementType}[{size}];");
             WriteLine($"var p{property.Name} = ({nativeType.Type}*){UnsafeClassName}.AsPointer(ref {UnsafeClassName}.AsRef(in {parentClass.NativeStructFieldName}.{property.Field.Name}));");
 
-            if (decl.LinkedTo is { ClassType: ClassType.Class })
+            if (decl.LinkedTo is { ClassType: ClassType.Class } || decl.ClassType == ClassType.Class)
             {
                 string spanName = $"span{property.Name}";
-                WriteLine($"var {spanName} = new {ReadonlySpanClassName}<{decl.FullName}>(p{property.Name}, {size});");
+                var fullName = decl.FullName;
+                if (decl.ClassType == ClassType.Class)
+                {
+                    fullName = decl.NativeStruct.FullName;
+                }
+
+                var classFullname = decl.FullName;
+                if (decl.LinkedTo != null && decl.ClassType != ClassType.Class)
+                {
+                    classFullname = decl.LinkedTo.FullName;
+                }
+                
+                WriteLine($"var {spanName} = new {ReadonlySpanClassName}<{fullName}>(p{property.Name}, {size});");
                 WriteLine($"for (int i = 0; i < {size}; ++i)");
                 WriteOpenBraceAndIndent();
-                WriteLine($"{tempArrayName}[i] = new {decl.LinkedTo.FullName}({spanName}[i]);");
+                WriteLine($"{tempArrayName}[i] = new {classFullname}({spanName}[i]);");
                 UnindentAndWriteCloseBrace();
+                WriteLine($"{property.Name} = {tempArrayName};");
             }
             else
             {
@@ -1299,55 +1481,36 @@ public class WrapperGenerator : CSharpCodeGenerator
                 
             WriteLine($"{contextName}.Destination[0].{property.Field.Name} = {TextGenerator.MarshalArrayToPointer}<{@class.Namespace}.{managedArrayTypeName}, {castTypeName}, {@class.NativeStruct.FullName}>({@class.InputClassName}.{property.Name}, ref {contextName});");
         }
-            
-        /*
-        WriteLine($"var {sizeInBytes} = sizeof({castTypeName}) * {@class.InputClassName}.{property.Name}.{CounterProperty};");
-        WriteLine($"var {byteSpan} = {contextName}.AllocateData({sizeInBytes});");
-        WriteLine($"var {tmpSpanName} = {MemoryMarshalClassName}.Cast<byte, {castTypeName}>({byteSpan});");
-        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = ({castTypeName}*){UnsafeClassName}.AsPointer(ref {MemoryMarshalClassName}.GetReference({tmpSpanName}));");
+    }
+    
+    private void MarshalFromArrayToDoublePointer(Property property, Class @class, string contextName)
+    {
+        var pointerType = property.Type as PointerType;
+        if (pointerType == null) return;
+        
+        var depth = pointerType.GetDepth();
 
-        WriteLine($"for (int i = 0; i < {@class.InputClassName}.{property.Name}.{CounterProperty}; ++i)");
-        WriteOpenBraceAndIndent();
-        if (decl != null && (decl.ClassType == ClassType.Class || decl.IsSimpleType)
-            || property.Type.IsPointerToArrayOfPrimitiveTypes())
-        {
-            if (property.Type.IsPointerToArrayOfPrimitiveTypes(out var primitive) && primitive.Type == PrimitiveType.Bool32)
-            {
-                string conversionName = string.Empty;
-                if (array.ElementType is BuiltinType builtinType)
-                {
-                    switch (builtinType.Type)
-                    {
-                        case PrimitiveType.Bool32:
-                        case PrimitiveType.UInt32:
-                            conversionName = "System.Convert.ToUInt32";
-                            break;
-                        case PrimitiveType.Int32:
-                            conversionName = "System.Convert.ToInt32";
-                            break;
-                        case PrimitiveType.Float:
-                            conversionName = "System.Convert.ToSingle";
-                            break;
-                    }
-                }
+        var bindingType = pointerType.GetBindingType();
+        
+        var arrayType = bindingType as ArrayType;
+        if (arrayType == null || string.IsNullOrEmpty(arrayType.ArraySizeSource))
+            return;
+        
+        TypePrinter.PushMarshalType(MarshalTypes.NativeField);
+        arrayType.ElementType.Declaration = property.Field.Type.Declaration;
+        var arrayTypeName = arrayType.ElementType.Visit(TypePrinter);
+        TypePrinter.PopMarshalType();
 
-                WriteLine($"{tmpSpanName}[i] = ({conversionName}){property.Name}[i];");
-            }
-            else
-            {
-                WriteLine($"{tmpSpanName}[i] = {@class.InputClassName}.{property.Name}[i];");
-            }
-        }
-        else
+        if (arrayTypeName.Type == "void")
         {
-            string destinationName = "destinationSlice";
-            WriteLine($"var {destinationName} = {tmpSpanName}.Slice(i, 1);");
-            WriteLine($"var innerContext = new {MarshalContextClassName}<{decl.FullName}>({destinationName}, {contextName}.DataCursor);");
-            WriteLine($"{@class.InputClassName}.{property.Name}[i].{MarshalMethodName}(ref innerContext);");
-            WriteLine($"{contextName}.DataCursor = innerContext.DataCursor;");
+            arrayTypeName.Type = PrimitiveType.Nuint.GetDisplayName();
         }
-        UnindentAndWriteCloseBrace();
-        */
+        
+        string sourceSpan = $"src{property.Name}";
+        WriteLine($"var {sourceSpan} = {@class.InputClassName}.{property.Name}.Span;");
+        WriteLine($"var allocatedSpan = {contextName}.AllocateNative<{arrayTypeName}>({sourceSpan}.Length);");
+        WriteLine($"{sourceSpan}.CopyTo(allocatedSpan);");
+        WriteLine($"{contextName}.Destination[0].{property.Field.Name} = (void{TextGenerator.GetPointerString(depth)}){UnsafeClassName}.AsPointer(ref allocatedSpan[0]);");
     }
         
     private void MarshalConstArrayToNative(Property property, Class @class, Class decl, string contextName, ref int increment)
@@ -1364,10 +1527,10 @@ public class WrapperGenerator : CSharpCodeGenerator
         TypePrinter.PushMarshalType(MarshalTypes.WrappedProperty);
         var result = arrayType.ElementType.Visit(TypePrinter);
         TypePrinter.PopMarshalType();
-            
+
         var destinationFieldName = $"tmpDestination{increment++}";
         var fieldName = $"{property.Field.Name}";
-        if (arrayType.ElementType.CanConvertToFixedArray())
+        if (arrayType.ElementType.CanConvertToFixedArray() || arrayType.ElementType.IsSimpleType())
         {
             if (arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.SChar) ||
                 arrayType.ElementType.IsPrimitiveTypeEquals(PrimitiveType.WideChar))
@@ -1385,10 +1548,20 @@ public class WrapperGenerator : CSharpCodeGenerator
             else
             {
                 WriteLine($"ref var {destinationFieldName} = ref {contextName}.Destination[0];");
-                WriteLine($"fixed ({result}* pDest = {destinationFieldName}.{fieldName})");
-                WriteOpenBraceAndIndent();
-                WriteLine($"{TextGenerator.MarshalFixedArrayToPointer}({@class.InputClassName}.{property.Name}.Span, pDest, {size});");
-                UnindentAndWriteCloseBrace();
+                if (decl is { IsSimpleType: true })
+                {
+                    WriteLine($"fixed (void* pDest = &{destinationFieldName}.{fieldName}.item0)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"{TextGenerator.MarshalFixedArrayToPointer}({@class.InputClassName}.{property.Name}.Span, ({result}*)pDest, {size});");
+                    UnindentAndWriteCloseBrace();
+                }
+                else
+                {
+                    WriteLine($"fixed ({result}* pDest = {destinationFieldName}.{fieldName})");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"{TextGenerator.MarshalFixedArrayToPointer}({@class.InputClassName}.{property.Name}.Span, pDest, {size});");
+                    UnindentAndWriteCloseBrace();
+                }
             }
         }
         else if (arrayType.ElementType.IsPurePointer())
@@ -1416,12 +1589,11 @@ public class WrapperGenerator : CSharpCodeGenerator
         }
         else // Fixed array of structs
         {
-            TypePrinter.PushMarshalType(MarshalTypes.Property);
+            TypePrinter.PushMarshalType(MarshalTypes.NativeField);
             var propType = arrayType.ElementType.Visit(TypePrinter);
             TypePrinter.PopMarshalType();
 
-            if (decl != null && !string.IsNullOrEmpty(decl.Namespace) &&
-                decl.Name == propType.Type)
+            if (decl != null)
             {
                 result = $"{InteropNamespace}.{propType}";
             }
@@ -1439,13 +1611,13 @@ public class WrapperGenerator : CSharpCodeGenerator
 
             string pointerName = $"p{property.Name}";
             WriteLine($"var {pointerName} = ({result}*){UnsafeClassName}.AsPointer(ref {fixedFieldName}.item0);");
-            if (decl is { LinkedTo.ClassType: ClassType.Class })
+            if (decl is { LinkedTo.ClassType: ClassType.Class } || decl.ClassType == ClassType.Class)
             {
-                WriteLine($"{TextGenerator.MarshalArrayOfHandleWrappersToFixedBuffer}({fixedFieldName}Span , {pointerName}, {size});");
+                WriteLine($"{TextGenerator.MarshalArrayOfHandleWrappersToFixedBuffer}({fixedFieldName}Span, {pointerName}, {size});");
             }
             else
             {
-                WriteLine($"{TextGenerator.MarshalArrayOfWrappersToFixedBuffer}({fixedFieldName}Span , {pointerName}, {size}, ref {contextName}.DataCursor);");
+                WriteLine($"{TextGenerator.MarshalArrayOfWrappersToFixedBuffer}({fixedFieldName}Span, {pointerName}, {size}, ref {contextName}.DataCursor);");
             }
         }
     }

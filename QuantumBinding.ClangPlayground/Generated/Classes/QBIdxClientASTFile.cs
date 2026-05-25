@@ -16,27 +16,27 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The client's data object that is associated with an AST file (PCH or module).
 ///</summary>
-public unsafe partial class QBIdxClientASTFile : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIdxClientASTFileImpl>
+public unsafe partial class QBIdxClientASTFile : IUnmanagedWrapper<QuantumBinding.Clang.Interop.CXIdxClientASTFile>
 {
-    internal CXIdxClientASTFileImpl __Instance;
+    internal CXIdxClientASTFile __Instance;
     public QBIdxClientASTFile()
     {
     }
 
-    public QBIdxClientASTFile(in QuantumBinding.Clang.Interop.CXIdxClientASTFileImpl __Instance)
+    public QBIdxClientASTFile(in QuantumBinding.Clang.Interop.CXIdxClientASTFile __Instance)
     {
         this.__Instance = __Instance;
     }
 
-    public QuantumBinding.Clang.Interop.CXIdxClientASTFileImpl GetNativeValue() => __Instance;
-    public ref readonly CXIdxClientASTFileImpl GetPinnableReference() => ref __Instance;
+    public QuantumBinding.Clang.Interop.CXIdxClientASTFile GetNativeValue() => __Instance;
+    public ref readonly CXIdxClientASTFile GetPinnableReference() => ref __Instance;
 
-    public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientASTFileImpl(QBIdxClientASTFile q)
+    public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientASTFile(QBIdxClientASTFile q)
     {
-        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIdxClientASTFileImpl();
+        return q?.__Instance ?? new QuantumBinding.Clang.Interop.CXIdxClientASTFile();
     }
 
-    public static implicit operator QBIdxClientASTFile(QuantumBinding.Clang.Interop.CXIdxClientASTFileImpl q)
+    public static implicit operator QBIdxClientASTFile(QuantumBinding.Clang.Interop.CXIdxClientASTFile q)
     {
         return new QBIdxClientASTFile(in q);
     }

@@ -12,6 +12,9 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
+///<summary>
+/// Index initialization options.
+///</summary>
 public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIndexOptions>
 {
     public QBIndexOptions()
@@ -32,6 +35,7 @@ public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<
     public uint Field6 { get; set; }
     public string PreambleStoragePath { get; set; }
     public string InvocationEmissionPath { get; set; }
+
 
     public static implicit operator QBIndexOptions(QuantumBinding.Clang.Interop.CXIndexOptions q)
     {
@@ -66,14 +70,14 @@ public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<
         InvocationEmissionPath = new string(native.invocationEmissionPath);
 
     }
-    public nuint GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
+    public void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct
     {
         var nativeSpan = context.AllocateNative<QuantumBinding.Clang.Interop.CXIndexOptions>(1);
         var dataCursor = context.GetDataCursor();
         var internalContext = new MarshallingContext<QuantumBinding.Clang.Interop.CXIndexOptions>(nativeSpan, dataCursor);
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
-        return (nuint)System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+        return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
     }
     private ref struct CXIndexOptionsMarshaller
     {

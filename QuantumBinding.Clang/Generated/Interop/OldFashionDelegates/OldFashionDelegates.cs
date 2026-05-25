@@ -18,17 +18,17 @@ public static unsafe class Delegates
     /// Visitor invoked for each cursor found by a traversal.
     ///</summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate CXChildVisitResult CXCursorVisitor(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXCursor parent, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    public unsafe delegate CXChildVisitResult CXCursorVisitor(QuantumBinding.Clang.Interop.CXCursor cursor, QuantumBinding.Clang.Interop.CXCursor parent, QuantumBinding.Clang.Interop.CXClientData client_data);
     ///<summary>
     /// Visitor invoked for each file in a translation unit (used with clang_getInclusions()).
     ///</summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate void CXInclusionVisitor(QuantumBinding.Clang.Interop.CXFileImpl included_file, QuantumBinding.Clang.Interop.CXSourceLocation* inclusion_stack, uint include_len, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    public unsafe delegate void CXInclusionVisitor(QuantumBinding.Clang.Interop.CXFile included_file, QuantumBinding.Clang.Interop.CXSourceLocation* inclusion_stack, uint include_len, QuantumBinding.Clang.Interop.CXClientData client_data);
     ///<summary>
     /// Visitor invoked for each field found by a traversal.
     ///</summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public unsafe delegate CXVisitorResult CXFieldVisitor(QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientDataImpl client_data);
+    public unsafe delegate CXVisitorResult CXFieldVisitor(QuantumBinding.Clang.Interop.CXCursor C, QuantumBinding.Clang.Interop.CXClientData client_data);
 }
 
 
