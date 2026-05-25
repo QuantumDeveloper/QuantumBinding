@@ -612,7 +612,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
     }
 
     ///<summary>
-    /// Given a cursor that represents an Objective-C method or property declaration, return non-zero if the declaration was affected by "@optional". Returns zero if the cursor is not such a declaration or it is "@required".
+    /// Given a cursor that represents an Objective-C method or property declaration, return non-zero if the declaration was affected by "\@optional". Returns zero if the cursor is not such a declaration or it is "\@required".
     ///</summary>
     public uint Cursor_isObjCOptional()
     {

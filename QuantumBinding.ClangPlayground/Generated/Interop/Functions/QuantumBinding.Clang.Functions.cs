@@ -499,7 +499,7 @@ public static unsafe partial class ClangInterop
     internal static extern int clang_Cursor_isNull(QuantumBinding.Clang.Interop.CXCursor cursor);
 
     ///<summary>
-    /// Given a cursor that represents an Objective-C method or property declaration, return non-zero if the declaration was affected by "@optional". Returns zero if the cursor is not such a declaration or it is "@required".
+    /// Given a cursor that represents an Objective-C method or property declaration, return non-zero if the declaration was affected by "\@optional". Returns zero if the cursor is not such a declaration or it is "\@required".
     ///</summary>
     [DllImport(LibraryPath, EntryPoint = "clang_Cursor_isObjCOptional", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
     internal static extern uint clang_Cursor_isObjCOptional(QuantumBinding.Clang.Interop.CXCursor c);

@@ -224,7 +224,24 @@ public static class ClangUtils
 
     private static string NormalizeTypeName(string name)
     {
-        return name.Replace("const", "").Trim();
+        if (string.IsNullOrEmpty(name)) return name;
+
+        string result = name.Replace("const", "").Trim();
+
+        if (result.StartsWith("enum "))
+        {
+            result = result.Substring(5).Trim();
+        }
+        else if (result.StartsWith("struct "))
+        {
+            result = result.Substring(7).Trim();
+        }
+        else if (result.StartsWith("union "))
+        {
+            result = result.Substring(6).Trim();
+        }
+
+        return result;
     }
 
     public static bool IsPrimitiveType(this QBType type)
