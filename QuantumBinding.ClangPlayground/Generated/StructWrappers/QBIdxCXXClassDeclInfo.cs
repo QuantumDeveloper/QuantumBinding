@@ -27,6 +27,7 @@ public unsafe partial class QBIdxCXXClassDeclInfo : IMarshallableObject, IMarsha
     public System.ReadOnlyMemory<QBIdxBaseClassInfo> Bases { get; set; }
     public uint NumBases { get; set; }
 
+
     public static implicit operator QBIdxCXXClassDeclInfo(QuantumBinding.Clang.Interop.CXIdxCXXClassDeclInfo q)
     {
         return new QBIdxCXXClassDeclInfo(in q);

@@ -26,6 +26,7 @@ public unsafe partial class QBTUResourceUsageEntry : IMarshallableObject, IMarsh
     public CXTUResourceUsageKind Kind { get; set; }
     public uint Amount { get; set; }
 
+
     public static implicit operator QBTUResourceUsageEntry(QuantumBinding.Clang.Interop.CXTUResourceUsageEntry q)
     {
         return new QBTUResourceUsageEntry(in q);

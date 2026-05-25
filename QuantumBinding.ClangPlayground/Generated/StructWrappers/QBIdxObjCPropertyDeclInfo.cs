@@ -27,6 +27,7 @@ public unsafe partial class QBIdxObjCPropertyDeclInfo : IMarshallableObject, IMa
     public QBIdxEntityInfo Getter { get; set; }
     public QBIdxEntityInfo Setter { get; set; }
 
+
     public static implicit operator QBIdxObjCPropertyDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCPropertyDeclInfo q)
     {
         return new QBIdxObjCPropertyDeclInfo(in q);

@@ -30,6 +30,7 @@ public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<Q
     public string Contents { get; set; }
     public uint Length { get; set; }
 
+
     public static implicit operator QBUnsavedFile(QuantumBinding.Clang.Interop.CXUnsavedFile q)
     {
         return new QBUnsavedFile(in q);

@@ -29,6 +29,7 @@ public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<Q
     public System.ReadOnlyMemory<nuint> Ptr_data { get; set; }
     public uint Begin_int_data { get; set; }
     public uint End_int_data { get; set; }
+
     ///<summary>
     /// Determine whether two ranges are equivalent.
     ///</summary>

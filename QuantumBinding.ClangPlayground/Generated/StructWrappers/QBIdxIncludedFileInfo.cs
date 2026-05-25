@@ -33,6 +33,7 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
     public int IsAngled { get; set; }
     public int IsModuleImport { get; set; }
 
+
     public static implicit operator QBIdxIncludedFileInfo(QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo q)
     {
         return new QBIdxIncludedFileInfo(in q);

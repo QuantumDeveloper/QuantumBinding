@@ -26,6 +26,7 @@ public unsafe partial class QBIdxObjCContainerDeclInfo : IMarshallableObject, IM
     public QBIdxDeclInfo DeclInfo { get; set; }
     public CXIdxObjCContainerKind Kind { get; set; }
 
+
     public static implicit operator QBIdxObjCContainerDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCContainerDeclInfo q)
     {
         return new QBIdxObjCContainerDeclInfo(in q);

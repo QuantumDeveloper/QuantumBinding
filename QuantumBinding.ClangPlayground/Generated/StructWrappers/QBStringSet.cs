@@ -25,6 +25,7 @@ public unsafe partial class QBStringSet : IMarshallableObject, IMarshallable<Qua
 
     public QBString Strings { get; set; }
     public uint Count { get; set; }
+
     ///<summary>
     /// Free the given string set.
     ///</summary>

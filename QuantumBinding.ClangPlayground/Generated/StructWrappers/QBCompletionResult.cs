@@ -29,6 +29,7 @@ public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshalla
     public CXCursorKind CursorKind { get; set; }
     public QBCompletionString CompletionString { get; set; }
 
+
     public static implicit operator QBCompletionResult(QuantumBinding.Clang.Interop.CXCompletionResult q)
     {
         return new QBCompletionResult(in q);

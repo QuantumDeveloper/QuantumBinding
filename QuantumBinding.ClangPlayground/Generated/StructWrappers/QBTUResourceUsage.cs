@@ -29,6 +29,7 @@ public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallab
     public nuint Data { get; set; }
     public uint NumEntries { get; set; }
     public QBTUResourceUsageEntry Entries { get; set; }
+
     public void DisposeCXTUResourceUsage()
     {
         using var ctx = new NativeContext(GetSize(), stackalloc byte[(int)QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold]);

@@ -28,6 +28,7 @@ public unsafe partial class QBComment : IMarshallableObject, IMarshallable<Quant
 
     public nuint ASTNode { get; set; }
     public QBTranslationUnit TranslationUnit { get; set; }
+
     ///<summary>
     /// Returns text of the specified word-like argument.
     ///</summary>

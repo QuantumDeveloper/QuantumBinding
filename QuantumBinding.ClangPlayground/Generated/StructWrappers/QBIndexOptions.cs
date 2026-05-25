@@ -36,6 +36,7 @@ public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<
     public string PreambleStoragePath { get; set; }
     public string InvocationEmissionPath { get; set; }
 
+
     public static implicit operator QBIndexOptions(QuantumBinding.Clang.Interop.CXIndexOptions q)
     {
         return new QBIndexOptions(in q);

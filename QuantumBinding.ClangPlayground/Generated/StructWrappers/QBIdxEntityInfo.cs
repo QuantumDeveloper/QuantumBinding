@@ -32,6 +32,7 @@ public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallable
     public System.ReadOnlyMemory<QBIdxAttrInfo> Attributes { get; set; }
     public uint NumAttributes { get; set; }
 
+
     public static implicit operator QBIdxEntityInfo(QuantumBinding.Clang.Interop.CXIdxEntityInfo q)
     {
         return new QBIdxEntityInfo(in q);

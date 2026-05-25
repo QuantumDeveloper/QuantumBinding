@@ -28,6 +28,7 @@ public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallab
 
     public uint Count { get; set; }
     public QBSourceRange Ranges { get; set; }
+
     ///<summary>
     /// Destroy the given CXSourceRangeList.
     ///</summary>

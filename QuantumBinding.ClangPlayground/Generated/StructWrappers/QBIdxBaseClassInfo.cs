@@ -27,6 +27,7 @@ public unsafe partial class QBIdxBaseClassInfo : IMarshallableObject, IMarshalla
     public QBCursor Cursor { get; set; }
     public QBIdxLoc Loc { get; set; }
 
+
     public static implicit operator QBIdxBaseClassInfo(QuantumBinding.Clang.Interop.CXIdxBaseClassInfo q)
     {
         return new QBIdxBaseClassInfo(in q);

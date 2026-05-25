@@ -28,6 +28,7 @@ public unsafe partial class QBCodeCompleteResults : IMarshallableObject, IMarsha
 
     public QBCompletionResult Results { get; set; }
     public uint NumResults { get; set; }
+
     ///<summary>
     /// Free the given set of code-completion results.
     ///</summary>

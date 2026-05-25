@@ -32,6 +32,7 @@ public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarsh
     public QBVersion Obsoleted { get; set; }
     public int Unavailable { get; set; }
     public QBString Message { get; set; }
+
     ///<summary>
     /// Free the memory associated with a CXPlatformAvailability structure.
     ///</summary>

@@ -35,6 +35,7 @@ public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallabl
     public delegate* unmanaged<CXClientData, CXIdxDeclInfo*, void> IndexDeclaration { get; set; }
     public delegate* unmanaged<CXClientData, CXIdxEntityRefInfo*, void> IndexEntityReference { get; set; }
 
+
     public static implicit operator IndexerCallbacks(QuantumBinding.Clang.Interop.IndexerCallbacks i)
     {
         return new IndexerCallbacks(in i);

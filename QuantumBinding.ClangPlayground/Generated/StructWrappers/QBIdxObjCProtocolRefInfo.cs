@@ -27,6 +27,7 @@ public unsafe partial class QBIdxObjCProtocolRefInfo : IMarshallableObject, IMar
     public QBCursor Cursor { get; set; }
     public QBIdxLoc Loc { get; set; }
 
+
     public static implicit operator QBIdxObjCProtocolRefInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefInfo q)
     {
         return new QBIdxObjCProtocolRefInfo(in q);

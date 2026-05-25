@@ -28,6 +28,7 @@ public unsafe partial class QBToken : IMarshallableObject, IMarshallable<Quantum
 
     public System.ReadOnlyMemory<uint> Int_data { get; set; }
     public nuint Ptr_data { get; set; }
+
     ///<summary>
     /// Determine the kind of the given token.
     ///</summary>

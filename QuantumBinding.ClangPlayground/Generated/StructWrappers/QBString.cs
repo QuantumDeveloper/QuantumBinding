@@ -28,6 +28,7 @@ public unsafe partial class QBString : IMarshallableObject, IMarshallable<Quantu
 
     public nuint Data { get; set; }
     public uint Private_flags { get; set; }
+
     ///<summary>
     /// Free the given string.
     ///</summary>

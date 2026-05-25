@@ -31,6 +31,7 @@ public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMar
     public QBIdxLoc Loc { get; set; }
     public int IsImplicit { get; set; }
 
+
     public static implicit operator QBIdxImportedASTFileInfo(QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo q)
     {
         return new QBIdxImportedASTFileInfo(in q);

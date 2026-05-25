@@ -26,6 +26,7 @@ public unsafe partial class QBIdxObjCProtocolRefListInfo : IMarshallableObject, 
     public System.ReadOnlyMemory<QBIdxObjCProtocolRefInfo> Protocols { get; set; }
     public uint NumProtocols { get; set; }
 
+
     public static implicit operator QBIdxObjCProtocolRefListInfo(QuantumBinding.Clang.Interop.CXIdxObjCProtocolRefListInfo q)
     {
         return new QBIdxObjCProtocolRefListInfo(in q);

@@ -27,6 +27,7 @@ public unsafe partial class QBIdxObjCInterfaceDeclInfo : IMarshallableObject, IM
     public QBIdxBaseClassInfo SuperInfo { get; set; }
     public QBIdxObjCProtocolRefListInfo Protocols { get; set; }
 
+
     public static implicit operator QBIdxObjCInterfaceDeclInfo(QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo q)
     {
         return new QBIdxObjCInterfaceDeclInfo(in q);

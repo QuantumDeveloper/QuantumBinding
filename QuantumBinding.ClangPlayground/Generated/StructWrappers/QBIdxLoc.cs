@@ -28,6 +28,7 @@ public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<Quantu
 
     public System.ReadOnlyMemory<nuint> Ptr_data { get; set; }
     public uint Int_data { get; set; }
+
     ///<summary>
     /// Retrieve the CXSourceLocation represented by the given CXIdxLoc.
     ///</summary>
