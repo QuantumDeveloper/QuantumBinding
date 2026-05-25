@@ -603,6 +603,11 @@ public static class TypeUtil
     {
         return type.Declaration is Class { IsWrapper: true };
     }
+    
+    public static bool IsUnionWrapper(this BindingType type)
+    {
+        return type.Declaration is Class { ClassType: ClassType.UnionWrapper };
+    }
 
     public static bool IsSimpleType(this BindingType type)
     {

@@ -209,6 +209,12 @@ public partial class PostProcessingApi : IClassParameters, ISetField, ISetProper
         return this;
     }
 
+    public ISetField SaveInteropSource(bool value)
+    {
+        _currentClass.SaveNativeContext = value;
+        return this;
+    }
+
     ISetField IClassParameters.SetClassType(ClassType classType)
     {
         _currentClass.ClassType = classType;

@@ -12,6 +12,8 @@ public interface IClassParameters
 
     ISetProperty AddProperty(string propertyName);
 
+    ISetField SaveInteropSource(bool value);
+
     ISetField SetClassType(ClassType classType);
 
     IClassParameters SetUnderlyingType(BindingType type);

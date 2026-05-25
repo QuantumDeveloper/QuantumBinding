@@ -119,7 +119,8 @@ public class NormalizeParametersPass : PreGeneratorPass
 
             if (decl is Delegate @delegate)
             {
-                field.Type = new DelegateType() { Name = customType.Name, Declaration = decl };
+                var delegateType = new DelegateType() { Name = customType.Name, Declaration = decl };
+                field.Type = delegateType;
             }
             else
             {

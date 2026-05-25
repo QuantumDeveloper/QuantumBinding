@@ -23,6 +23,8 @@ public class Class: DeclarationUnit
     }
         
     public bool IsWrapper => ClassType is ClassType.StructWrapper or ClassType.UnionWrapper;
+    
+    public bool SaveNativeContext { get; set; }
         
     public ClassType ClassType { get; set; }
 
@@ -201,7 +203,8 @@ public class Class: DeclarationUnit
             interfaces = [..Interfaces],
             Comment = (Comment)Comment?.Clone(),
             IsDispatchable = IsDispatchable,
-            DispatchTable = DispatchTable
+            DispatchTable = DispatchTable,
+            SaveNativeContext = SaveNativeContext
         };
     }
 

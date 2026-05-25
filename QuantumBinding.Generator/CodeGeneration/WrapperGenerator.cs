@@ -212,186 +212,253 @@ public class WrapperGenerator : CSharpCodeGenerator
         WriteLine($"public int GetSize()");
         WriteOpenBraceAndIndent();
         WriteLine($"var size = Marshal.SizeOf<{@class.NativeStruct.FullName}>();");
-
-        foreach (var property in @class.Properties)
+        
+        if (@class.ClassType == ClassType.UnionWrapper)
         {
-            if (property.Type.IsPointerToObject())
+            foreach (var property in @class.Properties)
             {
-                WriteLine($"if ({property.Name} is IMarshallableObject marshallable)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"size += marshallable.GetSize();");
-                UnindentAndWriteCloseBrace();
-            }
-            else if (property.Type.IsString())
-            {
-                WriteLine($"if (!string.IsNullOrEmpty({property.Name}))");
-                PushIndent();
-                WriteLine($"size += System.Text.Encoding.UTF8.GetByteCount({property.Name}) + 1;");
-                PopIndent();
-            }
-            else if (property.Type.IsStringArray())
-            {
-                if (TargetRuntime == TargetRuntime.Net8Plus)
+                if (property.Type.IsPointerToObject())
                 {
-                    WriteLine(
-                        $"size += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}.Span);");
+                    WriteLine($"if ({property.Name} is IMarshallableObject marshallable)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size = Math.Max(size, marshallable.GetSize());");
+                    UnindentAndWriteCloseBrace();
                 }
-                else
+                else if (property.Type.IsString())
                 {
-                    WriteLine($"size += MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name});");
+                    WriteLine($"if (!string.IsNullOrEmpty({property.Name}))");
+                    PushIndent();
+                    WriteLine($"size = Math.Max(size, System.Text.Encoding.UTF8.GetByteCount({property.Name}) + 1);");
+                    PopIndent();
                 }
-            }
-            else if (property.Type.IsPointerToArray(out var arrayType, out var depth))
-            {
-                if (property.Type.IsConstArray())
-                    continue;
-                    
-                var declaration = property.Type.Declaration as Class;
-                if (declaration is { IsWrapper: true })
+                else if (property.Type.IsStringArray())
                 {
                     if (TargetRuntime == TargetRuntime.Net8Plus)
                     {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
+                        WriteLine(
+                            $"size = Math.Max(size, QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}.Span));");
                     }
                     else
                     {
-                        WriteLine($"if ({property.Name} is not null)");
+                        WriteLine($"size = Math.Max(size, MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}));");
                     }
+                }
+                else if (property.Type.IsPointerToWrapper(out var wrapper))
+                {
+                    WriteLine($"if ({property.Name} != default)");
                     WriteOpenBraceAndIndent();
-                    WriteLine($"for (int i = 0; i < {property.Name}.Length; i++)");
+                    WriteLine($"size = Math.Max(size, {property.Name}.GetSize());");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsPointerToSimpleType())
+                {
+                    WriteLine($"if ({property.Name} != default)");
                     WriteOpenBraceAndIndent();
-
+                    WriteLine($"size = Math.Max(size, Marshal.SizeOf<{property.Type.Declaration.FullName}>());");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsDoublePointer())
+                {
+                    WriteLine($"if (!{property.Name}.IsEmpty)");
+                    PushIndent();
+                    WriteLine($"size = Math.Max(size, Marshal.SizeOf<nuint>());");
+                    PopIndent();
+                }
+            }
+        }
+        else
+        {
+            foreach (var property in @class.Properties)
+            {
+                if (property.Type.IsPointerToObject())
+                {
+                    WriteLine($"if ({property.Name} is IMarshallableObject marshallable)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size += marshallable.GetSize();");
+                    UnindentAndWriteCloseBrace();
+                }
+                else if (property.Type.IsString())
+                {
+                    WriteLine($"if (!string.IsNullOrEmpty({property.Name}))");
+                    PushIndent();
+                    WriteLine($"size += System.Text.Encoding.UTF8.GetByteCount({property.Name}) + 1;");
+                    PopIndent();
+                }
+                else if (property.Type.IsStringArray())
+                {
                     if (TargetRuntime == TargetRuntime.Net8Plus)
                     {
-                        WriteLine($"if ({property.Name}.Span[i] == null)");
+                        WriteLine(
+                            $"size += QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name}.Span);");
                     }
                     else
                     {
-                        WriteLine($"if ({property.Name}[i] == null)");
+                        WriteLine($"size += MarshalContextUtils.CalculateRequiredSizeForStringArray({property.Name});");
                     }
-
-                    PushIndent();
-                    WriteLine($"size += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                    PopIndent();
-                    WriteLine("else");
-                    PushIndent();
-                    WriteLine(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span[i].GetSize();"
-                        : $"size += {property.Name}[i].GetSize();");
-                    PopIndent();
-                    UnindentAndWriteCloseBrace();
-                    UnindentAndWriteCloseBrace();
                 }
-                else if (declaration is { ClassType: ClassType.Class })
+                else if (property.Type.IsPointerToArray(out var arrayType, out var depth))
                 {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
+                    if (property.Type.IsConstArray())
+                        continue;
+
+                    var declaration = property.Type.Declaration as Class;
+                    if (declaration is { IsWrapper: true })
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        WriteOpenBraceAndIndent();
+                        WriteLine($"for (int i = 0; i < {property.Name}.Length; i++)");
+                        WriteOpenBraceAndIndent();
+
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if ({property.Name}.Span[i] == null)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name}[i] == null)");
+                        }
+
+                        PushIndent();
+                        WriteLine($"size += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        PopIndent();
+                        WriteLine("else");
+                        PushIndent();
+                        WriteLine(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span[i].GetSize();"
+                            : $"size += {property.Name}[i].GetSize();");
+                        PopIndent();
+                        UnindentAndWriteCloseBrace();
+                        UnindentAndWriteCloseBrace();
+                    }
+                    else if (declaration is { ClassType: ClassType.Class })
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                            PushIndent();
+                            WriteLine(
+                                $"size += {property.Name}.Span.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                            PopIndent();
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                            PushIndent();
+                            WriteLine(
+                                $"size += {property.Name}.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                            PopIndent();
+                        }
+                    }
+                    else if (property.Type.IsPointerToArrayOfHandleWrappers())
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        PushIndent();
+                        Write(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span.Length"
+                            : $"size += {property.Name}.Length");
+                        Write($" * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        NewLine();
+                        PopIndent();
+                    }
+                    else if (property.Type.IsPointerToArrayOfEnums())
+                    {
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        var decl = property.Type.Declaration as Enumeration;
+                        PushIndent();
+                        Write(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span.Length"
+                            : $"size += {property.Name}.Length");
+                        Write($" * sizeof({decl.InheritanceType});");
+                        NewLine();
+                        PopIndent();
+                    }
+                    else if (property.Type.IsPointerToArrayOfPrimitiveTypes(out var primitiveType))
+                    {
+                        if (primitiveType.Type == PrimitiveType.Void)
+                        {
+                            primitiveType.Type = PrimitiveType.Nuint;
+                        }
+
+                        if (TargetRuntime == TargetRuntime.Net8Plus)
+                        {
+                            WriteLine($"if (!{property.Name}.IsEmpty)");
+                        }
+                        else
+                        {
+                            WriteLine($"if ({property.Name} is not null)");
+                        }
+
+                        PushIndent();
+                        Write(TargetRuntime == TargetRuntime.Net8Plus
+                            ? $"size += {property.Name}.Span.Length"
+                            : $"size += {property.Name}.Length");
+                        Write($" * Marshal.SizeOf<{primitiveType.Type.GetDisplayName()}>();");
+                        NewLine();
+                        PopIndent();
+                    }
+                    else if (depth >= 2 && arrayType.ElementType.IsPrimitiveType)
                     {
                         WriteLine($"if (!{property.Name}.IsEmpty)");
                         PushIndent();
-                        WriteLine($"size += {property.Name}.Span.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                        PopIndent();
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                        PushIndent();
-                        WriteLine($"size += {property.Name}.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        WriteLine($"size += Marshal.SizeOf<nuint>();");
                         PopIndent();
                     }
                 }
-                else if (property.Type.IsPointerToArrayOfHandleWrappers())
+                else if (property.Type.IsPointerToWrapper(out var wrapper))
                 {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                    }
-                        
-                    PushIndent();
-                    Write(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span.Length"
-                        : $"size += {property.Name}.Length");
-                    Write($" * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
-                    NewLine();
-                    PopIndent();
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size += {property.Name}.GetSize();");
+                    UnindentAndWriteCloseBrace();
                 }
-                else if (property.Type.IsPointerToArrayOfEnums())
+                else if (property.Type.IsPointerToSimpleType())
                 {
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                    }
-                        
-                    var decl = property.Type.Declaration as Enumeration;
-                    PushIndent();
-                    Write(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span.Length"
-                        : $"size += {property.Name}.Length");
-                    Write($" * sizeof({decl.InheritanceType});");
-                    NewLine();
-                    PopIndent();
+                    WriteLine($"if ({property.Name} != default)");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"size += Marshal.SizeOf<{property.Type.Declaration.FullName}>();");
+                    UnindentAndWriteCloseBrace();
                 }
-                else if (property.Type.IsPointerToArrayOfPrimitiveTypes(out var primitiveType))
-                {
-                    if (primitiveType.Type == PrimitiveType.Void)
-                    {
-                        primitiveType.Type = PrimitiveType.Nuint;
-                    }
-                    
-                    if (TargetRuntime == TargetRuntime.Net8Plus)
-                    {
-                        WriteLine($"if (!{property.Name}.IsEmpty)");
-                    }
-                    else
-                    {
-                        WriteLine($"if ({property.Name} is not null)");
-                    }
-                        
-                    PushIndent();
-                    Write(TargetRuntime == TargetRuntime.Net8Plus
-                        ? $"size += {property.Name}.Span.Length"
-                        : $"size += {property.Name}.Length");
-                    Write($" * Marshal.SizeOf<{primitiveType.Type.GetDisplayName()}>();");
-                    NewLine();
-                    PopIndent();
-                }
-                else if (depth >= 2 && arrayType.ElementType.IsPrimitiveType)
+                else if (property.Type.IsDoublePointer())
                 {
                     WriteLine($"if (!{property.Name}.IsEmpty)");
                     PushIndent();
                     WriteLine($"size += Marshal.SizeOf<nuint>();");
                     PopIndent();
                 }
-            }
-            else if (property.Type.IsPointerToWrapper(out var wrapper))
-            {
-                WriteLine($"if ({property.Name} != default)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"size += {property.Name}.GetSize();");
-                UnindentAndWriteCloseBrace();
-            }
-            else if (property.Type.IsPointerToSimpleType())
-            {
-                WriteLine($"if ({property.Name} != default)");
-                WriteOpenBraceAndIndent();
-                WriteLine($"size += Marshal.SizeOf<{property.Type.Declaration.FullName}>();");
-                UnindentAndWriteCloseBrace();
-            }
-            else if (property.Type.IsDoublePointer())
-            {
-                WriteLine($"if (!{property.Name}.IsEmpty)");
-                PushIndent();
-                WriteLine($"size += Marshal.SizeOf<nuint>();");
-                PopIndent();
+                else if (property.Type.IsUnionWrapper())
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    PushIndent();
+                    WriteLine($"size += {property.Name}.GetSize();");
+                    PopIndent();
+                }
             }
         }
+
         WriteLine($"return size;");
         UnindentAndWriteCloseBrace();
     }
@@ -434,6 +501,11 @@ public class WrapperGenerator : CSharpCodeGenerator
     {
         PushBlock(CodeBlockKind.Constructor);
         int constArrayIndex = 0;
+
+        if (@class.SaveNativeContext)
+        {
+            WriteLine($"{CurrentTranslationUnit.Module.WrapperInteropSourceName} = {@class.NativeStructFieldName};");
+        }
 
         foreach (var property in @class.Properties)
         {
@@ -986,6 +1058,13 @@ public class WrapperGenerator : CSharpCodeGenerator
             NewLine();
 
             PopBlock();
+        }
+        
+        NewLine();
+
+        if (@class.SaveNativeContext)
+        {
+            Write($"public {@class.NativeStruct.FullName} {CurrentTranslationUnit.Module.WrapperInteropSourceName} {{get; set;}}");
         }
     }
 

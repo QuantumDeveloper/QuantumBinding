@@ -83,6 +83,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
             WriteLine($"int CalculateSize({parametersResult})");
             WriteOpenBraceAndIndent();
             WriteLine($"int {totalSizeName} = 0;");
+
             foreach (var parameter in parameters)
             {
                 if (parameter.Type.IsConstArray(out var size))
@@ -117,7 +118,13 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                 }
                 else if (parameter.Type.IsPointerToArrayOfPrimitiveTypes(out var elementType))
                 {
-                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({elementType.Type.GetDisplayName()});");
+                    var primitiveType = elementType.Type;
+                    string typeName = primitiveType.GetDisplayName();
+                    if (primitiveType == PrimitiveType.Void)
+                    {
+                        typeName = PrimitiveType.Nuint.GetDisplayName();
+                    }
+                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof({typeName});");
                 }
                 else if (parameter.Type.IsPointerToArrayOfEnums())
                 {
@@ -130,7 +137,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                     WriteForLoop($"{parameter.Name}.Length",
                         () =>
                         {
-                            if (declaration != null && declaration.IsWrapper)
+                            if (declaration is { IsWrapper: true })
                             {
                                 WriteLine($"if({parameter.Name}[(int)i] == null)");
                                 PushIndent();

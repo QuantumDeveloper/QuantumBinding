@@ -20,6 +20,7 @@ public class PostProcessingApiPass : PreGeneratorPass
         Options.VisitDelegates = true;
         Options.VisitClasses = true;
         Options.VisitEnums = true;
+        Options.VisitMacros = true;
     }
 
     public override void OnBeforeUnitRun(TranslationUnit unit)
@@ -113,6 +114,24 @@ public class PostProcessingApiPass : PreGeneratorPass
         }
 
         return decl;
+    }
+
+    public override bool VisitMacro(Macro macro)
+    {
+        if (IsVisited(macro))
+        {
+            return false;
+        }
+        
+        if (!fixApi.TryGetMacro(macro.Name, false, out var macroExtension))
+        {
+            return false;
+        }
+        
+        macro.PrimitiveType = macroExtension.PrimitiveType;
+        macro.Type = new BuiltinType(macro.PrimitiveType);
+        
+        return base.VisitMacro(macro);
     }
 
     public override bool VisitFunction(Function function)
@@ -265,6 +284,8 @@ public class PostProcessingApiPass : PreGeneratorPass
         {
             return false;
         }
+
+        @class.SaveNativeContext = classFix.SaveNativeContext;
 
         if (classFix.IsDisposable)
         {
