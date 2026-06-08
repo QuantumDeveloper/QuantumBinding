@@ -264,6 +264,13 @@ public class WrapperGenerator : CSharpCodeGenerator
                     WriteLine($"size = Math.Max(size, Marshal.SizeOf<nuint>());");
                     PopIndent();
                 }
+                else if (property.Type.IsUnionWrapper())
+                {
+                    WriteLine($"if ({property.Name} != default)");
+                    PushIndent();
+                    WriteLine($"size = Math.Max(size, {property.Name}.GetSize());");
+                    PopIndent();
+                }
             }
         }
         else
@@ -622,6 +629,16 @@ public class WrapperGenerator : CSharpCodeGenerator
         int structIndex = 0;
         int pointerArrayIndex = 0;
         int constArrayIndex = 0;
+        
+        var isUnion = @class.ClassType == ClassType.UnionWrapper;
+        
+        void WriteUnionCondition()
+        {
+            if (isUnion)
+            {
+                WriteLine($"return;");
+            }
+        }
 
         PushBlock(CodeBlockKind.Method);
         foreach (var property in @class.Properties)
@@ -642,6 +659,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                 }
                 else
                 {
+                    bool shouldApplyUnionCondition = false;
                     if (property.Type.IsPointerToObject())
                     {
                         if (TargetRuntime == TargetRuntime.Net8Plus)
@@ -690,6 +708,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                     else
                     {
                         WriteLine($"if ({@class.InputClassName}.{property.Name} != default)");
+                        shouldApplyUnionCondition = true;
                     }
                         
                     WriteOpenBraceAndIndent();
@@ -734,6 +753,9 @@ public class WrapperGenerator : CSharpCodeGenerator
                     {
                         MarshalStructToPointer(property, @class, contextName, structIndex);
                     }
+                    
+                    if (shouldApplyUnionCondition)
+                        WriteUnionCondition();
 
                     UnindentAndWriteCloseBrace();
                 }
@@ -797,16 +819,38 @@ public class WrapperGenerator : CSharpCodeGenerator
                             WriteLine($"if ({@class.InputClassName}.{property.Name} != ({nativeTypeName})default)");
                             WriteOpenBraceAndIndent();
                             WriteLine($"{contextName}.Destination[0].{property.Field.Name} = {@class.InputClassName}.{property.Name};");
+                            if (@class.ClassType == ClassType.UnionWrapper)
+                            {
+                                WriteLine($"return;");
+                            }
                             UnindentAndWriteCloseBrace();
                         }
                         else
                         {
+                            if (@class.ClassType == ClassType.UnionWrapper)
+                            {
+                                WriteLine($"if ({@class.InputClassName}.{property.Name} != default)");
+                                WriteOpenBraceAndIndent();
+                            }
+                            
                             WriteLine($"{contextName}.Destination[0].{property.Field.Name} = {@class.InputClassName}.{property.Name};");
+                            
+                            if (@class.ClassType == ClassType.UnionWrapper)
+                            {
+                                WriteLine("return;");
+                                UnindentAndWriteCloseBrace();
+                            }
                         }
                     }
 
                     void MarshalFromWrappedToNative(BuiltinType builtin)
                     {
+                        if (@class.ClassType == ClassType.UnionWrapper)
+                        {
+                            WriteLine($"if ({@class.InputClassName}.{property.Name} != default)");
+                            WriteOpenBraceAndIndent();
+                        }
+                        
                         switch (builtin.Type)
                         {
                             case PrimitiveType.Bool:
@@ -819,6 +863,12 @@ public class WrapperGenerator : CSharpCodeGenerator
                                 WriteLine($"{contextName}.Destination[0].{property.Field.Name} = {@class.InputClassName}.{property.Name};");
                                 break;
                         }
+                        
+                        if (@class.ClassType == ClassType.UnionWrapper)
+                        {
+                            WriteLine("return;");
+                            UnindentAndWriteCloseBrace();
+                        }
                     }
                 }
             }
@@ -829,6 +879,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                 WriteLine($"if ({@class.InputClassName}.{property.Name} != default)");
                 WriteOpenBraceAndIndent();
                 action?.Invoke();
+                WriteUnionCondition();
                 UnindentAndWriteCloseBrace();
             }
         }
