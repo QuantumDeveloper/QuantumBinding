@@ -29,11 +29,6 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
             return false;
         }
 
-        if (function.Name == "vkGetSemaphoreWin32HandleKHR")
-        {
-            int x = 0;
-        }
-
         Class @class = null;
         // Create a method in global scope
         // Case if the function has more than 0 parameters or zero parameters, but with return type != void

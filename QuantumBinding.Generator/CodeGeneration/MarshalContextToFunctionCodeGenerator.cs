@@ -191,11 +191,6 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
 
     protected void MarshalSimpleType(Parameter parameter, string argumentName)
     {
-        if (Method.Name == "GetSemaphoreWin32HandleKHR" && parameter.Name == "pHandle")
-        {
-            int x = 0;
-        }
-        
         if (parameter.Type.IsConstArray(out int arraySize))
         {
             WriteLine(
@@ -298,11 +293,6 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             {
                 var p = Method.Parameters.FirstOrDefault(x => x.Id == parameter.Id);
                 classDecl = p.Type.Declaration as Class;
-            }
-            
-            if (Method.Name == "GetSemaphoreWin32HandleKHR" && parameter.Name == "pHandle")
-            {
-                int x = 0;
             }
             
             if (classDecl.ClassType == ClassType.Class && !parameter.Type.IsPointerToArray())

@@ -163,10 +163,6 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
 
     protected virtual void GenerateDeclaration(Declaration declaration)
     {
-        if (Category is GeneratorCategory.ExtensionMethods)
-        {
-            int x = 0;
-        }
         switch (declaration)
         {
             case Enumeration @enum:
