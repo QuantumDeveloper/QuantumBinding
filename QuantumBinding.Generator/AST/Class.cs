@@ -83,9 +83,11 @@ public class Class: DeclarationUnit
         
     public string MarshalerStructName => $"{NativeStruct.Name}Marshaller";
 
-    public List<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
+    public IReadOnlyList<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
 
-    public List<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
+    public IReadOnlyList<Method> StaticMethods => methods.Where(x => !x.IsStatic).ToList();
+
+    public IReadOnlyList<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
 
     public IReadOnlyCollection<Method> AllMethods => methods;
 
@@ -149,7 +151,7 @@ public class Class: DeclarationUnit
 
     public void ClearMethods()
     {
-        Methods.Clear();
+        methods.Clear();
     }
         
     public void ClearFields()
@@ -160,6 +162,7 @@ public class Class: DeclarationUnit
     public void AddMethod(Method method)
     {
         if (method == null) return;
+        
         methods.Add(method);
     }
         

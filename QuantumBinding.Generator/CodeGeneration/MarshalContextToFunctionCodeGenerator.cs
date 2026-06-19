@@ -68,7 +68,6 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             
         bool isVoid = method.ReturnType.IsPrimitiveTypeEquals(PrimitiveType.Void);
 
-        var parametersResult = TypePrinter.VisitParameters(parameters, MarshalTypes.MethodParameter, method.IsExtensionMethod);
         var returnType = "void";
         if (!isVoid)
         {
@@ -84,7 +83,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         }
 
         int index = 0;
-        _isInstanceMethod = method.Class != null;
+        _isInstanceMethod = method.Class != null && !method.IsStatic && !method.IsExtensionMethod;
 
         for (var paramIndex = 0; paramIndex < method.Function.Parameters.Count; paramIndex++)
         {
@@ -130,7 +129,14 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         if (method.IsInstanceMethod && method.Class.IsDispatchable && method.Class.DispatchTable != null && !method.Class.DispatchTable.FunctionsToIgnore.Contains(method.Function.Name))
         {
             var parametersSting = TypePrinter.VisitParameters(NativeParameters, MarshalTypes.NativeFunctionCall);
-            Write($"{method.Class.DispatchFieldName}.{method.Function.Name}({parametersSting});");
+            if (method.IsExtensionMethod || method.IsStatic)
+            {
+                Write($"{method.Parameters.First().Name}.{method.Class.DispatchFieldName}.{method.Function.Name}({parametersSting});");
+            }
+            else
+            {
+                Write($"{method.Class.DispatchFieldName}.{method.Function.Name}({parametersSting});");
+            }
         }
         else
         {
@@ -185,6 +191,11 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
 
     protected void MarshalSimpleType(Parameter parameter, string argumentName)
     {
+        if (Method.Name == "GetSemaphoreWin32HandleKHR" && parameter.Name == "pHandle")
+        {
+            int x = 0;
+        }
+        
         if (parameter.Type.IsConstArray(out int arraySize))
         {
             WriteLine(
@@ -240,22 +251,32 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
     {
         var pointerType = parameter.Type as PointerType;
         var depth = pointerType.GetDepth();
+        string conversionType = "nuint";
+        if (pointerType.IsPointerToIntPtr())
+        {
+            conversionType = "nint";
+        }
         
         if (parameter.ParameterKind is ParameterKind.Out or ParameterKind.Ref)
         {
+            if (depth > 1)
+            {
+                depth--;
+            }
+            
             if (parameter.ParameterKind == ParameterKind.Out)
             {
-                WriteLine($"void{GetPointerString(depth)} {argumentName} = null;");
+                WriteLine($"void{GetPointerString(depth)} {argumentName} = {Default};");
             }
             else
             {
                 WriteLine($"void{GetPointerString(depth)} {argumentName} = (void{GetPointerString(depth)}){parameter.Name};");
             }
             
-            CreateNativeParameter(parameter, argumentName, parameter.Type.Declaration);
+            CreateNativeParameter(parameter, $"&{argumentName}", parameter.Type.Declaration);
             PostActions.Enqueue(() =>
             {
-                WriteLine($"{parameter.Name} = (nuint){argumentName};");
+                WriteLine($"{parameter.Name} = ({conversionType}){argumentName};");
             });
         }
         else
@@ -279,13 +300,21 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 classDecl = p.Type.Declaration as Class;
             }
             
+            if (Method.Name == "GetSemaphoreWin32HandleKHR" && parameter.Name == "pHandle")
+            {
+                int x = 0;
+            }
+            
             if (classDecl.ClassType == ClassType.Class && !parameter.Type.IsPointerToArray())
             {
                 if (classDecl == Method.Class && parameter.Index == 0)
                 {
-                    if (!Method.IsStatic)
+                    if (Method.IsExtensionMethod)
                     {
-                        //argumentName = parameter.Name;
+                        argumentName = parameter.Name;
+                    }
+                    else if (IsInstanceMethod)
+                    {
                         argumentName = "this";
                     }
                 }

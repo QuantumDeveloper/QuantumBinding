@@ -29,6 +29,11 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
             return false;
         }
 
+        if (function.Name == "vkGetSemaphoreWin32HandleKHR")
+        {
+            int x = 0;
+        }
+
         Class @class = null;
         // Create a method in global scope
         // Case if the function has more than 0 parameters or zero parameters, but with return type != void
@@ -86,8 +91,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
 
         if (@class.Owner != function.Owner)
         {
-            isExtension = true;
-            method.IsExtensionMethod = true;
+            isExtension = true; 
         }
 
         method.Function = function;
@@ -106,7 +110,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
                 method.Parameters.Add(param);
             }
 
-            method.IsStatic = true;
+            method.IsExtensionMethod = true;
         }
         else
         {
@@ -145,6 +149,9 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
 
         method.Class = @class;
         @class.AddMethod(method);
+        
+        if (method.IsExtensionMethod)
+            CurrentNamespace.AddDeclaration(method);
 
         if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !_skipOverloadList.Contains(function.Name))
         {
