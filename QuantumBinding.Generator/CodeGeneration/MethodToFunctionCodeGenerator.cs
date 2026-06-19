@@ -42,9 +42,13 @@ public class MethodToFunctionCodeGenerator : MarshalContextToFunctionCodeGenerat
             {
                 if (classDecl == Method.Class && parameter.Index == 0)
                 {
-                    if (!Method.IsStatic)
+                    if (Method.IsExtensionMethod)
                     {
-                        argumentName = "this"; // pass this as the first parameter to avoid additional copying of memory
+                        argumentName = parameter.Name;
+                    }
+                    else if (IsInstanceMethod)
+                    {
+                        argumentName = "this";
                     }
                 }
 

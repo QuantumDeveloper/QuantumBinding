@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Utils;
@@ -58,6 +59,9 @@ public class BasicCodeGeneratorPass : CodeGeneratorPass
                 return new List<CodeGenerator>() { methodsGenerator };
             case GeneratorSpecializations.Extensions:
                 return ProcessDeclarations(unit.ExtensionClasses, unit);
+            case GeneratorSpecializations.ExtensionMethods:
+                var extensionClasses = unit.ExtensionMethods.Where(x=>x.Class != null).Select(x => x.Class).Distinct().ToList();
+                return ProcessDeclarations(extensionClasses, unit, GeneratorCategory.ExtensionMethods);
             default:
                 return new List<CodeGenerator>();
         }

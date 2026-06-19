@@ -57,8 +57,12 @@ public abstract class DeclarationUnit : Declaration
     public IReadOnlyList<Function> Functions =>
         _declarations.Where(x => x is Function && !(x is Method)).OfType<Function>().ToList();
 
-    public IReadOnlyList<Method> StaticMethods => _declarations.Where(x => x is Method).OfType<Method>().ToList();
+    public IReadOnlyList<Method> StaticMethods =>
+        _declarations.Where(x => x is Method { IsStatic: true }).OfType<Method>().ToList();
 
+    public IReadOnlyList<Method> ExtensionMethods =>
+        _declarations.Where(x => x is Method { IsExtensionMethod: true }).OfType<Method>().ToList();
+    
     public IReadOnlyList<Declaration> Declarations => _declarations;
 
     public IReadOnlyList<Declaration> IgnoredDeclarations =>

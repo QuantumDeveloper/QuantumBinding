@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangGenerat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Clang", "QuantumBinding.Clang\QuantumBinding.Clang.csproj", "{7E8412B8-C462-4B54-A699-17A49AFEB6E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangPlayground", "QuantumBinding.ClangPlayground\QuantumBinding.ClangPlayground.csproj", "{F17A117C-F270-4570-BC2F-ACDBDC5F8095}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.ClangSandbox", "QuantumBinding.ClangSandbox\QuantumBinding.ClangSandbox.csproj", "{F17A117C-F270-4570-BC2F-ACDBDC5F8095}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuantumBinding.Utils", "QuantumBinding.Utils\QuantumBinding.Utils.csproj", "{2AC570AD-CEF8-4CD1-9040-B1D876EA12BB}"
 EndProject
