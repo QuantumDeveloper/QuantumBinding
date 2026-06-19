@@ -798,7 +798,7 @@ public class CSharpTypePrinter : TypePrinter
     {
         StringBuilder builder = new StringBuilder();
         builder.Append($"{GetAccessSpecifier(method.AccessSpecifier)}");
-        if (method.IsStatic)
+        if (method.IsStatic || method.IsExtensionMethod)
         {
             builder.Append(" static");
         }

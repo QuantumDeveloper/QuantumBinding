@@ -15,6 +15,8 @@ public static class DeclarationUtils
                 return GeneratorCategory.DispatchTables;
             case Enumeration:
                 return GeneratorCategory.Enums;
+            case Method { IsExtensionMethod: true } method:
+                return GeneratorCategory.ExtensionMethods;
             case Class @class:
                 switch (@class.ClassType)
                 {

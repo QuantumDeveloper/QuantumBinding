@@ -219,6 +219,8 @@ public class MethodToRefStructCodeGenerator : TextGenerator
     {
         WriteLine($"byte[] rentedArray = null;");
         WriteLine($"var mainBuffer = totalSize <= {StackAllocThresholdPropertyName} ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);");
+        WriteLine("fixed (byte* bufferPtr = mainBuffer)");
+        WriteOpenBraceAndIndent();
         WriteLine($"try");
         WriteOpenBraceAndIndent();
         action?.Invoke();
@@ -229,6 +231,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
         PushIndent();
         WriteLine($"System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);");
         PopIndent();
+        UnindentAndWriteCloseBrace();
         UnindentAndWriteCloseBrace();
     }
 }

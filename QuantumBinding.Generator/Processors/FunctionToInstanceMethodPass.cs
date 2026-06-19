@@ -86,8 +86,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
 
         if (@class.Owner != function.Owner)
         {
-            isExtension = true;
-            method.IsExtensionMethod = true;
+            isExtension = true; 
         }
 
         method.Function = function;
@@ -106,7 +105,7 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
                 method.Parameters.Add(param);
             }
 
-            method.IsStatic = true;
+            method.IsExtensionMethod = true;
         }
         else
         {
@@ -145,6 +144,9 @@ public class FunctionToInstanceMethodPass : PreGeneratorPass
 
         method.Class = @class;
         @class.AddMethod(method);
+        
+        if (method.IsExtensionMethod)
+            CurrentNamespace.AddDeclaration(method);
 
         if (CurrentNamespace.Module.GenerateOverloadsForArrayParams && !_skipOverloadList.Contains(function.Name))
         {

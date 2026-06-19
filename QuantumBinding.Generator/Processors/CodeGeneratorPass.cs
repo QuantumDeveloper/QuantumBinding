@@ -115,12 +115,13 @@ public abstract class CodeGeneratorPass : ICodeGenerationPass
         return outputs;
     }
         
-    protected List<CodeGenerator> ProcessDeclarations(IEnumerable<Declaration> declarations, TranslationUnit unit)
+    protected List<CodeGenerator> ProcessDeclarations(IEnumerable<Declaration> declarations, TranslationUnit unit, GeneratorCategory category = GeneratorCategory.Undefined)
     {
         var codeGenerators = new List<CodeGenerator>();
         foreach (var type in declarations)
         {
-            var category = type.GetCategory();
+            if (category == GeneratorCategory.Undefined)
+                category = type.GetCategory();
 
             var generator = OnCreateGenerator(category, unit);
             generator.Run(type);

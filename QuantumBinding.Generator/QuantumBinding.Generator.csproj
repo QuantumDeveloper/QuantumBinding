@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QuantumBinding.Clang\QuantumBinding.Clang.csproj" />
-<!--    <ProjectReference Include="..\QuantumBinding.ClangPlayground\QuantumBinding.ClangPlayground.csproj" />-->
+<!--    <ProjectReference Include="..\QuantumBinding.ClangSandbox\QuantumBinding.ClangSandbox.csproj" />-->
   </ItemGroup>
 
 </Project>

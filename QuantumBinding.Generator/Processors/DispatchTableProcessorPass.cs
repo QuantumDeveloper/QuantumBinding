@@ -24,21 +24,31 @@ public class DispatchTableProcessorPass : PreGeneratorPass
             var classHandle = CurrentNamespace.Classes.FirstOrDefault(x=>x.Name == handle);
             foreach (var method in classHandle.Methods)
             {
-                if (method.IsOverload)
-                    continue;
-                
-                var function = method.Function;
-                
-                if (dispatchTable.FunctionsToIgnore.Contains(function.Name))
-                    continue;
-                
-                var field = new Field();
-                field.Name = function.Name;
-                var returnParameter = new Parameter();
-                returnParameter.Type = function.ReturnType;
-                field.Type = new DelegateType() { Name = function.Name, Parameters = [..function.Parameters, returnParameter] };
-                dispatchTable.AddField(field);
+                ProcessDispatchableMethod(method);
             }
+            
+            foreach (var method in classHandle.ExtensionMethods)
+            {
+                ProcessDispatchableMethod(method);
+            }
+        }
+
+        void ProcessDispatchableMethod(Method method)
+        {
+            if (method.IsOverload)
+                return;
+                
+            var function = method.Function;
+                
+            if (dispatchTable.FunctionsToIgnore.Contains(function.Name))
+                return;
+                
+            var field = new Field();
+            field.Name = function.Name;
+            var returnParameter = new Parameter();
+            returnParameter.Type = function.ReturnType;
+            field.Type = new DelegateType() { Name = function.Name, Parameters = [..function.Parameters, returnParameter] };
+            dispatchTable.AddField(field);
         }
 
         return true;
