@@ -21,6 +21,7 @@ public class TextGenerator: ITextGenerator
     public static string MarshalContextUtilsArrayOfHandleWrappers => "QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfHandleWrappers";
     public static string MarshalContextUtilsBlittableArray => "QuantumBinding.Utils.MarshalContextUtils.MarshalBlittableArray";
     public static string MarshalContextUtilsUnmarshalBlittableArray => "QuantumBinding.Utils.MarshalContextUtils.UnmarshalBlittableArray";
+    public static string MarshalContextUtilsCopyNativeToSpan => "QuantumBinding.Utils.MarshalContextUtils.CopyNativeToSpan";
     public static string MarshalContextUtilsAllocatePointerForArray => "QuantumBinding.Utils.MarshalContextUtils.AllocatePointerArray";
     public static string MarshalContextCalculateSizeForStringArray => "QuantumBinding.Utils.MarshalContextUtils.CalculateRequiredSizeForStringArray";
     public static string MarshalContextStringToPointer => "QuantumBinding.Utils.MarshalContextUtils.MarshalString";
