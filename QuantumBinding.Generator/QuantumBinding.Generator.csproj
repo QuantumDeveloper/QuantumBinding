@@ -26,6 +26,12 @@
     <Content Include="libclang.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <!-- clang's builtin resource headers (stddef.h/stdint.h/stdbool.h + shards), so libclang can resolve <stdint.h>
+         when driven programmatically. Copied next to libclang.dll in the output; see ClangParser -resource-dir. -->
+    <Content Include="clang-resource\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>clang-resource\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
