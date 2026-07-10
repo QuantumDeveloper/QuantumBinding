@@ -340,7 +340,9 @@ public static class ClangUtils
     public static PrimitiveType GetPrimitiveType(this QBType type)
     {
         var canonical = type.GetCanonicalType();
-        switch (type.Kind)
+        // Switch on the CANONICAL kind: newer libclang hands back typedef sugar (uint32_t -> unsigned int) whose raw
+        // Kind is CXType_Typedef, missing every primitive case; the canonical kind is the real underlying primitive.
+        switch (canonical.Kind)
         {
             case CXTypeKind.CXType_Bool:
                 return PrimitiveType.Bool;

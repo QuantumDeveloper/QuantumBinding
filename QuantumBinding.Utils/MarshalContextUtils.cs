@@ -88,6 +88,22 @@ public static unsafe class MarshalContextUtils
         }
         return destination;
     }
+
+    /// <summary>
+    /// Copies <paramref name="count"/> native elements into a caller-owned <see cref="Span{T}"/> (clamped to the span's
+    /// length). Used for two-call "query then fill" APIs whose managed parameter is a <c>Span&lt;T&gt;</c>: the span is
+    /// passed by value, so reassigning it (as <see cref="UnmarshalBlittableArray{TBlittable}"/> did) never reaches the
+    /// caller's buffer - the data must be copied INTO the span.
+    /// </summary>
+    public static void CopyNativeToSpan<TBlittable>(TBlittable* source, long count, Span<TBlittable> destination)
+        where TBlittable : unmanaged
+    {
+        if (source == null || count <= 0 || destination.IsEmpty)
+            return;
+
+        var copyCount = (int)Math.Min(count, destination.Length);
+        new ReadOnlySpan<TBlittable>(source, copyCount).CopyTo(destination);
+    }
     
     public static TNative* AllocatePointerArray<TNative>(
         int count,

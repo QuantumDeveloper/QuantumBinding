@@ -96,6 +96,22 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
             "-fparse-all-comments"                  //To make clang parse comments
         };
 
+        // Point clang at its builtin resource headers (stddef.h/stdint.h/stdbool.h). libclang, when driven
+        // programmatically, does NOT auto-detect a toolchain, so without this it can't resolve <stdint.h> and every
+        // uint32_t degrades to int (+ comment loss). The headers ship in the repo next to libclang.dll
+        // (clang-resource/include, copied to the output dir), so this works out of the box for anyone who clones;
+        // CLANG_RESOURCE_DIR overrides it. The dir passed is the one whose /include holds the headers.
+        var bundledResourceDir = System.IO.Path.Combine(AppContext.BaseDirectory, "clang-resource");
+        var resourceDir = Environment.GetEnvironmentVariable("CLANG_RESOURCE_DIR");
+        if (string.IsNullOrEmpty(resourceDir) && System.IO.Directory.Exists(bundledResourceDir))
+        {
+            resourceDir = bundledResourceDir;
+        }
+        if (!string.IsNullOrEmpty(resourceDir))
+        {
+            arguments.Add($"-resource-dir={resourceDir}");
+        }
+
         foreach (var define in _unit.Module.Defines)
         {
             arguments.Add($"-D{define}");
@@ -105,7 +121,7 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
         {
             arguments.Add($"-I{include}");
         }
-        
+
         return arguments;
     }
 
