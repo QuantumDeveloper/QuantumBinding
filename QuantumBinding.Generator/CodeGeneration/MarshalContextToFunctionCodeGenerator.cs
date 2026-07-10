@@ -968,10 +968,16 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
     {
         if (parameter.ParameterKind == ParameterKind.Out)
         {
+            // out T[] : the caller receives a fresh array, so assigning the newly unmarshalled array is correct.
             WriteLine($"{parameter.Name} = new {typeStrResult}[{arrayLength}];");
+            WriteLine($"{parameter.Name} = {MarshalContextUtilsUnmarshalBlittableArray}({argumentName}, (long){arrayLength});");
         }
-
-        WriteLine($"{parameter.Name} = {MarshalContextUtilsUnmarshalBlittableArray}({argumentName}, (long){arrayLength});");
+        else
+        {
+            // ref/in-out : the managed parameter is a caller-owned Span<T>. It is passed BY VALUE, so reassigning it
+            // (as an array) is lost - the native data must be copied INTO the caller's buffer instead.
+            WriteLine($"{MarshalContextUtilsCopyNativeToSpan}({argumentName}, (long){arrayLength}, {parameter.Name});");
+        }
     }
     
     protected void WritePointerToPrimitiveType(Parameter parameter, string argumentName)
