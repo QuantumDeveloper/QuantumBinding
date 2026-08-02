@@ -19,6 +19,10 @@ public static unsafe class MarshalContextUtils
         int primarySize = sizeof(TNative);
         Span<byte> destinationByteSpan = dataCursor.Slice(0, primarySize);
 
+        // Same reason as in MarshalArrayOfWrappers: a marshaller writes a field only when it differs from the default,
+        // so the destination must start out zeroed. It is not, whenever the buffer came from ArrayPool.Rent.
+        destinationByteSpan.Clear();
+
         Span<TNative> destinationSpan = MemoryMarshal.Cast<byte, TNative>(destinationByteSpan);
 
         Span<byte> remainingBuffer = dataCursor.Slice(primarySize);
@@ -143,11 +147,21 @@ public static unsafe class MarshalContextUtils
 
         Span<byte> nativeArrayByteSpan = dataCursor.Slice(0, sizeOfNativeArray);
 
+        // The generated marshallers SKIP writing a field whose value is the default - they rely on the destination
+        // being zeroed. That holds for a small struct (the caller stack-allocates, and stackalloc is zeroed) but NOT for
+        // an array: it comes from ArrayPool.Rent, which hands back whatever was in it. Every default-valued field then
+        // kept a previous tenant's bytes - e.g. a VkBufferImageCopy with bufferOffset 0 reached the driver carrying a
+        // stale POINTER as its offset, which Vulkan validation reported as a copy of ~10^14 bytes and the device did not
+        // survive. Zero the slots so "skip the default" means what it says.
+        nativeArrayByteSpan.Clear();
+
         TNative* pNativeArray = (TNative*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(nativeArrayByteSpan));
 
         Span<byte> remainingBuffer = dataCursor.Slice(sizeOfNativeArray);
 
-        ref Span<byte> currentGlobalDataCursor = ref remainingBuffer; // Начинаем отсчёт с этой точки
+        // A plain copy, NOT `ref remainingBuffer`: aliasing the two made the "how much did the nested data use" figure
+        // below subtract a value from itself, so it was always zero and nested payloads were handed out twice.
+        Span<byte> nestedDataCursor = remainingBuffer;
 
         for (int i = 0; i < count; i++)
         {
@@ -170,16 +184,16 @@ public static unsafe class MarshalContextUtils
 
                 var localContext = new MarshallingContext<TNative>(
                     itemDestinationSpan,
-                    currentGlobalDataCursor
+                    nestedDataCursor
                 );
 
                 managedItem.MarshalTo(ref localContext);
 
-                currentGlobalDataCursor = localContext.DataCursor;
+                nestedDataCursor = localContext.DataCursor;
             }
         }
 
-        int bytesUsedForNestedData = remainingBuffer.Length - currentGlobalDataCursor.Length;
+        int bytesUsedForNestedData = remainingBuffer.Length - nestedDataCursor.Length;
         int totalBytesConsumed = sizeOfNativeArray + bytesUsedForNestedData;
 
         dataCursor = dataCursor.Slice(totalBytesConsumed);
