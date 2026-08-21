@@ -211,7 +211,7 @@ public class WrapperGenerator : CSharpCodeGenerator
     {
         WriteLine($"public int GetSize()");
         WriteOpenBraceAndIndent();
-        WriteLine($"var size = Marshal.SizeOf<{@class.NativeStruct.FullName}>();");
+        WriteLine($"var size = QuantumBinding.Utils.SizeOfCache<{@class.NativeStruct.FullName}>.Size;");
         
         if (@class.ClassType == ClassType.UnionWrapper)
         {
@@ -254,14 +254,14 @@ public class WrapperGenerator : CSharpCodeGenerator
                 {
                     WriteLine($"if ({property.Name} != default)");
                     WriteOpenBraceAndIndent();
-                    WriteLine($"size = Math.Max(size, Marshal.SizeOf<{property.Type.Declaration.FullName}>());");
+                    WriteLine($"size = Math.Max(size, QuantumBinding.Utils.SizeOfCache<{property.Type.Declaration.FullName}>.Size);");
                     UnindentAndWriteCloseBrace();
                 }
                 else if (property.Type.IsDoublePointer())
                 {
                     WriteLine($"if (!{property.Name}.IsEmpty)");
                     PushIndent();
-                    WriteLine($"size = Math.Max(size, Marshal.SizeOf<nuint>());");
+                    WriteLine($"size = Math.Max(size, QuantumBinding.Utils.SizeOfCache<nuint>.Size);");
                     PopIndent();
                 }
                 else if (property.Type.IsUnionWrapper())
@@ -334,7 +334,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                         }
 
                         PushIndent();
-                        WriteLine($"size += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        WriteLine($"size += QuantumBinding.Utils.SizeOfCache<{declaration.NativeStruct.FullName}>.Size;");
                         PopIndent();
                         WriteLine("else");
                         PushIndent();
@@ -352,7 +352,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                             WriteLine($"if (!{property.Name}.IsEmpty)");
                             PushIndent();
                             WriteLine(
-                                $"size += {property.Name}.Span.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                                $"size += {property.Name}.Span.Length * QuantumBinding.Utils.SizeOfCache<{declaration.NativeStruct.FullName}>.Size;");
                             PopIndent();
                         }
                         else
@@ -360,7 +360,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                             WriteLine($"if ({property.Name} is not null)");
                             PushIndent();
                             WriteLine(
-                                $"size += {property.Name}.Length * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                                $"size += {property.Name}.Length * QuantumBinding.Utils.SizeOfCache<{declaration.NativeStruct.FullName}>.Size;");
                             PopIndent();
                         }
                     }
@@ -379,7 +379,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                         Write(TargetRuntime == TargetRuntime.Net8Plus
                             ? $"size += {property.Name}.Span.Length"
                             : $"size += {property.Name}.Length");
-                        Write($" * Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                        Write($" * QuantumBinding.Utils.SizeOfCache<{declaration.NativeStruct.FullName}>.Size;");
                         NewLine();
                         PopIndent();
                     }
@@ -423,7 +423,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                         Write(TargetRuntime == TargetRuntime.Net8Plus
                             ? $"size += {property.Name}.Span.Length"
                             : $"size += {property.Name}.Length");
-                        Write($" * Marshal.SizeOf<{primitiveType.Type.GetDisplayName()}>();");
+                        Write($" * QuantumBinding.Utils.SizeOfCache<{primitiveType.Type.GetDisplayName()}>.Size;");
                         NewLine();
                         PopIndent();
                     }
@@ -431,7 +431,7 @@ public class WrapperGenerator : CSharpCodeGenerator
                     {
                         WriteLine($"if (!{property.Name}.IsEmpty)");
                         PushIndent();
-                        WriteLine($"size += Marshal.SizeOf<nuint>();");
+                        WriteLine($"size += QuantumBinding.Utils.SizeOfCache<nuint>.Size;");
                         PopIndent();
                     }
                 }
@@ -446,14 +446,14 @@ public class WrapperGenerator : CSharpCodeGenerator
                 {
                     WriteLine($"if ({property.Name} != default)");
                     WriteOpenBraceAndIndent();
-                    WriteLine($"size += Marshal.SizeOf<{property.Type.Declaration.FullName}>();");
+                    WriteLine($"size += QuantumBinding.Utils.SizeOfCache<{property.Type.Declaration.FullName}>.Size;");
                     UnindentAndWriteCloseBrace();
                 }
                 else if (property.Type.IsDoublePointer())
                 {
                     WriteLine($"if (!{property.Name}.IsEmpty)");
                     PushIndent();
-                    WriteLine($"size += Marshal.SizeOf<nuint>();");
+                    WriteLine($"size += QuantumBinding.Utils.SizeOfCache<nuint>.Size;");
                     PopIndent();
                 }
                 else if (property.Type.IsUnionWrapper())

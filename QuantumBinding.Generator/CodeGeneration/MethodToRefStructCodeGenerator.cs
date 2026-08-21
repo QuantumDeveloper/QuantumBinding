@@ -141,7 +141,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                             {
                                 WriteLine($"if({parameter.Name}[(int)i] == null)");
                                 PushIndent();
-                                WriteLine($"{totalSizeName} += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                                WriteLine($"{totalSizeName} += QuantumBinding.Utils.SizeOfCache<{declaration.NativeStruct.FullName}>.Size;");
                                 PopIndent();
                                 WriteLine($"else");
                                 PushIndent();
