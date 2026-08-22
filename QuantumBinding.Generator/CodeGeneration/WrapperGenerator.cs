@@ -13,6 +13,7 @@ public class WrapperGenerator : CSharpCodeGenerator
     private const string MarshalContextClassName = "QuantumBinding.Utils.MarshallingContext";
     private const string MarshalInterfaceName = "IMarshallable";
     private const string MarshalObjectInterfaceName = "IMarshallableObject";
+    private const string MarshalFromPointerInterfaceName = "IMarshallableFromPointer";
     private const string SpanClassName = "System.Span";
     private const string ReadonlySpanClassName = "System.ReadOnlySpan";
     private const string MarshalFromMethodName = "MarshalFrom";
@@ -150,7 +151,7 @@ public class WrapperGenerator : CSharpCodeGenerator
         var classVisitResult = TypePrinter.VisitClass(@class).ToString();
         if (TargetRuntime == TargetRuntime.Net8Plus)
         {
-            WriteLine($"{classVisitResult} : {MarshalObjectInterfaceName}, {MarshalInterfaceName}<{@class.NativeStruct.FullName}>");
+            WriteLine($"{classVisitResult} : {MarshalObjectInterfaceName}, {MarshalFromPointerInterfaceName}, {MarshalInterfaceName}<{@class.NativeStruct.FullName}>");
         }
         else
         {
@@ -172,6 +173,8 @@ public class WrapperGenerator : CSharpCodeGenerator
         if (TargetRuntime == TargetRuntime.Net8Plus)
         {
             GenerateIMarshallableObjectInterface(@class);
+            NewLine();
+            GenerateIMarshallableFromPointerInterface(@class);
         }
 
         GenerateStructMarshaller(@class);
@@ -192,6 +195,15 @@ public class WrapperGenerator : CSharpCodeGenerator
         GenerateMarshalToMethod(@class);
         NewLine();
         GenerateMarshalFromMethod(@class);
+    }
+
+    private void GenerateIMarshallableFromPointerInterface(Class @class)
+    {
+        WriteLine($"public void MarshalFromPointer(void* native)");
+        WriteOpenBraceAndIndent();
+        WriteLine($"if (native == null) return;");
+        WriteLine($"{MarshalFromMethodName}(in *({@class.NativeStruct.FullName}*)native);");
+        UnindentAndWriteCloseBrace();
     }
 
     private void GenerateIMarshallableObjectInterface(Class @class)
@@ -555,7 +567,20 @@ public class WrapperGenerator : CSharpCodeGenerator
                 }
                 else if (property.Type.IsPointerToObject())
                 {
+                    // An OUTPUT chain: the caller hung typed objects off this pointer before the call, the native side
+                    // filled the memory they were marshalled into, and those objects are what the caller still holds -
+                    // so read back INTO them. Overwriting the property with the raw address instead (what this used to
+                    // do unconditionally) threw away the only typed handle on the answer, which is why every reader of
+                    // an output chain had to hand-roll pointers around the binding. A property that holds no object
+                    // still gets the address, so nothing that relied on it changes.
+                    WriteLine($"if ({property.Name} is IMarshallableFromPointer chained{property.Name})");
+                    WriteOpenBraceAndIndent();
+                    WriteLine($"chained{property.Name}.MarshalFromPointer({@class.NativeStructFieldName}.{property.Field.Name});");
+                    UnindentAndWriteCloseBrace();
+                    WriteLine($"else");
+                    WriteOpenBraceAndIndent();
                     WriteLine($"{property.Name} = (System.IntPtr){@class.NativeStructFieldName}.{property.Field.Name};");
+                    UnindentAndWriteCloseBrace();
                 }
                 else if (property.Type.IsDoublePointer() ||
                          property.Type.IsPointerToVoid(out var pointerDepth) ||

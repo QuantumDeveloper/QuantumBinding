@@ -894,7 +894,24 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
         WriteOpenBraceAndIndent();
         if (classDecl.IsWrapper)
         {
-            WriteLine($"{parameter.Name} = new {classDecl.Owner.FullNamespace}.{classDecl.Name}(*{argumentName});");
+            if (parameter.ParameterKind == ParameterKind.Ref)
+            {
+                // A ref parameter is one the CALLER built: it may carry a chain of further objects that this call was
+                // asked to fill. Replacing it with a fresh instance answered the top-level fields and silently dropped
+                // everything hanging off it, so the object that goes in is the object that comes back out.
+                WriteLine($"if ({parameter.Name} != null)");
+                PushIndent();
+                WriteLine($"{parameter.Name}.MarshalFrom(*{argumentName});");
+                PopIndent();
+                WriteLine($"else");
+                PushIndent();
+                WriteLine($"{parameter.Name} = new {classDecl.Owner.FullNamespace}.{classDecl.Name}(*{argumentName});");
+                PopIndent();
+            }
+            else
+            {
+                WriteLine($"{parameter.Name} = new {classDecl.Owner.FullNamespace}.{classDecl.Name}(*{argumentName});");
+            }
         }
         else
         {
