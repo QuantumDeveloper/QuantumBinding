@@ -108,7 +108,8 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                     {
                         WriteLine($"if (!string.IsNullOrEmpty({parameter.Name}))");
                         PushIndent();
-                        WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof(byte) + 1;");
+                        // UTF-8 BYTES, not characters - see the same spot in CSharpCodeGenerator.
+                        WriteLine($"{totalSizeName} += System.Text.Encoding.UTF8.GetByteCount({parameter.Name}) + 1;");
                         PopIndent();
                     }
                 }
