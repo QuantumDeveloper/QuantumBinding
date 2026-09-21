@@ -16,7 +16,6 @@ listed: those carry their own licences with them and are not redistributed here.
 |---|---|
 | `libclang.dll` | Windows build, 82 MB |
 | `libclang.dylib` | macOS build, 98 MB |
-| `_libclang.dll` | a second Windows build, 59 MB — see the note at the end |
 | `clang-resource/include/**` | Clang's builtin headers (30 files: `stddef.h`, `stdarg.h`, `limits.h`, `stdatomic.h` and the rest) |
 
 This is what the binding generator is built on. It parses C headers through Clang's own front end rather than through
@@ -63,14 +62,10 @@ For the avoidance of doubt, everything else in this repository is its own and is
 
 ## Worth fixing
 
-**`_libclang.dll` looks like a leftover.** It is a second Windows build of the same library, 59 MB against the 82 MB
-of `libclang.dll`, and nothing in the build refers to it by that name. If it is indeed an older copy kept by hand, it
-should go — 59 MB that every clone pays for and that this file has to account for.
-
 **The versions are not recorded.** These binaries came from upstream releases, and the repository does not say which.
-Two builds of libclang differing by 23 MB is exactly the situation where that matters. Writing the release version
-next to them would let this file name it instead of describing it by size.
+Writing the release version next to them would let this file name it instead of describing it by size — and would have
+made the leftover copy removed alongside this note obvious years earlier.
 
-**239 MB of binaries live in git history.** They are needed — the generator cannot run without them — but a released
-archive or a download step would keep them out of every clone. That is a larger change than this file, and it is
-noted here only so the cost is written down somewhere.
+**180 MB of binaries live in git history.** They are needed — the generator cannot run without them — but taking
+libclang from the runtime packages that already publish it, or fetching it in a build step, would keep it out of every
+clone. That is a larger change than this file, and it is noted here only so the cost is written down somewhere.
