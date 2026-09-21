@@ -17,7 +17,6 @@
         <IsPackable>true</IsPackable>
         <Description>Marshalling helpers shared by the C# bindings QuantumBinding generates: pointer and array conversion, native string handling, and caches of the sizes and layouts the generated interop asks for on every call.</Description>
         <PackageTags>interop;marshalling;native;bindings;pinvoke</PackageTags>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
