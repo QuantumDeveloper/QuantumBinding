@@ -23,6 +23,17 @@ public unsafe interface IMarshallableObject
     int GetSize();
     void* GetNativePointer<TContext>(ref TContext context) where TContext : IMarshallingContext, allows ref struct;
 }
+
+/// <summary>Reads an object back from native memory whose type is not statically known at the call site - a chained
+/// structure reached through an untyped next-pointer. The implementation knows its own native type, which is exactly
+/// the piece the caller is missing.
+/// <para>Kept separate from <see cref="IMarshallableObject"/> on purpose: bindings generated before this existed are
+/// consumed as compiled assemblies, and a method added to an interface they already implement is a load-time break,
+/// not a compile-time one. An object that does not implement this is simply left alone.</para></summary>
+public unsafe interface IMarshallableFromPointer
+{
+    void MarshalFromPointer(void* native);
+}
 #endif
 
 public interface IMarshallingContext

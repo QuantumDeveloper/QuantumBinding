@@ -1091,7 +1091,11 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
                 }
                 else
                 {
-                    WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof(byte) + 1;");
+                    // UTF-8 BYTES, not characters. MarshalString encodes with Encoding.UTF8 and slices the cursor by the
+                    // byte count, so sizing the buffer by string.Length under-allocates for anything outside ASCII and
+                    // the slice throws "Specified argument was out of the range of valid values" - which reads as a bug
+                    // in the caller, not as one character too many. Caught by a shader whose comment had a Cyrillic word.
+                    WriteLine($"{totalSizeName} += System.Text.Encoding.UTF8.GetByteCount({parameter.Name}) + 1;");
                 }
             }
             else if (parameter.Type.IsPointerToArrayOfSimpleTypes(out var type))

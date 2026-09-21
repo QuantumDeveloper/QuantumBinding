@@ -108,7 +108,8 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                     {
                         WriteLine($"if (!string.IsNullOrEmpty({parameter.Name}))");
                         PushIndent();
-                        WriteLine($"{totalSizeName} += {parameter.Name}.Length * sizeof(byte) + 1;");
+                        // UTF-8 BYTES, not characters - see the same spot in CSharpCodeGenerator.
+                        WriteLine($"{totalSizeName} += System.Text.Encoding.UTF8.GetByteCount({parameter.Name}) + 1;");
                         PopIndent();
                     }
                 }
@@ -141,7 +142,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
                             {
                                 WriteLine($"if({parameter.Name}[(int)i] == null)");
                                 PushIndent();
-                                WriteLine($"{totalSizeName} += Marshal.SizeOf<{declaration.NativeStruct.FullName}>();");
+                                WriteLine($"{totalSizeName} += QuantumBinding.Utils.SizeOfCache<{declaration.NativeStruct.FullName}>.Size;");
                                 PopIndent();
                                 WriteLine($"else");
                                 PushIndent();
