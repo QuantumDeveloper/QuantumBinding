@@ -32,9 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The version comes from global.json, so CI and a developer's machine build with the same SDK instead of with
+      # whatever each happens to have installed.
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       # Platform=x64 is not decoration: AllowUnsafeBlocks is set per configuration/platform in these projects, and
       # without it the generated interop fails to compile with CS0227.
