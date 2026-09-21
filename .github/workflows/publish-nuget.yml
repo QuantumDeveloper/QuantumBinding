@@ -1,0 +1,69 @@
+# Publishes QuantumBinding.Utils to nuget.org without a stored key.
+#
+# The job asks GitHub for a short-lived OIDC token, NuGet/login exchanges it for a temporary API key that lives one
+# hour, and the push uses that. Nothing to rotate and nothing to leak - which is the point, since API keys created
+# from 17 Aug 2026 last 30 days and every key made before that stops working on 1 Nov 2026.
+#
+# The matching policy on nuget.org (Account -> Trusted Publishing) must name:
+#   Repository Owner: QuantumDeveloper
+#   Repository:       QuantumBinding
+#   Workflow File:    publish-nuget.yml     <- this file's NAME only, no path
+#   Environment:      (leave empty)
+# Renaming this file breaks the policy: the name is half of what nuget.org trusts.
+name: Publish to NuGet
+
+# Manual on purpose. Publishing is irreversible - a version can be unlisted but never deleted, never replaced - so it
+# should be a decision someone makes, not a side effect of a push.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Pack only, do not publish'
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # lets the job ask GitHub for the OIDC token; without it NuGet/login has nothing to exchange
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Platform=x64 is not decoration: AllowUnsafeBlocks is set per configuration/platform in these projects, and
+      # without it the generated interop fails to compile with CS0227.
+      - name: Pack
+        run: dotnet pack QuantumBinding.Utils/QuantumBinding.Utils.csproj -c Release -p:Platform=x64 -o artifacts
+
+      - name: Show what was packed
+        run: |
+          ls -la artifacts
+          for f in artifacts/*.nupkg; do echo "== $f"; unzip -p "$f" '*.nuspec'; done
+
+      - name: Upload package as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/*.nupkg
+
+      # Asked for as late as possible: the key expires an hour after it is issued.
+      - name: NuGet login (OIDC to a temporary key)
+        if: ${{ !inputs.dry_run }}
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}   # nuget.org profile name, not the e-mail address
+
+      - name: Push
+        if: ${{ !inputs.dry_run }}
+        run: >
+          dotnet nuget push artifacts/*.nupkg
+          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
