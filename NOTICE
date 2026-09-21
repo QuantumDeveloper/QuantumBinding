@@ -6,3 +6,7 @@ This product includes software developed by Denis Zaporozhets.
 Releases made before this file was added were published under the MIT licence.
 That grant is not withdrawn: anyone who obtained those versions keeps the rights
 MIT gave them. This and later versions are licensed under Apache-2.0.
+
+This repository redistributes binaries of libclang, part of the LLVM Project,
+which is licensed under Apache-2.0 with the LLVM exception; its notice must
+travel with those binaries. See THIRD-PARTY-NOTICES.md.

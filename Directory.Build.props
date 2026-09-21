@@ -1,0 +1,28 @@
+<Project>
+
+  <!-- Package metadata shared by everything published from this repository. Kept here rather than repeated in each
+       csproj: a licence or repository URL that drifts between packages is worse than none, because whichever one a
+       consumer happens to read, they have no way to tell it is the stale one. -->
+  <PropertyGroup>
+    <Authors>Denis Zaporozhets</Authors>
+    <Company>Denis Zaporozhets</Company>
+    <Copyright>Copyright 2019-2026 Denis Zaporozhets</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/QuantumDeveloper/QuantumBinding</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/QuantumDeveloper/QuantumBinding</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <!-- Off by default, on per project. Sandboxes and demos are not products, and a package published by accident
+       cannot be taken back - nuget.org lets a version be unlisted, never deleted. -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>

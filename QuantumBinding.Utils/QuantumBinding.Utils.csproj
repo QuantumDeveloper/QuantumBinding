@@ -14,8 +14,9 @@
              call), so anything rebuilt from here failed to LOAD against it. Republished under a new number rather than
              overwriting 2.0.0, which every cache would have gone on serving from its old copy. -->
         <Version>2.0.1</Version>
-        <Authors>Adamantium studio</Authors>
-        <Company>Adamantium studio</Company>
+        <IsPackable>true</IsPackable>
+        <Description>Marshalling helpers shared by the C# bindings QuantumBinding generates: pointer and array conversion, native string handling, and caches of the sizes and layouts the generated interop asks for on every call.</Description>
+        <PackageTags>interop;marshalling;native;bindings;pinvoke</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
