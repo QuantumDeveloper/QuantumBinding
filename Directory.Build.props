@@ -4,8 +4,10 @@
        csproj: a licence or repository URL that drifts between packages is worse than none, because whichever one a
        consumer happens to read, they have no way to tell it is the stale one. -->
   <PropertyGroup>
-    <Authors>Denis Zaporozhets</Authors>
-    <Company>Denis Zaporozhets</Company>
+    <!-- The studio publishes, the person holds the rights. Author and owner have to read as the same identity for a
+         reserved prefix to mean anything; copyright is a legal fact about a human and stays one. -->
+    <Authors>Adamantium Studio</Authors>
+    <Company>Adamantium Studio</Company>
     <Copyright>Copyright 2019-2026 Denis Zaporozhets</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/QuantumDeveloper/QuantumBinding</PackageProjectUrl>
