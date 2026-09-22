@@ -25,4 +25,19 @@
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
+  <!-- The icon sits beside the csproj that packs it, not here, because a repository that grows a second package
+       needs a second icon and one shared file cannot say which package you are looking at.
+       Both halves are guarded on the file existing rather than on IsPackable: PackageIcon pointing at a file that
+       is not packed is NU5046, a build broken by a missing picture. And an IsPackable guard would not work here
+       anyway - MSBuild finishes evaluating PROPERTIES before it starts on ITEMS, so a PropertyGroup guarded that
+       way reads the default set above and never the value a project sets later.
+       PackageIconUrl is not used: nuget.org deprecated it, and the image has to travel inside the package. -->
+  <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\icon.png')">
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\icon.png')">
+    <None Include="$(MSBuildProjectDirectory)\icon.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
 </Project>
