@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Types;
-using System.Text;
 
 namespace QuantumBinding.Generator.Processors;
 
@@ -26,7 +24,7 @@ public class WrappersCreationPass : PreGeneratorPass
 
         // Create wrappers only for structs and unions
         if ((@class.ClassType != ClassType.Struct && @class.ClassType != ClassType.Union)
-            || @class.IsSimpleType 
+            || @class.IsSimpleType
             || @class.LinkedTo is { IsIgnored: false })
         {
             return false;
@@ -83,7 +81,6 @@ public class WrappersCreationPass : PreGeneratorPass
         op.OperatorKind = OperatorKind.Implicit;
         wrapper.Operators.Add(op);
 
-        int pointersCount = 0;
         foreach (var field in @class.Fields)
         {
             var property = new Property();
@@ -106,7 +103,7 @@ public class WrappersCreationPass : PreGeneratorPass
                 Console.WriteLine(e);
                 throw;
             }
-                
+
             if (field.Type.Declaration is Class declaration && !declaration.IsSimpleType)
             {
                 if ((declaration.ClassType == ClassType.Struct && declaration.LinkedTo == null) || declaration.ClassType == ClassType.Union)
@@ -138,136 +135,19 @@ public class WrappersCreationPass : PreGeneratorPass
 
             property.Field = field;
             var decl = property.Type.Declaration as Class;
-            if (field.IsPointer)
-            {
-                pointersCount++;
-            }
-                
+
+            // A pointer property is NULLABLE - that is all this branch decides now. It used to give every pointer a
+            // companion field owning its native memory, back when a wrapper allocated per property and disposed it;
+            // marshalling writes into one call-scoped buffer instead, so there is nothing to own and nothing to free.
             if (field.IsPointer && !field.Type.IsPointerToVoid(out _))
             {
                 var pointerType = (PointerType)field.Type;
-                if (field.Name.StartsWith("@"))
-                {
-                    name = field.Name.Substring(1);
-                }
-                name = $"_{name[0].ToString().ToLower()}{name.Substring(1)}";
-                property.PairedField = new Field($"{name}") { ShouldDispose = true };
-                if (field.Type.IsAnsiString() || field.Type.IsUnicodeString())
-                {
-                    property.PairedField.Type = new CustomType("MarshaledString");
-                }
-                else if (field.Type.IsStringArray())
-                {
-                    property.PairedField.Type = new CustomType("MarshaledStringArray");
-                }
-                else if (field.Type.IsPointerToArray() || field.Type.IsPointerToArrayOfEnums())
-                {
-                    try
-                    {
-                        var typePrinter = new CSharpTypePrinter(ProcessingContext.Options);
-                        typePrinter.PushModule(CurrentNamespace.Module);
-                        typePrinter.PushMarshalType(MarshalTypes.NativeField);
-                        var underlyingType = pointerType.Visit(typePrinter).Type;
-                        typePrinter.PopMarshalType();
-                            
-                        if (pointerType.Declaration != null && !pointerType.Pointee.IsPrimitiveType(out var primitive))
-                        {
-                            if (pointerType.Declaration is Class class1)
-                            {
-                                if (!class1.IsSimpleType || 
-                                    (class1.IsSimpleType && 
-                                     !ProcessingContext.Options.PodTypesAsSimpleTypes &&
-                                     class1.UnderlyingNativeType != null))
-                                {
-                                    underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
-                                }
-                            }
-                            else
-                            {
-                                underlyingType = $"{pointerType.Declaration.Namespace}.{underlyingType}";
-                            }
-                        }
-
-                        property.PairedField.Type = new CustomType($"NativeStructArray<{underlyingType}>");
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                }
-                else if (!field.Type.IsPointerToSystemType(out var customType) &&
-                         (field.Type.IsPointerToStructOrUnion() || 
-                          field.Type.IsPointerToCustomType(out var custom)||
-                          field.Type.IsPointerToBuiltInType(out var primitive)))
-                {
-                    try
-                    {
-                        var typePrinter = new CSharpTypePrinter(ProcessingContext.Options);
-                        typePrinter.PushModule(CurrentNamespace.Module);
-                        typePrinter.PushMarshalType(MarshalTypes.NativeField);
-                        var underlyingType = pointerType.Visit(typePrinter).Type;
-
-                        if (pointerType.Declaration != null)
-                        {
-                            if (pointerType.Declaration is Class class1)
-                            {
-                                if (!class1.IsSimpleType || 
-                                    (class1.IsSimpleType && 
-                                     !ProcessingContext.Options.PodTypesAsSimpleTypes &&
-                                     class1.UnderlyingNativeType != null))
-                                {
-                                    underlyingType = $"{pointerType.Declaration.InteropNamespace}.{underlyingType}";
-                                }
-                            }
-                            else
-                            {
-                                underlyingType = $"{pointerType.Declaration.Namespace}.{underlyingType}";
-                            }
-                        }
-
-                        typePrinter.PopMarshalType();
-                        property.PairedField.Type = new CustomType($"NativeStruct<{underlyingType}>");
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                }
-                else
-                {
-                    if (!field.Type.IsPointerToSystemType(out var customT))
-                    {
-                        property.PairedField.Type = new CustomType("UnknownReference");
-                    }
-                }
-
-                property.PairedField.AccessSpecifier = AccessSpecifier.Private;
-                if (!property.Type.IsPointerToIntPtr() && 
-                    !field.Type.IsPointerToVoid(out _) &&
-                    !field.Type.IsPointerToSystemType(out var type))
-                {
-                    wrapper.AddField(property.PairedField);
-                }
-
-                if ((property.Type.IsPointerToBuiltInType(out var primitiveType) || property.Type.IsPointerToStructOrUnion() && !property.Type.IsPointerToArray()) || 
+                if ((property.Type.IsPointerToBuiltInType(out var primitiveType) || property.Type.IsPointerToStructOrUnion() && !property.Type.IsPointerToArray()) ||
                     (decl?.IsSimpleType == true))
                 {
                     if (pointerType != null && !property.Type.IsArray())
                         pointerType.IsNullable = true;
                 }
-            }
-            else if ((field.Type.IsArray() && !field.Type.IsSimpleType() && !field.Type.IsEnum() &&
-                      !field.Type.IsDelegate()) ||
-                     (field.Type.IsCustomType(out var custom) && !custom.IsSimpleType() && !custom.IsEnum() &&
-                      !custom.IsDelegate()))
-            {
-                property.PairedField = new Field(field.Name[0].ToString().ToLower() + field.Name.Substring(1))
-                {
-                    Type = field.Type,
-                    AccessSpecifier = AccessSpecifier.Private
-                };
             }
 
             if (field.CanGenerateGetter)
@@ -282,41 +162,5 @@ public class WrappersCreationPass : PreGeneratorPass
 
             wrapper.AddProperty(property);
         }
-
-        wrapper.IsDisposable = true;
-        wrapper.DisposableBaseClass = FileExtensionGenerator.DisposableClassName;
-        var disposeBody = new StringBuilder();
-        var usedFields = new List<string>();
-        foreach (var field in wrapper.Fields)
-        {
-            if (field.ShouldDispose)
-            {
-                usedFields.Add(field.Name);
-                disposeBody.AppendLine($"{field.Name}.Dispose();");
-            }
-        }
-
-        foreach (var property in wrapper.Properties)
-        {
-            if (property.Type.IsClass() && !usedFields.Contains($"_{property.Field.Name}"))
-            {
-                var @class1 = (Class)property.Type.Declaration;
-                if (@class1.ClassType is ClassType.StructWrapper or ClassType.UnionWrapper)
-                {
-                    if (property.Type.IsArray())
-                    {
-                        disposeBody.AppendLine($"foreach(var item in {property.Name})");
-                        disposeBody.AppendLine("{");
-                        disposeBody.AppendLine($"\titem.Dispose();");
-                        disposeBody.AppendLine("}");
-                    }
-                    else
-                    {
-                        disposeBody.AppendLine($"{property.Name}?.Dispose();");
-                    }
-                }
-            }
-        }
-        wrapper.DisposeBody = disposeBody.ToString();
     }
 }

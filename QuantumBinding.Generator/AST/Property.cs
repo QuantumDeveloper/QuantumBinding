@@ -16,8 +16,6 @@ public class Property : Declaration
 
     public Field Field { get; set; }
 
-    public Field PairedField { get; set; }
-
     public override T Visit<T>(IDeclarationVisitor<T> visitor)
     {
         return visitor.VisitProperty(this);
@@ -40,8 +38,7 @@ public class Property : Declaration
             Setter = Setter,
             IsAutoProperty = IsAutoProperty,
             AccessSpecifier = AccessSpecifier,
-            Field = (Field)Field.Clone(),
-            PairedField = (Field)PairedField.Clone()
+            Field = (Field)Field.Clone()
         };
     }
 
