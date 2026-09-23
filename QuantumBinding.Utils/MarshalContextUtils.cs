@@ -123,6 +123,9 @@ public static unsafe class MarshalContextUtils
         int sizeInBytes = count * sizeOfElement;
 
         Span<byte> allocatedByteSpan = dataCursor.Slice(0, sizeInBytes);
+        // The caller fills these slots, and may leave some of them alone - so they start empty rather than holding
+        // whatever ArrayPool.Rent handed back.
+        allocatedByteSpan.Clear();
 
         dataCursor = dataCursor.Slice(sizeInBytes);
 

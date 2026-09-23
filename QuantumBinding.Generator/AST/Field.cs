@@ -26,8 +26,6 @@ public class Field : Declaration
 
     public AccessSpecifier AccessSpecifier { get; set; }
 
-    public bool ShouldDispose { get; set; }
-
     public bool IsPointer => Type.IsPointer();
 
     public bool CanGenerateGetter { get; set; } = true;
@@ -80,7 +78,6 @@ public class Field : Declaration
             Type = (BindingType)Type.Clone(),
             Index = Index,
             AccessSpecifier = AccessSpecifier,
-            ShouldDispose = ShouldDispose,
             CanGenerateGetter = CanGenerateGetter,
             CanGenerateSetter = CanGenerateSetter
         };

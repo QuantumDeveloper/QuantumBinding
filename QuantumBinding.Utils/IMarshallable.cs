@@ -79,6 +79,9 @@ public ref struct MarshallingContext<TNative>: IMarshallingContext where TNative
     public Span<byte> AllocateData(int size)
     {
         var slice = DataCursor.Slice(0, size);
+        // ZEROED, for the same reason MarshalArrayOfWrappers zeroes its slots: a generated marshaller writes a field
+        // only when it differs from the default, and above StackAllocThreshold this buffer came from ArrayPool.Rent.
+        slice.Clear();
         DataCursor = DataCursor.Slice(size);
         return slice;
     }
@@ -91,8 +94,11 @@ public static unsafe class MarshallingContext
     {
         var primaryStructSize = sizeof(TNative);
 
-        var destinationSpan = MemoryMarshal.Cast<byte, TNative>(
-            mainBuffer.Slice(0, primaryStructSize));
+        var primarySlice = mainBuffer.Slice(0, primaryStructSize);
+        // Same rule as AllocateData: a marshaller writes a field only when it differs from the default.
+        primarySlice.Clear();
+
+        var destinationSpan = MemoryMarshal.Cast<byte, TNative>(primarySlice);
 
         var dataCursorSpan = mainBuffer.Slice(primaryStructSize);
 
@@ -128,6 +134,10 @@ public static unsafe class MarshallingContext
 public unsafe ref struct NativeContext
 {
     private byte[] _rentedArray;
+    // The rented buffer is a MANAGED array and the pointers handed to native code point into it, so it has to stay
+    // put for as long as this context lives. A stack buffer needs none of this.
+    private GCHandle _pin;
+
     public Span<byte> Data { get; }
 
     public NativeContext(int size, Span<byte> stackBuffer = default)
@@ -135,11 +145,13 @@ public unsafe ref struct NativeContext
         if (size <= stackBuffer.Length)
         {
             _rentedArray = null;
+            _pin = default;
             Data = stackBuffer.Slice(0, size);
         }
         else
         {
             _rentedArray = ArrayPool<byte>.Shared.Rent(size);
+            _pin = GCHandle.Alloc(_rentedArray, GCHandleType.Pinned);
             Data = _rentedArray.AsSpan(0, size);
         }
     }
@@ -148,6 +160,7 @@ public unsafe ref struct NativeContext
     {
         if (_rentedArray != null)
         {
+            if (_pin.IsAllocated) _pin.Free();
             ArrayPool<byte>.Shared.Return(_rentedArray);
             _rentedArray = null;
         }
