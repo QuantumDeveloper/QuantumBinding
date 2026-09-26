@@ -31,11 +31,11 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The version comes from global.json, so CI and a developer's machine build with the same SDK instead of with
       # whatever each happens to have installed.
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -52,7 +52,7 @@ jobs:
           for f in artifacts/*.nupkg; do echo "== $f"; unzip -p "$f" '*.nuspec'; done
 
       - name: Upload package as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nupkg
           path: artifacts/*.nupkg
