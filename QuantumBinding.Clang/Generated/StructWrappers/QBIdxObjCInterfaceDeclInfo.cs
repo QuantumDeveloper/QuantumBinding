@@ -12,7 +12,7 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxObjCInterfaceDeclInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo>
+public unsafe partial class QBIdxObjCInterfaceDeclInfo : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo>
 {
     public QBIdxObjCInterfaceDeclInfo()
     {
@@ -35,7 +35,7 @@ public unsafe partial class QBIdxObjCInterfaceDeclInfo : IMarshallableObject, IM
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo>.Size;
         if (ContainerInfo != default)
         {
             size += ContainerInfo.GetSize();
@@ -74,6 +74,12 @@ public unsafe partial class QBIdxObjCInterfaceDeclInfo : IMarshallableObject, IM
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIdxObjCInterfaceDeclInfo*)native);
     }
     private ref struct CXIdxObjCInterfaceDeclInfoMarshaller
     {

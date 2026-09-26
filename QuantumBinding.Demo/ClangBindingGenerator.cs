@@ -42,7 +42,6 @@ namespace QuantumBinding.ClangGenerator
             clangModule.IncludeDirs.Add($@"{headerPath}\clang-c");
             clangModule.Files.Add($@"{headerPath}\clang-c\Documentation.h");
             clangModule.ForceCallingConvention = true;
-            clangModule.AllowConvertStructToClass = true;
             clangModule.CallingConvention = CallingConvention.Cdecl;
             clangModule.MethodClassName = "ClangNative";
             clangModule.InteropClassName = "ClangInterop";
@@ -51,7 +50,6 @@ namespace QuantumBinding.ClangGenerator
             clangModule.OutputFileName = mainNamespace;
             clangModule.OutputNamespace = mainNamespace;
             clangModule.InteropSubNamespace = interopSubNamespace;
-            clangModule.WrapInteropObjects = true;
             clangModule.EachTypeInSeparateFile = true;
             clangModule.FileHeader = header;
 

@@ -169,16 +169,13 @@ public abstract class QuantumBindingGenerator
             if (module == null) continue;
                 
             processingCtx.AddCodeGenerationPass(new BasicCodeGeneratorPass(module.GeneratorSpecializations), ExecutionPassKind.PerTranslationUnit, module);
-                
-            if (module.WrapInteropObjects)
-            {
-                processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
-                processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
-                processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
-                processingCtx.AddPreGeneratorPass(new ContextGenerationAnalyzerPass(), ExecutionPassKind.PerTranslationUnit, module);
 
-                processingCtx.AddCodeGenerationPass(new WrappersCodeGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
-            }
+            processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
+            processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
+            processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
+            processingCtx.AddPreGeneratorPass(new ContextGenerationAnalyzerPass(), ExecutionPassKind.PerTranslationUnit, module);
+
+            processingCtx.AddCodeGenerationPass(new WrappersCodeGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
         }
     }
 

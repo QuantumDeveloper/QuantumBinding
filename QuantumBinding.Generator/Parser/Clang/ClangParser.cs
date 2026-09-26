@@ -435,8 +435,6 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
             var pointee = type.GetPointeeType();
             if (pointee.Kind is CXTypeKind.CXType_Record or CXTypeKind.CXType_Void)
             {
-                var convertToClass = _unit.Module.AllowConvertStructToClass;
-                var classType = convertToClass ? ClassType.Class : ClassType.Struct;
                 var pointeeName = pointee.ToString();
                 if (pointeeName.StartsWith("const"))
                 {
@@ -450,12 +448,12 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                     OriginalName = spelling,
                     IsTypedef = true,
                     IsPointer = true,
-                    ClassType = classType,
+                    ClassType = ClassType.Class,
                     NativeStruct = _unit.AllClasses.FirstOrDefault(x => x.Name == pointeeName),
                     Comment = GetComment(cursor)
                 };
 
-                if (convertToClass && classType == ClassType.Class && @class.NativeStruct == null)
+                if (@class.NativeStruct == null)
                 {
                     var @struct = (Class)@class.Clone();
                     @struct.ClassType = ClassType.Struct;
@@ -468,29 +466,17 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                     @class.NativeStruct = @struct;
                 }
 
-                if (@class.NativeStruct != null)
-                {
-                    @class.NativeStruct.LinkedTo = @class;
-                }
+                @class.NativeStruct.LinkedTo = @class;
 
                 var dependentType = new DependentNameType(@class.Name, pointeeName);
                 dependentType.Declaration = @class;
                 @class.UnderlyingNativeType = dependentType;
-                    
+
                 var field = new Field();
-                if (classType == ClassType.Class)
-                {
-                    field.AccessSpecifier = AccessSpecifier.Internal;
-                    field.Name = "__Instance";
-                    field.Type = new CustomType(@class.NativeStruct.Name);
-                    field.Type.Declaration = @class.NativeStruct;
-                }
-                else
-                {
-                    field.AccessSpecifier = AccessSpecifier.Public;
-                    field.Name = "pointer";
-                    field.Type = new PointerType() { Pointee = new BuiltinType(PrimitiveType.Void) };
-                }
+                field.AccessSpecifier = AccessSpecifier.Internal;
+                field.Name = "__Instance";
+                field.Type = new CustomType(@class.NativeStruct.Name);
+                field.Type.Declaration = @class.NativeStruct;
 
                 @class.AddField(field);
                 var inputParameter = new Parameter(field.Name);
@@ -515,15 +501,12 @@ public unsafe class ClangParser : ICXCursorVisitor, IMetadataProvider
                 op.PassValueToConstructor = true;
                 @class.Operators.Add(op);
 
-                if (convertToClass)
-                {
-                    var defaultCtr = new Constructor() { Class = @class, IsDefault = true };
-                    @class.Constructors.Add(defaultCtr);
+                var defaultCtr = new Constructor() { Class = @class, IsDefault = true };
+                @class.Constructors.Add(defaultCtr);
 
-                    var ctr = new Constructor() { Class = @class };
-                    ctr.InputParameters.Add(inputParameter);
-                    @class.Constructors.Add(ctr);
-                }
+                var ctr = new Constructor() { Class = @class };
+                ctr.InputParameters.Add(inputParameter);
+                @class.Constructors.Add(ctr);
 
                 AddDeclaration(@class);
 

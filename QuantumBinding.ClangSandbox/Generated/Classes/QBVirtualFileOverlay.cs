@@ -38,26 +38,29 @@ public unsafe partial class QBVirtualFileOverlay : IUnmanagedWrapper<QuantumBind
         {
             int totalSize = 0;
             if (!string.IsNullOrEmpty(virtualPath))
-                totalSize += virtualPath.Length * sizeof(byte) + 1;
+                totalSize += System.Text.Encoding.UTF8.GetByteCount(virtualPath) + 1;
             if (!string.IsNullOrEmpty(realPath))
-                totalSize += realPath.Length * sizeof(byte) + 1;
+                totalSize += System.Text.Encoding.UTF8.GetByteCount(realPath) + 1;
             return totalSize;
         }
 
         var totalSize = CalculateSize(virtualPath, realPath);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(virtualPath, ref currentCursor);
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(realPath, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_addFileMapping(this, arg1, arg2);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(virtualPath, ref currentCursor);
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(realPath, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_VirtualFileOverlay_addFileMapping(this, arg1, arg2);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -88,7 +91,7 @@ public unsafe partial class QBVirtualFileOverlay : IUnmanagedWrapper<QuantumBind
         return result;
     }
 
-    public ref readonly CXVirtualFileOverlayImpl GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXVirtualFileOverlayImpl(QBVirtualFileOverlay q)
     {

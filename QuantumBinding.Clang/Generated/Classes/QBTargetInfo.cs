@@ -53,7 +53,7 @@ public unsafe partial class QBTargetInfo : IUnmanagedWrapper<QuantumBinding.Clan
         return QuantumBinding.Clang.Interop.ClangInterop.clang_TargetInfo_getTriple(this);
     }
 
-    public ref readonly CXTargetInfoImpl GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXTargetInfoImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXTargetInfoImpl(QBTargetInfo q)
     {

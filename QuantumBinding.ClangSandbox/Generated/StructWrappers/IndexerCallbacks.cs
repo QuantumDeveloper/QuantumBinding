@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A group of callbacks used by #clang_indexSourceFile and #clang_indexTranslationUnit.
 ///</summary>
-public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.IndexerCallbacks>
+public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.IndexerCallbacks>
 {
     public IndexerCallbacks()
     {
@@ -43,7 +43,7 @@ public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallabl
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.IndexerCallbacks>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.IndexerCallbacks>.Size;
         return size;
     }
 
@@ -72,6 +72,12 @@ public unsafe partial class IndexerCallbacks : IMarshallableObject, IMarshallabl
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.IndexerCallbacks*)native);
     }
     private ref struct IndexerCallbacksMarshaller
     {

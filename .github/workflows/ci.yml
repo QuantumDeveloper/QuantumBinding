@@ -1,0 +1,59 @@
+# Builds the solution, packs the three packages and runs the quick-start sample on them, on Windows, Linux and macOS.
+# The sample generates bindings for its header with the packed generator and builds them against the packed Utils, so a
+# package that does not restore, does not load libclang or generates code that does not compile fails here, before
+# nuget.org.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # A branch of this repository is built on push, so pull_request builds only the ones from forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build
+        run: dotnet build QuantumBinding.sln -c Release -warnaserror
+
+      - name: Pack
+        shell: bash
+        run: |
+          dotnet pack QuantumBinding.Utils/QuantumBinding.Utils.csproj -c Release -o artifacts
+          dotnet pack QuantumBinding.Clang/QuantumBinding.Clang.csproj -c Release -o artifacts
+          dotnet pack QuantumBinding.Generator/QuantumBinding.Generator.csproj -c Release -o artifacts
+
+      # samples/QuickStart/nuget.config takes QuantumBinding.* from artifacts only: the sample runs what was just packed.
+      - name: Generate the quick-start bindings
+        working-directory: samples/QuickStart/Generator
+        run: dotnet run -c Release
+
+      - name: Build the quick-start bindings
+        run: dotnet build samples/QuickStart/MyLib/MyLib.csproj -c Release -warnaserror
+
+      # The libclang bindings are generated from Windows headers, so only the Windows job can regenerate them.
+      - name: The libclang bindings are current
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          (cd QuantumBinding.Demo && dotnet run -c Release)
+          changes="$(git status --porcelain -- QuantumBinding.ClangSandbox)"
+          if [ -n "$changes" ]; then echo "$changes"; exit 1; fi
+          diff -r --strip-trailing-cr QuantumBinding.ClangSandbox/Generated QuantumBinding.Clang/Generated

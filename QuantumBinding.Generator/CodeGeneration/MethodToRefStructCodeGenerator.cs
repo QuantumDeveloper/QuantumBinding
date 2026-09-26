@@ -17,8 +17,6 @@ public class MethodToRefStructCodeGenerator : TextGenerator
 
     protected string ConversionMethodName { get; set; }
 
-    protected bool WrapInteropObjects { get; set; }
-    
     protected  BindingOptions Options { get; set; }
 
     public MethodToRefStructCodeGenerator(
@@ -31,7 +29,6 @@ public class MethodToRefStructCodeGenerator : TextGenerator
         TypePrinter.PushModule(translationUnit.Module);
         CurrentTranslationUnit = translationUnit;
         ConversionMethodName = conversionMethodName;
-        WrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
     }
     
     public TargetRuntime TargetRuntime => CurrentTranslationUnit.Module.TargetRuntime;

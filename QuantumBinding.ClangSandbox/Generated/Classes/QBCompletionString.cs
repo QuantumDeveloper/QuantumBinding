@@ -116,7 +116,7 @@ public unsafe partial class QBCompletionString : IUnmanagedWrapper<QuantumBindin
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumCompletionChunks(this);
     }
 
-    public ref readonly CXCompletionString GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXCompletionString GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXCompletionString(QBCompletionString q)
     {

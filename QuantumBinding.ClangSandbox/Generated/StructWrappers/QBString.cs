@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A character string.
 ///</summary>
-public unsafe partial class QBString : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXString>
+public unsafe partial class QBString : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXString>
 {
     public QBString()
     {
@@ -58,7 +58,7 @@ public unsafe partial class QBString : IMarshallableObject, IMarshallable<Quantu
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXString>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXString>.Size;
         return size;
     }
 
@@ -81,6 +81,12 @@ public unsafe partial class QBString : IMarshallableObject, IMarshallable<Quantu
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXString*)native);
     }
     private ref struct CXStringMarshaller
     {

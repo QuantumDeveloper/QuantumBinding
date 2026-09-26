@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Identifies an array of ranges.
 ///</summary>
-public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRangeList>
+public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRangeList>
 {
     public QBSourceRangeList()
     {
@@ -47,7 +47,7 @@ public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallab
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXSourceRangeList>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXSourceRangeList>.Size;
         if (Ranges != default)
         {
             size += Ranges.GetSize();
@@ -75,6 +75,12 @@ public unsafe partial class QBSourceRangeList : IMarshallableObject, IMarshallab
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXSourceRangeList*)native);
     }
     private ref struct CXSourceRangeListMarshaller
     {

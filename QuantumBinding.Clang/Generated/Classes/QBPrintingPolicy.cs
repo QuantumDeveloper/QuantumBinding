@@ -53,7 +53,7 @@ public unsafe partial class QBPrintingPolicy : IUnmanagedWrapper<QuantumBinding.
         QuantumBinding.Clang.Interop.ClangInterop.clang_PrintingPolicy_setProperty(this, property, value);
     }
 
-    public ref readonly CXPrintingPolicy GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXPrintingPolicy GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXPrintingPolicy(QBPrintingPolicy q)
     {

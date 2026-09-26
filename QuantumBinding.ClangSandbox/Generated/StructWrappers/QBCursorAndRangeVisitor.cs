@@ -12,7 +12,7 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>
+public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>
 {
     public QBCursorAndRangeVisitor()
     {
@@ -34,7 +34,7 @@ public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMars
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>.Size;
         return size;
     }
 
@@ -57,6 +57,12 @@ public unsafe partial class QBCursorAndRangeVisitor : IMarshallableObject, IMars
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor*)native);
     }
     private ref struct CXCursorAndRangeVisitorMarshaller
     {

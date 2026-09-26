@@ -69,13 +69,19 @@ public class MyLibGenerator : QuantumBindingGenerator
         module.InteropClassName = "MyLibInterop";
         module.MethodClassName = "MyLibNative";
         module.EachTypeInSeparateFile = true;
-        module.WrapInteropObjects = true;
 
         options.AddModule(module);
     }
 
     public override void OnSetupPostProcessing(ProcessingContext context)
     {
+        // Functions over a handle become its methods, the rest static methods of MyLibNative.
+        context.AddPreGeneratorPass(new FunctionToInstanceMethodPass(), ExecutionPassKind.PerTranslationUnit, module);
+        // mylib_release(context) reads context.Release().
+        context.AddPreGeneratorPass(
+            new RegexRenamePass("^mylib_", "", RenameTargets.Method, true),
+            ExecutionPassKind.PerTranslationUnit,
+            module);
         // Every name but the imported functions' in PascalCase: mylib_context becomes MylibContext.
         context.AddPreGeneratorPass(
             new CaseRenamePass(RenameTargetsUtils.AnyExcept(RenameTargets.Function), CasePattern.PascalCase),

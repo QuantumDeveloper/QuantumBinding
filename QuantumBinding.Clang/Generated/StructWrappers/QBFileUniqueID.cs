@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Uniquely identifies a CXFile, that refers to the same underlying file, across an indexing session.
 ///</summary>
-public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXFileUniqueID>
+public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXFileUniqueID>
 {
     public QBFileUniqueID()
     {
@@ -36,7 +36,7 @@ public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXFileUniqueID>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXFileUniqueID>.Size;
         return size;
     }
 
@@ -62,6 +62,12 @@ public unsafe partial class QBFileUniqueID : IMarshallableObject, IMarshallable<
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXFileUniqueID*)native);
     }
     private ref struct CXFileUniqueIDMarshaller
     {

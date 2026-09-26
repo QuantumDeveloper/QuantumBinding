@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Provides the contents of a file that has not yet been saved to disk.
 ///</summary>
-public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXUnsavedFile>
+public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXUnsavedFile>
 {
     public QBUnsavedFile()
     {
@@ -38,7 +38,7 @@ public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<Q
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXUnsavedFile>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXUnsavedFile>.Size;
         if (!string.IsNullOrEmpty(Filename))
             size += System.Text.Encoding.UTF8.GetByteCount(Filename) + 1;
         if (!string.IsNullOrEmpty(Contents))
@@ -66,6 +66,12 @@ public unsafe partial class QBUnsavedFile : IMarshallableObject, IMarshallable<Q
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXUnsavedFile*)native);
     }
     private ref struct CXUnsavedFileMarshaller
     {
