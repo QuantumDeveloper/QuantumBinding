@@ -591,7 +591,7 @@ public class CSharpCodeGenerator: CSharpCodeGeneratorBase
     {
         if (@class.ClassType != ClassType.Class) return;
             
-        WriteLine($"public ref readonly {@class.Fields[0].Type} GetPinnableReference() => ref {@class.Fields[0].Name};");
+        WriteLine($"public ref readonly {@class.NativeStruct.FullName} GetPinnableReference() => ref {@class.Fields[0].Name};");
     }
 
     protected void GenerateExtensionMethods(Class @class)

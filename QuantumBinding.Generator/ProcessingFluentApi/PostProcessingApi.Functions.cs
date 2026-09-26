@@ -194,7 +194,7 @@ public partial class PostProcessingApi : IFunctionParameter, IFunctionParameterN
         return this;
     }
 
-    IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerType(BindingType pointeeType, uint pointerDepth = 1)
+    IFunctionParameterName IInterpretFunctionParameterByName.InterpretAsPointerType(BindingType pointeeType, uint pointerDepth)
     {
         var pointer = new PointerType();
         _currentParameter.Type = pointer;

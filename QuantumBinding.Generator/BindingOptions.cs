@@ -16,8 +16,6 @@ public class BindingOptions
 
     public bool DebugMode { get; set; }
 
-    public string PathToBindingsFile { get; set; }
-
     public bool PodTypesAsSimpleTypes { get; set; }
 
     public List<string> ParserArguments { get; set; }

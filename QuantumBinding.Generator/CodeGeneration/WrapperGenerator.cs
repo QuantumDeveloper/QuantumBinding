@@ -803,7 +803,6 @@ public class WrapperGenerator : CSharpCodeGenerator
                 {
                     WriteDefaultCondition(() =>
                     {
-                        string childContext = "childContext";
                         var nativeDecl = property.Field.Type.Declaration as Class;
                             
                         WriteLine($"fixed ({nativeDecl.FullName}* pField = &{contextName}.Destination[0].{property.Field.Name})");
@@ -1492,8 +1491,6 @@ public class WrapperGenerator : CSharpCodeGenerator
     private void MarshalStringArrayToPointer(Property property, Class @class, string contextName)
     {
         var conversionType = property.Type.IsUnicodeString() ? "char" : "sbyte";
-        string pointerArraySizeName = "pointerArraySize";
-        string pointerSpanName = "pointerSpan";
         var inputSpanName = TargetRuntime == TargetRuntime.Net8Plus ? $"{@class.InputClassName}.{property.Name}.Span" : $"{@class.InputClassName}.{property.Name}";
         WriteLine($"{contextName}.Destination[0].{property.Field.Name} = {TextGenerator.MarshalStringArrayToUtf8Buffer}({inputSpanName}, ref {contextName});");
     }
@@ -1523,8 +1520,6 @@ public class WrapperGenerator : CSharpCodeGenerator
             castTypeName = $"{interop}.{structName}";
         }
 
-        string sizeInBytes = "sizeInBytes";
-        string byteSpan = "byteSpan";
         if (decl is { ClassType: ClassType.Class } or { IsSimpleType: true})
         {
             var parameterName = TargetRuntime == TargetRuntime.Net8Plus

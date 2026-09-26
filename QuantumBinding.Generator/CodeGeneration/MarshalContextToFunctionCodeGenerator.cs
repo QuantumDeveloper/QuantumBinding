@@ -728,7 +728,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             if (classDecl.ClassType == ClassType.Class)
             {
                 WriteLine($"{classDecl.NativeStruct.Namespace}.{typeStrResult} {argumentName} = null;");
-                WriteLine($"{SpanClassName}<{classDecl.NativeStruct.FullName}> {argumentName}Span = {Default};");
+                WriteLine($"scoped {SpanClassName}<{classDecl.NativeStruct.FullName}> {argumentName}Span = {Default};");
                 ImplicitTwoWayArrayTypeConversion(parameter, classDecl, argumentName, arrayLength);
             }
             else

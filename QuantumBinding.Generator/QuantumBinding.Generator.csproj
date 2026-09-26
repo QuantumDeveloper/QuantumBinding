@@ -1,11 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latestmajor</LangVersion>
-    <Platforms>x64</Platforms>
     <Configurations>Debug;Release</Configurations>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>QuantumBinding.Generator</PackageId>
+    <Version>3.0.0</Version>
+    <IsPackable>true</IsPackable>
+    <Description>Generates C# bindings from C headers through libclang. The native libclang comes from the libclang runtime packages: a project that runs the generator sets its RuntimeIdentifier and restores only its own platform's library.</Description>
+    <PackageTags>interop;bindings;generator;clang;libclang;pinvoke</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,24 +21,23 @@
 
   <ItemGroup>
     <None Remove="ClangSharp.dll" />
-    <None Remove="libclang.dll" />
     <None Remove="_ClangSharp.dll" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="libclang.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Remove="libclang.dylib" />
-    <Content Include="libclang.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <!-- clang's builtin resource headers (stddef.h/stdint.h/stdbool.h + shards), so libclang can resolve <stdint.h>
-         when driven programmatically. Copied next to libclang.dll in the output; see ClangParser -resource-dir. -->
-    <Content Include="clang-resource\**\*">
+         when driven programmatically. Copied to the output; see ClangParser -resource-dir. A package consumer gets
+         them from build\QuantumBinding.Generator.targets. -->
+    <Content Include="clang-resource\**\*" Pack="true" PackagePath="clang-resource\">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>clang-resource\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
+    <None Update="build\QuantumBinding.Generator.targets" Pack="true"
+          PackagePath="build\QuantumBinding.Generator.targets;buildTransitive\QuantumBinding.Generator.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="libclang" Version="22.1.8" />
   </ItemGroup>
 
   <ItemGroup>

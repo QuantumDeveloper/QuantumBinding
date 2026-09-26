@@ -20,9 +20,6 @@ public class MethodToRefStructCodeGenerator : TextGenerator
     protected bool WrapInteropObjects { get; set; }
     
     protected  BindingOptions Options { get; set; }
-    
-    private int currentParameterIndex;
-    private List<Parameter> nativeParams;
 
     public MethodToRefStructCodeGenerator(
         BindingOptions options, 
