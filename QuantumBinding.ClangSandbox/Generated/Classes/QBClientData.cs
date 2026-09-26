@@ -29,7 +29,7 @@ public unsafe partial class QBClientData : IUnmanagedWrapper<QuantumBinding.Clan
     }
 
     public QuantumBinding.Clang.Interop.CXClientData GetNativeValue() => __Instance;
-    public ref readonly CXClientData GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXClientData GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXClientData(QBClientData q)
     {

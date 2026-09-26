@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Data for IndexerCallbacks#indexEntityReference.
 ///</summary>
-public unsafe partial class QBIdxEntityRefInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxEntityRefInfo>
+public unsafe partial class QBIdxEntityRefInfo : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIdxEntityRefInfo>
 {
     public QBIdxEntityRefInfo()
     {
@@ -42,7 +42,7 @@ public unsafe partial class QBIdxEntityRefInfo : IMarshallableObject, IMarshalla
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxEntityRefInfo>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxEntityRefInfo>.Size;
         if (ReferencedEntity != default)
         {
             size += ReferencedEntity.GetSize();
@@ -85,6 +85,12 @@ public unsafe partial class QBIdxEntityRefInfo : IMarshallableObject, IMarshalla
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIdxEntityRefInfo*)native);
     }
     private ref struct CXIdxEntityRefInfoMarshaller
     {

@@ -73,7 +73,7 @@ public unsafe partial class QBFile : IUnmanagedWrapper<QuantumBinding.Clang.Inte
         return result;
     }
 
-    public ref readonly CXFile GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXFile GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXFile(QBFile q)
     {

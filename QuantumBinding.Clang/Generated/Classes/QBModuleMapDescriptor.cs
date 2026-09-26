@@ -46,23 +46,26 @@ public unsafe partial class QBModuleMapDescriptor : IUnmanagedWrapper<QuantumBin
         {
             int totalSize = 0;
             if (!string.IsNullOrEmpty(name))
-                totalSize += name.Length * sizeof(byte) + 1;
+                totalSize += System.Text.Encoding.UTF8.GetByteCount(name) + 1;
             return totalSize;
         }
 
         var totalSize = CalculateSize(name);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(name, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_setFrameworkModuleName(this, arg1);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(name, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_setFrameworkModuleName(this, arg1);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -75,23 +78,26 @@ public unsafe partial class QBModuleMapDescriptor : IUnmanagedWrapper<QuantumBin
         {
             int totalSize = 0;
             if (!string.IsNullOrEmpty(name))
-                totalSize += name.Length * sizeof(byte) + 1;
+                totalSize += System.Text.Encoding.UTF8.GetByteCount(name) + 1;
             return totalSize;
         }
 
         var totalSize = CalculateSize(name);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(name, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_setUmbrellaHeader(this, arg1);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalString(name, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_ModuleMapDescriptor_setUmbrellaHeader(this, arg1);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -106,7 +112,7 @@ public unsafe partial class QBModuleMapDescriptor : IUnmanagedWrapper<QuantumBin
         return result;
     }
 
-    public ref readonly CXModuleMapDescriptorImpl GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXModuleMapDescriptorImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXModuleMapDescriptorImpl(QBModuleMapDescriptor q)
     {

@@ -29,7 +29,7 @@ public unsafe partial class QBIdxClientEntity : IUnmanagedWrapper<QuantumBinding
     }
 
     public QuantumBinding.Clang.Interop.CXIdxClientEntity GetNativeValue() => __Instance;
-    public ref readonly CXIdxClientEntity GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXIdxClientEntity GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXIdxClientEntity(QBIdxClientEntity q)
     {

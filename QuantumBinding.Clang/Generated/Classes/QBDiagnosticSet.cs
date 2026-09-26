@@ -53,7 +53,7 @@ public unsafe partial class QBDiagnosticSet : IUnmanagedWrapper<QuantumBinding.C
         return QuantumBinding.Clang.Interop.ClangInterop.clang_getNumDiagnosticsInSet(this);
     }
 
-    public ref readonly CXDiagnosticSet GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXDiagnosticSet GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXDiagnosticSet(QBDiagnosticSet q)
     {

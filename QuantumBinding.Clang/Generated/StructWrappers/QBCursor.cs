@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A cursor representing some element in the abstract syntax tree for a translation unit.
 ///</summary>
-public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCursor>
+public unsafe partial class QBCursor : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXCursor>
 {
     public QBCursor()
     {
@@ -123,18 +123,21 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, constraint, expr);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(constraint, ref currentCursor);
-            var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(expr, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getGCCAssemblyInput(arg0, index, arg2, arg3);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(constraint, ref currentCursor);
+                var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(expr, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getGCCAssemblyInput(arg0, index, arg2, arg3);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -188,18 +191,21 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, constraint, expr);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(constraint, ref currentCursor);
-            var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(expr, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getGCCAssemblyOutput(arg0, index, arg2, arg3);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(constraint, ref currentCursor);
+                var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(expr, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_getGCCAssemblyOutput(arg0, index, arg2, arg3);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -526,18 +532,21 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, language, definedIn);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(language, ref currentCursor);
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(definedIn, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isExternalSymbol(arg0, arg1, arg2, ref isGenerated);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(language, ref currentCursor);
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(definedIn, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_Cursor_isExternalSymbol(arg0, arg1, arg2, ref isGenerated);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -819,17 +828,20 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, param1);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(param1, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_equalCursors(arg0, arg1);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(param1, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_equalCursors(arg0, arg1);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -851,18 +863,21 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, visitor);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = file == null ? new CXFile() : (CXFile)file;
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursorAndRangeVisitor, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(visitor, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_findReferencesInFile(arg0, arg1, arg2);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg1 = file == null ? new CXFile() : (CXFile)file;
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursorAndRangeVisitor, QuantumBinding.Clang.Interop.CXCursorAndRangeVisitor>(visitor, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_findReferencesInFile(arg0, arg1, arg2);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -1022,7 +1037,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
             for (var i = 0U; i < availability.Length; i++)
             {
                 if(availability[(int)i] == null)
-                    totalSize += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXPlatformAvailability>();
+                    totalSize += QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXPlatformAvailability>.Size;
                 else
                     totalSize += availability[(int)i].GetSize();
             }
@@ -1032,25 +1047,28 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, deprecated_message, unavailable_message, availability);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = stackalloc int[1];
-            *arg1 = always_deprecated;
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(deprecated_message, ref currentCursor);
-            var arg4 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(unavailable_message, ref currentCursor);
-            QuantumBinding.Clang.Interop.CXPlatformAvailability* arg5 = null;
-            if (!availability.IsEmpty)
+            try
             {
-                arg5 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBPlatformAvailability, QuantumBinding.Clang.Interop.CXPlatformAvailability>(availability, ref currentCursor);
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg1 = stackalloc int[1];
+                *arg1 = always_deprecated;
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(deprecated_message, ref currentCursor);
+                var arg4 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(unavailable_message, ref currentCursor);
+                QuantumBinding.Clang.Interop.CXPlatformAvailability* arg5 = null;
+                if (!availability.IsEmpty)
+                {
+                    arg5 = QuantumBinding.Utils.MarshalContextUtils.MarshalArrayOfWrappers<QuantumBinding.Clang.QBPlatformAvailability, QuantumBinding.Clang.Interop.CXPlatformAvailability>(availability, ref currentCursor);
+                }
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPlatformAvailability(arg0, arg1, arg2, ref always_unavailable, arg4, arg5, availability_size);
             }
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_getCursorPlatformAvailability(arg0, arg1, arg2, ref always_unavailable, arg4, arg5, availability_size);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -1210,18 +1228,21 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, startBuf, endBuf);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(startBuf, ref currentCursor);
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(endBuf, ref currentCursor);
-            QuantumBinding.Clang.Interop.ClangInterop.clang_getDefinitionSpellingAndExtent(arg0, arg1, arg2, ref startLine, ref startColumn, ref endLine, ref endColumn);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(startBuf, ref currentCursor);
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStringArray(endBuf, ref currentCursor);
+                QuantumBinding.Clang.Interop.ClangInterop.clang_getDefinitionSpellingAndExtent(arg0, arg1, arg2, ref startLine, ref startColumn, ref endLine, ref endColumn);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -1313,17 +1334,20 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         var totalSize = CalculateSize(this, @base);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(@base, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_getOffsetOfBase(arg0, arg1);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(this, ref currentCursor);
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBCursor, QuantumBinding.Clang.Interop.CXCursor>(@base, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_getOffsetOfBase(arg0, arg1);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -1463,7 +1487,7 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCursor>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXCursor>.Size;
         return size;
     }
 
@@ -1492,6 +1516,12 @@ public unsafe partial class QBCursor : IMarshallableObject, IMarshallable<Quantu
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXCursor*)native);
     }
     private ref struct CXCursorMarshaller
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using QuantumBinding.Generator.AST;
 using QuantumBinding.Generator.CodeGeneration;
 using QuantumBinding.Generator.Processors;
@@ -16,10 +17,6 @@ public abstract class QuantumBindingGenerator
         processingCtx.AddPreGeneratorPass(new CheckMacrosPass(), ExecutionPassKind.PerTranslationUnit);
         processingCtx.AddPreGeneratorPass(new NormalizeParametersPass(), ExecutionPassKind.PerTranslationUnit);
         OnSetup(options);
-        if (File.Exists(options.PathToBindingsFile))
-        {
-            //processingCtx.AddPreGeneratorPass(new LoadBindingsFromFilePass(options.PathToBindingsFile), ExecutionPassKind.PerTranslationUnit);
-        }
         OnBeforeSetupPasses(processingCtx);
         BeforeSetupPassesInternal(processingCtx);
         OnSetupPostProcessing(processingCtx);
@@ -76,11 +73,15 @@ public abstract class QuantumBindingGenerator
                 {
                     var unit = new TranslationUnit(file, module);
                     unit.Parse();
-                    if (unit.IsValid)
+                    if (!unit.IsValid)
                     {
-                        translationUnits.Add(unit);
-                        module.TranslationUnits.Add(unit);
+                        var reason = File.Exists(file) ? unit.ParseResult.ToString() : "file not found";
+                        throw new InvalidOperationException(
+                            $"Module '{module.Name}': could not parse '{file}' ({reason}).");
                     }
+
+                    translationUnits.Add(unit);
+                    module.TranslationUnits.Add(unit);
                 }
 
                 if (translationUnits.Count > 1)
@@ -131,14 +132,10 @@ public abstract class QuantumBindingGenerator
                 processingCtx.RunCodeGenerationPasses(module);
                     
                 processingCtx.RunPostGeneratorPasses(module);
-                    
-                RemoveFilesFromPreviousGeneration(processingCtx.AstContext);
 
-                SaveGeneratedCode(processingCtx.AstContext.GeneratorOutputs);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                var files = RenderGeneratedCode(processingCtx.AstContext.GeneratorOutputs);
+                WriteGeneratedCode(files);
+                RemoveFilesFromPreviousGeneration(processingCtx.AstContext, files);
             }
             finally
             {
@@ -172,42 +169,69 @@ public abstract class QuantumBindingGenerator
             if (module == null) continue;
                 
             processingCtx.AddCodeGenerationPass(new BasicCodeGeneratorPass(module.GeneratorSpecializations), ExecutionPassKind.PerTranslationUnit, module);
-                
-            if (module.WrapInteropObjects)
-            {
-                processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
-                processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
-                processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
-                processingCtx.AddPreGeneratorPass(new ContextGenerationAnalyzerPass(), ExecutionPassKind.PerTranslationUnit, module);
 
-                processingCtx.AddCodeGenerationPass(new WrappersCodeGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
-            }
+            processingCtx.AddPreGeneratorPass(new WrappersCreationPass(specs), ExecutionPassKind.PerTranslationUnit, module);
+            processingCtx.AddPreGeneratorPass(new UpdateWrappedMethodParametersPass(specs), ExecutionPassKind.PerTranslationUnit, module);
+            processingCtx.AddPreGeneratorPass(new GlobalScopeToClassMethod(), ExecutionPassKind.PerTranslationUnit, module);
+            processingCtx.AddPreGeneratorPass(new ContextGenerationAnalyzerPass(), ExecutionPassKind.PerTranslationUnit, module);
+
+            processingCtx.AddCodeGenerationPass(new WrappersCodeGenerationPass(), ExecutionPassKind.PerTranslationUnit, module);
         }
     }
 
-    private void RemoveFilesFromPreviousGeneration(ASTContext context)
+    private static void RemoveFilesFromPreviousGeneration(ASTContext context, Dictionary<string, string> generated)
     {
         foreach (var unit in context.TranslationUnits)
         {
             if (!unit.Module.CleanPreviousGeneration) continue;
 
-            if (Directory.Exists(unit.Module.OutputPath))
-            {
-                Directory.Delete(unit.Module.OutputPath, true);
-            }
+            RemoveStaleFiles(unit.Module.OutputPath, generated);
 
             foreach (var mapping in context.Module.NamespaceMapping)
             {
-                if (Directory.Exists(mapping.OutputPath))
-                {
-                    Directory.Delete(mapping.OutputPath, true);
-                }
+                RemoveStaleFiles(mapping.OutputPath, generated);
             }
         }
     }
 
-    private void SaveGeneratedCode(IEnumerable<GeneratorOutput> generatorOutputs)
+    private static void RemoveStaleFiles(string root, Dictionary<string, string> generated)
     {
+        if (string.IsNullOrEmpty(root) || !Directory.Exists(root))
+        {
+            return;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+        {
+            if (!generated.ContainsKey(Path.GetFullPath(file)))
+            {
+                File.Delete(file);
+            }
+        }
+
+        var directories = Directory.EnumerateDirectories(root, "*", SearchOption.AllDirectories)
+            .OrderByDescending(directory => directory.Length);
+        foreach (var directory in directories)
+        {
+            if (!Directory.EnumerateFileSystemEntries(directory).Any())
+            {
+                Directory.Delete(directory);
+            }
+        }
+    }
+
+    private static void WriteGeneratedCode(Dictionary<string, string> files)
+    {
+        foreach (var (path, code) in files)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, code);
+        }
+    }
+
+    private static Dictionary<string, string> RenderGeneratedCode(IEnumerable<GeneratorOutput> generatorOutputs)
+    {
+        var files = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var output in generatorOutputs)
         {
             if (output.Outputs.Count == 0) continue;
@@ -241,14 +265,11 @@ public abstract class QuantumBindingGenerator
                     finalPath = Path.Combine(path, folderName);
                 }
 
-                if (!string.IsNullOrEmpty(finalPath))
-                {
-                    Directory.CreateDirectory(finalPath);
-                }
-
-                File.WriteAllText(Path.Combine(finalPath, codeGenerator.GetFileName(output.TranslationUnit)),
-                    codeGenerator.Generate());
+                var file = Path.GetFullPath(Path.Combine(finalPath, codeGenerator.GetFileName(output.TranslationUnit)));
+                files[file] = codeGenerator.Generate();
             }
         }
+
+        return files;
     }
 }

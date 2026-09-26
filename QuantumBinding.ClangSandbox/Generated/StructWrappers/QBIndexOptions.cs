@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Index initialization options.
 ///</summary>
-public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIndexOptions>
+public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIndexOptions>
 {
     public QBIndexOptions()
     {
@@ -44,7 +44,7 @@ public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIndexOptions>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIndexOptions>.Size;
         if (!string.IsNullOrEmpty(PreambleStoragePath))
             size += System.Text.Encoding.UTF8.GetByteCount(PreambleStoragePath) + 1;
         if (!string.IsNullOrEmpty(InvocationEmissionPath))
@@ -78,6 +78,12 @@ public unsafe partial class QBIndexOptions : IMarshallableObject, IMarshallable<
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIndexOptions*)native);
     }
     private ref struct CXIndexOptionsMarshaller
     {

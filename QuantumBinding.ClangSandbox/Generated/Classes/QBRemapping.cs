@@ -49,17 +49,20 @@ public unsafe partial class QBRemapping : IUnmanagedWrapper<QuantumBinding.Clang
         var totalSize = CalculateSize(param2, param3);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(param2, ref currentCursor);
-            var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(param3, ref currentCursor);
-            QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getFilenames(this, param1, arg2, arg3);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg2 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(param2, ref currentCursor);
+                var arg3 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToPointer<QuantumBinding.Clang.QBString, QuantumBinding.Clang.Interop.CXString>(param3, ref currentCursor);
+                QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getFilenames(this, param1, arg2, arg3);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -68,7 +71,7 @@ public unsafe partial class QBRemapping : IUnmanagedWrapper<QuantumBinding.Clang
         return QuantumBinding.Clang.Interop.ClangInterop.clang_remap_getNumFiles(this);
     }
 
-    public ref readonly CXRemapping GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXRemapping GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXRemapping(QBRemapping q)
     {

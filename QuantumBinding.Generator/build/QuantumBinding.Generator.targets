@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- ClangParser looks for clang's resource headers next to the running generator. -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\clang-resource\**\*"
+          Link="clang-resource\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

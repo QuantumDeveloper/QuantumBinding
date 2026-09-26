@@ -78,12 +78,6 @@ public class NormalizeParametersPass : PreGeneratorPass
             return false;
         }
 
-        if (!CurrentNamespace.Module.AllowConvertStructToClass && @class.NativeStruct != null)
-        {
-            @class.NativeStruct.IsIgnored = true;
-            return true;
-        }
-
         if (@class.IsPointer && @class.NativeStruct != null && @class.NativeStruct.Fields.Count == 0)
         {
             var field = new Field("pointer");

@@ -1,4 +1,5 @@
-# Publishes QuantumBinding.Utils to nuget.org without a stored key.
+# Publishes QuantumBinding.Utils, QuantumBinding.Clang and QuantumBinding.Generator to nuget.org without a stored key.
+# A version already there is skipped, so one run publishes only the packages whose version was bumped.
 #
 # The job asks GitHub for a short-lived OIDC token, NuGet/login exchanges it for a temporary API key that lives one
 # hour, and the push uses that. Nothing to rotate and nothing to leak - which is the point, since API keys created
@@ -30,18 +31,20 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The version comes from global.json, so CI and a developer's machine build with the same SDK instead of with
       # whatever each happens to have installed.
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
-      # Platform=x64 is not decoration: AllowUnsafeBlocks is set per configuration/platform in these projects, and
-      # without it the generated interop fails to compile with CS0227.
+      # AnyCPU: the libraries load in any 64-bit process, the ARM64 ones of Apple Silicon included.
       - name: Pack
-        run: dotnet pack QuantumBinding.Utils/QuantumBinding.Utils.csproj -c Release -p:Platform=x64 -o artifacts
+        run: |
+          dotnet pack QuantumBinding.Utils/QuantumBinding.Utils.csproj -c Release -o artifacts
+          dotnet pack QuantumBinding.Clang/QuantumBinding.Clang.csproj -c Release -o artifacts
+          dotnet pack QuantumBinding.Generator/QuantumBinding.Generator.csproj -c Release -o artifacts
 
       - name: Show what was packed
         run: |
@@ -49,7 +52,7 @@ jobs:
           for f in artifacts/*.nupkg; do echo "== $f"; unzip -p "$f" '*.nuspec'; done
 
       - name: Upload package as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nupkg
           path: artifacts/*.nupkg

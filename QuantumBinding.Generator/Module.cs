@@ -62,15 +62,11 @@ public class Module
 
     public bool SkipGenerationForSimpleTypes { get; set; }
 
-    public bool AllowConvertStructToClass { get; set; }
-        
     public AccessSpecifier InteropClassAccessSpecifier { get; set; }
 
     public CallingConvention CallingConvention { get; set; }
 
     public GeneratorSpecializations GeneratorSpecializations { get; set; }
-
-    public bool WrapInteropObjects { get; set; }
 
     public bool CharAsBoolForMethods { get; set; }
         

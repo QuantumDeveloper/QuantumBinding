@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A parsed comment.
 ///</summary>
-public unsafe partial class QBComment : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXComment>
+public unsafe partial class QBComment : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXComment>
 {
     public QBComment()
     {
@@ -367,7 +367,7 @@ public unsafe partial class QBComment : IMarshallableObject, IMarshallable<Quant
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXComment>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXComment>.Size;
         return size;
     }
 
@@ -390,6 +390,12 @@ public unsafe partial class QBComment : IMarshallableObject, IMarshallable<Quant
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXComment*)native);
     }
     private ref struct CXCommentMarshaller
     {

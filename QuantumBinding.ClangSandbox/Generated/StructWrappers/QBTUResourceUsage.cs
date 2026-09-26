@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// The memory usage of a CXTranslationUnit, broken into categories.
 ///</summary>
-public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXTUResourceUsage>
+public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXTUResourceUsage>
 {
     public QBTUResourceUsage()
     {
@@ -45,7 +45,7 @@ public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallab
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXTUResourceUsage>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXTUResourceUsage>.Size;
         if (Entries != default)
         {
             size += Entries.GetSize();
@@ -74,6 +74,12 @@ public unsafe partial class QBTUResourceUsage : IMarshallableObject, IMarshallab
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXTUResourceUsage*)native);
     }
     private ref struct CXTUResourceUsageMarshaller
     {

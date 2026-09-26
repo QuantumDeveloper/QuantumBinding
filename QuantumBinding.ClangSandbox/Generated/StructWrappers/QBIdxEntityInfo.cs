@@ -12,7 +12,7 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxEntityInfo>
+public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIdxEntityInfo>
 {
     public QBIdxEntityInfo()
     {
@@ -40,7 +40,7 @@ public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallable
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxEntityInfo>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxEntityInfo>.Size;
         if (!string.IsNullOrEmpty(Name))
             size += System.Text.Encoding.UTF8.GetByteCount(Name) + 1;
         if (!string.IsNullOrEmpty(USR))
@@ -50,7 +50,7 @@ public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallable
             for (int i = 0; i < Attributes.Length; i++)
             {
                 if (Attributes.Span[i] == null)
-                    size += Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxAttrInfo>();
+                    size += QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxAttrInfo>.Size;
                 else
                     size += Attributes.Span[i].GetSize();
             }
@@ -91,6 +91,12 @@ public unsafe partial class QBIdxEntityInfo : IMarshallableObject, IMarshallable
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIdxEntityInfo*)native);
     }
     private ref struct CXIdxEntityInfoMarshaller
     {

@@ -85,9 +85,7 @@ public class Class: DeclarationUnit
 
     public IReadOnlyList<Method> Methods => methods.Where(x => !x.IsExtensionMethod).ToList();
 
-    public IReadOnlyList<Method> StaticMethods => methods.Where(x => !x.IsStatic).ToList();
-
-    public IReadOnlyList<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
+    public override IReadOnlyList<Method> ExtensionMethods => methods.Where(x=>x.IsExtensionMethod).ToList();
 
     public IReadOnlyCollection<Method> AllMethods => methods;
 

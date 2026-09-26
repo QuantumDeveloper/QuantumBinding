@@ -1,7 +1,8 @@
 # Third-party notices
 
-This repository **redistributes compiled binaries of another project** alongside its own code. That is permitted by
-its licence — permissive — on one condition: the notice travels with the binaries. This file is that notice.
+This repository **redistributes files of another project** alongside its own code: Clang's builtin headers, which also
+travel inside the `QuantumBinding.Generator` package. That is permitted by their licence — permissive — on one
+condition: the notice travels with the files. This file is that notice.
 
 Listed here is what ships in the repository as somebody else's build output. Packages consumed through NuGet are not
 listed: those carry their own licences with them and are not redistributed here.
@@ -14,9 +15,10 @@ listed: those carry their own licences with them and are not redistributed here.
 
 | File | |
 |---|---|
-| `libclang.dll` | Windows build, 82 MB |
-| `libclang.dylib` | macOS build, 98 MB |
 | `clang-resource/include/**` | Clang's builtin headers (30 files: `stddef.h`, `stdarg.h`, `limits.h`, `stdatomic.h` and the rest) |
+
+libclang itself is not here: the generator takes it from the `libclang` NuGet runtime packages, which carry their own
+licence.
 
 This is what the binding generator is built on. It parses C headers through Clang's own front end rather than through
 a hand-written parser, which is why the generated bindings agree with what a C compiler would see — including macros,
@@ -25,7 +27,7 @@ for itself; without them the parse of any real header fails on the first `#inclu
 
 libclang is part of the LLVM Project and is licensed under the **Apache License 2.0 with LLVM exception**. The
 resource headers carry that as an SPDX identifier in their own first lines — a notice that already travels with those
-files. The binaries carry nothing a reader can see, which is what makes this file necessary.
+files. This file states it for the repository and the package as a whole.
 
 The Apache-2.0 text is in `LICENSE` at the root of this repository. The LLVM exception adds to it:
 
@@ -62,10 +64,8 @@ For the avoidance of doubt, everything else in this repository is its own and is
 
 ## Worth fixing
 
-**The versions are not recorded.** These binaries came from upstream releases, and the repository does not say which.
-Writing the release version next to them would let this file name it instead of describing it by size — and would have
-made the leftover copy removed alongside this note obvious years earlier.
+**The headers' version is not recorded.** They came from an upstream release, and the repository does not say which.
+They should match the libclang the packages bring (22.1.8); writing the version next to them would let this file say so.
 
-**180 MB of binaries live in git history.** They are needed — the generator cannot run without them — but taking
-libclang from the runtime packages that already publish it, or fetching it in a build step, would keep it out of every
-clone. That is a larger change than this file, and it is noted here only so the cost is written down somewhere.
+**180 MB of libclang binaries still live in git history.** They left the tree when libclang moved to the runtime
+packages, but every clone still downloads them. Removing them needs a history rewrite, which is a decision of its own.

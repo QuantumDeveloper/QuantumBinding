@@ -17,12 +17,7 @@ public class MethodToRefStructCodeGenerator : TextGenerator
 
     protected string ConversionMethodName { get; set; }
 
-    protected bool WrapInteropObjects { get; set; }
-    
     protected  BindingOptions Options { get; set; }
-    
-    private int currentParameterIndex;
-    private List<Parameter> nativeParams;
 
     public MethodToRefStructCodeGenerator(
         BindingOptions options, 
@@ -34,7 +29,6 @@ public class MethodToRefStructCodeGenerator : TextGenerator
         TypePrinter.PushModule(translationUnit.Module);
         CurrentTranslationUnit = translationUnit;
         ConversionMethodName = conversionMethodName;
-        WrapInteropObjects = CurrentTranslationUnit.Module.WrapInteropObjects;
     }
     
     public TargetRuntime TargetRuntime => CurrentTranslationUnit.Module.TargetRuntime;

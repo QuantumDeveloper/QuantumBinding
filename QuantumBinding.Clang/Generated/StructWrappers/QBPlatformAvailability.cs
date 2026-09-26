@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Describes the availability of a given entity on a particular platform, e.g., a particular class might only be available on Mac OS 10.7 or newer.
 ///</summary>
-public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXPlatformAvailability>
+public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXPlatformAvailability>
 {
     public QBPlatformAvailability()
     {
@@ -51,7 +51,7 @@ public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarsh
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXPlatformAvailability>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXPlatformAvailability>.Size;
         return size;
     }
 
@@ -78,6 +78,12 @@ public unsafe partial class QBPlatformAvailability : IMarshallableObject, IMarsh
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXPlatformAvailability*)native);
     }
     private ref struct CXPlatformAvailabilityMarshaller
     {

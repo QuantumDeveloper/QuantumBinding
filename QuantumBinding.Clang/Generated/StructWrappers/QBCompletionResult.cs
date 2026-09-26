@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// A single result of code completion.
 ///</summary>
-public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXCompletionResult>
+public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXCompletionResult>
 {
     public QBCompletionResult()
     {
@@ -37,7 +37,7 @@ public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshalla
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXCompletionResult>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXCompletionResult>.Size;
         return size;
     }
 
@@ -60,6 +60,12 @@ public unsafe partial class QBCompletionResult : IMarshallableObject, IMarshalla
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXCompletionResult*)native);
     }
     private ref struct CXCompletionResultMarshaller
     {

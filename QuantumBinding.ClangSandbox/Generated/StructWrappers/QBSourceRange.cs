@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Identifies a half-open character range in the source code.
 ///</summary>
-public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRange>
+public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXSourceRange>
 {
     public QBSourceRange()
     {
@@ -48,17 +48,20 @@ public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<Q
         var totalSize = CalculateSize(this, range2);
         byte[] rentedArray = null;
         var mainBuffer = totalSize <= QuantumBinding.Utils.MarshalingUtils.StackAllocThreshold ? stackalloc byte[totalSize] : (rentedArray = System.Buffers.ArrayPool<byte>.Shared.Rent(totalSize)).AsSpan(0, totalSize);
-        try
+        fixed (byte* bufferPtr = mainBuffer)
         {
-            ref System.Span<byte> currentCursor = ref mainBuffer;
-            var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(this, ref currentCursor);
-            var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(range2, ref currentCursor);
-            return QuantumBinding.Clang.Interop.ClangInterop.clang_equalRanges(arg0, arg1);
-        }
-        finally
-        {
-            if (rentedArray != null)
-                System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            try
+            {
+                ref System.Span<byte> currentCursor = ref mainBuffer;
+                var arg0 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(this, ref currentCursor);
+                var arg1 = QuantumBinding.Utils.MarshalContextUtils.MarshalStructToNative<QuantumBinding.Clang.QBSourceRange, QuantumBinding.Clang.Interop.CXSourceRange>(range2, ref currentCursor);
+                return QuantumBinding.Clang.Interop.ClangInterop.clang_equalRanges(arg0, arg1);
+            }
+            finally
+            {
+                if (rentedArray != null)
+                    System.Buffers.ArrayPool<byte>.Shared.Return(rentedArray);
+            }
         }
     }
 
@@ -100,7 +103,7 @@ public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<Q
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXSourceRange>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXSourceRange>.Size;
         return size;
     }
 
@@ -129,6 +132,12 @@ public unsafe partial class QBSourceRange : IMarshallableObject, IMarshallable<Q
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXSourceRange*)native);
     }
     private ref struct CXSourceRangeMarshaller
     {

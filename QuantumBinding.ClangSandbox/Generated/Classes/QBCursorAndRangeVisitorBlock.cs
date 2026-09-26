@@ -26,7 +26,7 @@ public unsafe partial class QBCursorAndRangeVisitorBlock : IUnmanagedWrapper<Qua
     }
 
     public QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock GetNativeValue() => __Instance;
-    public ref readonly _CXCursorAndRangeVisitorBlock GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop._CXCursorAndRangeVisitorBlock(QBCursorAndRangeVisitorBlock q)
     {

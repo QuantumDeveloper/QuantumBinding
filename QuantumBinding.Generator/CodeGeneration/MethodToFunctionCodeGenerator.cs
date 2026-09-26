@@ -74,8 +74,7 @@ public class MethodToFunctionCodeGenerator : MarshalContextToFunctionCodeGenerat
                 }
                 else // structs without pointers, simple types
                 {
-                    if (parameter.ParameterKind == ParameterKind.Out &&
-                        CurrentTranslationUnit.Module.WrapInteropObjects && !classDecl.IsSimpleType)
+                    if (parameter.ParameterKind == ParameterKind.Out && !classDecl.IsSimpleType)
                     {
                         TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
                         var t = parameter.Type.Visit(TypePrinter);

@@ -335,8 +335,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
                 }
                 else // structs without pointers, simple types
                 {
-                    if (parameter.ParameterKind == ParameterKind.Out &&
-                        CurrentTranslationUnit.Module.WrapInteropObjects && !classDecl.IsSimpleType)
+                    if (parameter.ParameterKind == ParameterKind.Out && !classDecl.IsSimpleType)
                     {
                         TypePrinter.PushMarshalType(MarshalTypes.MethodParameter);
                         var t = parameter.Type.Visit(TypePrinter);
@@ -453,19 +452,10 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             }
             else if (parameter.ParameterKind == ParameterKind.Out)
             {
-                if (!string.IsNullOrEmpty(arrayLength)
-                    && CurrentTranslationUnit.Module.WrapInteropObjects)
+                if (!string.IsNullOrEmpty(arrayLength))
                 {
                     WriteLine($"IntPtr {argumentName} = IntPtr.Zero;");
                     PostActions.Enqueue(() => ConvertPointerToWrappedStructArray(parameter, argumentName, classDecl, currentArray));
-                }
-                else if (!string.IsNullOrEmpty(arrayLength)
-                         && !CurrentTranslationUnit.Module.WrapInteropObjects)
-                {
-                    WriteLine(
-                        $"var {argumentName} = new {classDecl.NativeStruct.Namespace}.{classDecl.NativeStruct.Name}[{arrayLength}];");
-                    PostActions.Enqueue(
-                        () => ImplicitTwoWayArrayTypeConversion(parameter, classDecl, argumentName, arrayLength));
                 }
                 else
                 {
@@ -728,7 +718,7 @@ public class MarshalContextToFunctionCodeGenerator : TextGenerator
             if (classDecl.ClassType == ClassType.Class)
             {
                 WriteLine($"{classDecl.NativeStruct.Namespace}.{typeStrResult} {argumentName} = null;");
-                WriteLine($"{SpanClassName}<{classDecl.NativeStruct.FullName}> {argumentName}Span = {Default};");
+                WriteLine($"scoped {SpanClassName}<{classDecl.NativeStruct.FullName}> {argumentName}Span = {Default};");
                 ImplicitTwoWayArrayTypeConversion(parameter, classDecl, argumentName, arrayLength);
             }
             else

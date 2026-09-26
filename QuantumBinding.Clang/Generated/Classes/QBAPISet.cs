@@ -37,7 +37,7 @@ public unsafe partial class QBAPISet : IUnmanagedWrapper<QuantumBinding.Clang.In
         QuantumBinding.Clang.Interop.ClangInterop.clang_disposeAPISet(this);
     }
 
-    public ref readonly CXAPISetImpl GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXAPISetImpl GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXAPISetImpl(QBAPISet q)
     {

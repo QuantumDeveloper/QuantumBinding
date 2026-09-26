@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Describes a single preprocessing token.
 ///</summary>
-public unsafe partial class QBToken : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXToken>
+public unsafe partial class QBToken : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXToken>
 {
     public QBToken()
     {
@@ -47,7 +47,7 @@ public unsafe partial class QBToken : IMarshallableObject, IMarshallable<Quantum
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXToken>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXToken>.Size;
         return size;
     }
 
@@ -74,6 +74,12 @@ public unsafe partial class QBToken : IMarshallableObject, IMarshallable<Quantum
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXToken*)native);
     }
     private ref struct CXTokenMarshaller
     {

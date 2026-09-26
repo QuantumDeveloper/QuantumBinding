@@ -9,8 +9,8 @@ namespace QuantumBinding.Generator.Processors;
 /// <summary>
 /// This class detecs and move methods from global scope to classes local scope.
 /// </summary>
-/// <remarks>Works ONLY if first parameter is StructWrapper or UnionWrapper. 
-/// It will be applied automatically if options WrapInteopObjects will be set to TRUE</remarks>
+/// <remarks>Works ONLY if first parameter is StructWrapper or UnionWrapper.
+/// The generator applies it to every module.</remarks>
 public class GlobalScopeToClassMethod : PreGeneratorPass
 {
     public GlobalScopeToClassMethod()

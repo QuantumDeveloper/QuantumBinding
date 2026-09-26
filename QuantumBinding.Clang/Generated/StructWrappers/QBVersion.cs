@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Describes a version number of the form major.minor.subminor.
 ///</summary>
-public unsafe partial class QBVersion : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXVersion>
+public unsafe partial class QBVersion : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXVersion>
 {
     public QBVersion()
     {
@@ -38,7 +38,7 @@ public unsafe partial class QBVersion : IMarshallableObject, IMarshallable<Quant
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXVersion>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXVersion>.Size;
         return size;
     }
 
@@ -62,6 +62,12 @@ public unsafe partial class QBVersion : IMarshallableObject, IMarshallable<Quant
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXVersion*)native);
     }
     private ref struct CXVersionMarshaller
     {

@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Data for ppIncludedFile callback.
 ///</summary>
-public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>
+public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>
 {
     public QBIdxIncludedFileInfo()
     {
@@ -41,7 +41,7 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo>.Size;
         if (!string.IsNullOrEmpty(Filename))
             size += System.Text.Encoding.UTF8.GetByteCount(Filename) + 1;
         return size;
@@ -70,6 +70,12 @@ public unsafe partial class QBIdxIncludedFileInfo : IMarshallableObject, IMarsha
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIdxIncludedFileInfo*)native);
     }
     private ref struct CXIdxIncludedFileInfoMarshaller
     {

@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Data for IndexerCallbacks#importedASTFile.
 ///</summary>
-public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>
+public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>
 {
     public QBIdxImportedASTFileInfo()
     {
@@ -39,7 +39,7 @@ public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMar
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo>.Size;
         return size;
     }
 
@@ -64,6 +64,12 @@ public unsafe partial class QBIdxImportedASTFileInfo : IMarshallableObject, IMar
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIdxImportedASTFileInfo*)native);
     }
     private ref struct CXIdxImportedASTFileInfoMarshaller
     {

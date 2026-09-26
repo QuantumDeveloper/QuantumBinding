@@ -12,7 +12,7 @@ using QuantumBinding.Clang.Interop;
 
 namespace QuantumBinding.Clang;
 
-public unsafe partial class QBStringSet : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXStringSet>
+public unsafe partial class QBStringSet : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXStringSet>
 {
     public QBStringSet()
     {
@@ -44,7 +44,7 @@ public unsafe partial class QBStringSet : IMarshallableObject, IMarshallable<Qua
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXStringSet>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXStringSet>.Size;
         if (Strings != default)
         {
             size += Strings.GetSize();
@@ -72,6 +72,12 @@ public unsafe partial class QBStringSet : IMarshallableObject, IMarshallable<Qua
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXStringSet*)native);
     }
     private ref struct CXStringSetMarshaller
     {

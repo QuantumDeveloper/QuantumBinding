@@ -69,7 +69,7 @@ public unsafe partial class QBModule : IUnmanagedWrapper<QuantumBinding.Clang.In
         return QuantumBinding.Clang.Interop.ClangInterop.clang_Module_isSystem(this);
     }
 
-    public ref readonly CXModule GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXModule GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXModule(QBModule q)
     {

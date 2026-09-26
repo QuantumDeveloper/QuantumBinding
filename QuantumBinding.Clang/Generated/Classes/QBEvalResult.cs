@@ -94,7 +94,7 @@ public unsafe partial class QBEvalResult : IUnmanagedWrapper<QuantumBinding.Clan
         return QuantumBinding.Clang.Interop.ClangInterop.clang_EvalResult_isUnsignedInt(this);
     }
 
-    public ref readonly CXEvalResult GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop.CXEvalResult GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop.CXEvalResult(QBEvalResult q)
     {

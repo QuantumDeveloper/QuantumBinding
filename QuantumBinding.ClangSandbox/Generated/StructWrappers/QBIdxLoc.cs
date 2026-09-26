@@ -15,7 +15,7 @@ namespace QuantumBinding.Clang;
 ///<summary>
 /// Source location passed to index callbacks.
 ///</summary>
-public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<QuantumBinding.Clang.Interop.CXIdxLoc>
+public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallableFromPointer, IMarshallable<QuantumBinding.Clang.Interop.CXIdxLoc>
 {
     public QBIdxLoc()
     {
@@ -61,7 +61,7 @@ public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<Quantu
 
     public int GetSize()
     {
-        var size = Marshal.SizeOf<QuantumBinding.Clang.Interop.CXIdxLoc>();
+        var size = QuantumBinding.Utils.SizeOfCache<QuantumBinding.Clang.Interop.CXIdxLoc>.Size;
         return size;
     }
 
@@ -89,6 +89,12 @@ public unsafe partial class QBIdxLoc : IMarshallableObject, IMarshallable<Quantu
         this.MarshalTo(ref internalContext);
         context.SetDataCursor(internalContext.DataCursor);
         return System.Runtime.CompilerServices.Unsafe.AsPointer(ref nativeSpan[0]);
+    }
+
+    public void MarshalFromPointer(void* native)
+    {
+        if (native == null) return;
+        MarshalFrom(in *(QuantumBinding.Clang.Interop.CXIdxLoc*)native);
     }
     private ref struct CXIdxLocMarshaller
     {

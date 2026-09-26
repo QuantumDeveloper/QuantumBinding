@@ -26,7 +26,7 @@ public unsafe partial class QBCursorVisitorBlock : IUnmanagedWrapper<QuantumBind
     }
 
     public QuantumBinding.Clang.Interop._CXChildVisitResult GetNativeValue() => __Instance;
-    public ref readonly _CXChildVisitResult GetPinnableReference() => ref __Instance;
+    public ref readonly QuantumBinding.Clang.Interop._CXChildVisitResult GetPinnableReference() => ref __Instance;
 
     public static implicit operator QuantumBinding.Clang.Interop._CXChildVisitResult(QBCursorVisitorBlock q)
     {
